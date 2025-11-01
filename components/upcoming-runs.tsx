@@ -41,52 +41,69 @@ export function UpcomingRuns() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {weeklyRuns.map((run) => (
-            <Card key={run.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-xl mb-2">{run.title}</CardTitle>
-                <CardDescription>{run.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{run.dayOfWeek}s</span>
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            {weeklyRuns.map((run) => (
+              <Card key={run.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl mb-2">{run.title}</CardTitle>
+                  <CardDescription>{run.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{run.dayOfWeek}s</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span>{run.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{run.location}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>{run.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{run.location}</span>
-                  </div>
-                </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">{run.distance}</Badge>
-                  <Badge variant="outline">{run.pace}</Badge>
-                </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">{run.distance}</Badge>
+                    <Badge variant="outline">{run.pace}</Badge>
+                  </div>
 
-                <div className="flex gap-2">
-                  <Button className="flex-1" variant="default" asChild>
-                    <a href={run.facebookLink} target="_blank" rel="noopener noreferrer">
-                      Facebook
-                    </a>
-                  </Button>
-                  <Button className="flex-1 bg-transparent" variant="outline" asChild>
-                    <a href={run.stravaLink} target="_blank" rel="noopener noreferrer">
-                      Strava
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="flex gap-2">
+                    <Button className="flex-1" variant="default" asChild>
+                      <a href={run.facebookLink} target="_blank" rel="noopener noreferrer">
+                        Facebook
+                      </a>
+                    </Button>
+                    <Button className="flex-1 bg-transparent" variant="outline" asChild>
+                      <a href={run.stravaLink} target="_blank" rel="noopener noreferrer">
+                        Strava
+                      </a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-lg">Club Stats</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <iframe
+                allowTransparency
+                frameBorder="0"
+                height="160"
+                scrolling="no"
+                src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=false"
+                width="100%"
+                className="w-full"
+              />
+            </CardContent>
+          </Card>
         </div>
-
-        
       </div>
     </section>
   )
