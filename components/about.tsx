@@ -16,6 +16,10 @@ const features = [
     icon: Trophy,
     title: "Race Support",
     description: "Training plans, group race entries, and cheering squads for Chicago marathons and races.",
+    link: {
+      text: "Get AI Training & Nutrition Advice",
+      url: "https://gemini.google.com/gem/15qZeU56iHf5NOFxDh737EZMpVOV5qSfs?usp=sharing",
+    },
   },
   {
     icon: Heart,
@@ -52,6 +56,16 @@ export function About() {
                       <div>
                         <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
                         <p className="text-muted-foreground">{feature.description}</p>
+                        {feature.link && (
+                          <a
+                            href={feature.link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block mt-3 text-sm font-medium text-primary hover:underline"
+                          >
+                            {feature.link.text} →
+                          </a>
+                        )}
                       </div>
                     </div>
                   </CardContent>
