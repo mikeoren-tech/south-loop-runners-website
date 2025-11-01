@@ -12,7 +12,7 @@ function StravaIcon({ className }: { className?: string }) {
 
 export function JoinCTA() {
   return (
-    <section className="py-20 bg-gradient-to-br from-blue-600 to-indigo-700">
+    <section className="py-20 bg-gradient-to-br from-[#b4def7] to-[#9dd3f0]">
       <div className="container mx-auto px-4">
         <Card className="max-w-6xl mx-auto border-0 shadow-2xl">
           <CardContent className="p-8 md:p-12">

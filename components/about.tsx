@@ -50,7 +50,7 @@ export function About() {
                     <div className="flex gap-4">
                       <div className="shrink-0">
                         <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-6 w-6 text-primary" />
+                          <Icon className="h-6 w-6 text-destructive" />
                         </div>
                       </div>
                       <div>
@@ -61,7 +61,7 @@ export function About() {
                             href={feature.link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block mt-3 text-sm font-medium text-primary hover:underline"
+                            className="inline-block mt-3 text-sm font-medium hover:underline text-[rgba(217,42,49,1)]"
                           >
                             {feature.link.text} →
                           </a>
@@ -79,9 +79,7 @@ export function About() {
               <div className="max-w-3xl mx-auto text-center space-y-4">
                 <h3 className="text-2xl md:text-3xl font-bold text-balance">Running in the Heart of Chicago</h3>
                 <p className="text-lg opacity-90 text-balance">
-                  Based in the South Loop, we have unparalleled access to Grant Park, the Lakefront Trail, Museum
-                  Campus, and countless scenic routes. Whether you're training for your first 5K or your tenth marathon,
-                  you'll find your pace with us.
+                  Based in the South Loop, we have unparalleled access to Grant Park, the Lakefront Trail, Museum Campus, and countless scenic routes. Whether you're training for your first 5K or your tenth marathon, you'll find your pace with us.
                 </p>
               </div>
             </CardContent>

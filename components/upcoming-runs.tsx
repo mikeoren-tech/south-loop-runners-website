@@ -11,7 +11,7 @@ const weeklyRuns = [
     time: "6:15 PM",
     location: "Agora Statues (Michigan Ave & Roosevelt)",
     distance: "30 minutes",
-    pace: "Variable Pace",
+    pace: "Party Pace",
     description: "Thursday evening run along the lakefront. All paces welcome!",
     facebookLink: "https://www.facebook.com/groups/665701690539939",
     stravaLink: "https://www.strava.com/clubs/Southlooprunners",
@@ -23,7 +23,7 @@ const weeklyRuns = [
     time: "9:00 AM",
     location: "Agora Statues (Michigan Ave & Roosevelt)",
     distance: "6.5 miles",
-    pace: "Steady",
+    pace: "Pace Groups",
     description: "Saturday morning long run. Join us for our signature Anchor Run!",
     facebookLink: "https://www.facebook.com/groups/665701690539939",
     stravaLink: "https://www.strava.com/clubs/Southlooprunners",
@@ -67,7 +67,9 @@ export function UpcomingRuns() {
 
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">{run.distance}</Badge>
-                    <Badge variant="outline">{run.pace}</Badge>
+                    <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                      {run.pace}
+                    </Badge>
                   </div>
 
                   <div className="flex gap-2">
