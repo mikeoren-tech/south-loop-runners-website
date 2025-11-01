@@ -1,6 +1,6 @@
 # Deploying to Cloudflare Pages
 
-This Next.js application is configured for deployment to Cloudflare Pages.
+This Next.js application can be deployed to Cloudflare Pages using the standard Next.js build.
 
 ## Prerequisites
 
@@ -9,58 +9,54 @@ This Next.js application is configured for deployment to Cloudflare Pages.
 
 ## Deployment Steps
 
-### Option 1: Deploy via Cloudflare Dashboard
+### Deploy via Cloudflare Dashboard (Recommended)
 
-1. Log in to your Cloudflare account
-2. Go to **Pages** → **Create a project**
-3. Connect your Git repository
+1. Log in to your Cloudflare account at https://dash.cloudflare.com
+2. Go to **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**
+3. Select your repository (south-loop-runners-website)
 4. Configure build settings:
-   - **Framework preset**: Next.js (Static HTML Export)
-   - **Build command**: `npm run pages:build`
-   - **Build output directory**: `.vercel/output/static`
-5. Add environment variables (if needed):
+   - **Framework preset**: Next.js
+   - **Build command**: `npm run build`
+   - **Build output directory**: `.next`
+5. Add environment variables (optional):
    - Go to **Settings** → **Environment variables**
-   - Add `STRAVA_ACCESS_TOKEN` if using Strava integration
-6. Add compatibility flag:
-   - Go to **Settings** → **Functions** → **Compatibility flags**
-   - Add `nodejs_compat`
-7. Click **Save and Deploy**
+   - Add `STRAVA_ACCESS_TOKEN` if you want to enable Strava integration
+6. Click **Save and Deploy**
 
-### Option 2: Deploy via Wrangler CLI
+### Subsequent Deployments
 
-\`\`\`bash
-# Install Wrangler globally
-npm install -g wrangler
-
-# Login to Cloudflare
-wrangler login
-
-# Build the project
-npm run pages:build
-
-# Deploy to Cloudflare Pages
-wrangler pages deploy .vercel/output/static --project-name=south-loop-runners
-\`\`\`
+After the initial setup, Cloudflare Pages will automatically deploy your site whenever you push to your main branch.
 
 ## Environment Variables
 
-If you're using any environment variables (like `STRAVA_ACCESS_TOKEN`), make sure to add them in:
-- **Cloudflare Dashboard**: Settings → Environment variables
-- **Wrangler CLI**: Use `wrangler pages secret put <KEY>`
+The site currently uses these environment variables:
+- `STRAVA_ACCESS_TOKEN` (optional) - For Strava club integration
+
+To add environment variables:
+1. Go to your Pages project in Cloudflare Dashboard
+2. Navigate to **Settings** → **Environment variables**
+3. Add variables for Production and/or Preview environments
+
+## Features
+
+- **Automatic deployments** from Git pushes
+- **Preview deployments** for pull requests
+- **Custom domains** can be added in Settings → Custom domains
+- **Analytics** available in the Analytics tab
 
 ## Notes
 
-- The site uses static export mode for optimal Cloudflare Pages compatibility
-- Images are unoptimized for Cloudflare's edge network
-- Instagram embeds require client-side JavaScript to load
-- All external links (Facebook, Strava, Instagram) work without additional configuration
+- The site is a standard Next.js app with static and dynamic features
+- Instagram embeds load client-side via Instagram's embed.js
+- All social media links (Facebook, Strava, Instagram) work without additional configuration
+- Images are unoptimized for better compatibility with Cloudflare's edge network
 
 ## Troubleshooting
 
 If you encounter build errors:
-1. Ensure Node.js version is 18 or higher
-2. Clear build cache: `rm -rf .next .vercel`
-3. Check that all dependencies are installed: `npm install`
-4. Verify environment variables are set correctly
+1. Check the build logs in the Cloudflare Dashboard
+2. Ensure all dependencies are listed in package.json
+3. Verify Node.js version compatibility (18+)
+4. Check that environment variables are set correctly
 
 For more information, visit: https://developers.cloudflare.com/pages/framework-guides/nextjs/
