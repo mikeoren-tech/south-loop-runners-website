@@ -86,13 +86,7 @@ export function UpcomingRuns() {
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <Button variant="outline" size="lg" asChild>
-            <a href="https://www.strava.com/clubs/Southlooprunners" target="_blank" rel="noopener noreferrer">
-              Join Our Strava Club
-            </a>
-          </Button>
-        </div>
+        
       </div>
     </section>
   )

@@ -1,55 +1,32 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Instagram, Heart, MessageCircle } from "lucide-react"
+import { Instagram } from "lucide-react"
+import { useEffect } from "react"
 
-const instagramPosts = [
-  {
-    id: 1,
-    image: "/group-of-runners-on-chicago-lakefront-at-sunrise.jpg",
-    caption: "Beautiful sunrise run along the lakefront this morning! 🌅",
-    likes: 142,
-    comments: 18,
-  },
-  {
-    id: 2,
-    image: "/runners-crossing-chicago-marathon-finish-line.jpg",
-    caption: "Congrats to all our members who crushed the Chicago Marathon! 🏃‍♀️💪",
-    likes: 256,
-    comments: 34,
-  },
-  {
-    id: 3,
-    image: "/group-photo-of-runners-in-south-loop-chicago.jpg",
-    caption: "Another amazing Thursday social run! Love this community ❤️",
-    likes: 189,
-    comments: 22,
-  },
-  {
-    id: 4,
-    image: "/runners-on-snowy-chicago-winter-trail.jpg",
-    caption: "We don't let a little snow stop us! ❄️ #ChicagoRunners",
-    likes: 203,
-    comments: 28,
-  },
-  {
-    id: 5,
-    image: "/post-run-coffee-and-bagels-with-runners.jpg",
-    caption: "Post-run fuel is the best fuel ☕🥯",
-    likes: 167,
-    comments: 15,
-  },
-  {
-    id: 6,
-    image: "/runners-at-grant-park-buckingham-fountain-chicago.jpg",
-    caption: "Tuesday tempo runs at Buckingham Fountain never get old 💙",
-    likes: 178,
-    comments: 19,
-  },
+// To get post URLs: Go to instagram.com/southlooprunners, click on a post, copy the URL
+const instagramPostUrls = [
+  "https://www.instagram.com/p/DP9K4vRjQFC/", // Replace with actual post URL
+  "https://www.instagram.com/p/DNlckmkRoOp", // Replace with actual post URL
+  "https://www.instagram.com/p/DIpBIqBvI3K", // Replace with actual post URL
+  "https://www.instagram.com/p/DQX-bcQDSop/", // Replace with actual post URL
+  "https://www.instagram.com/reel/C_A2lrwxRLx/", // Replace with actual post URL
+  "https://www.instagram.com/p/DPy33Mvju6e/", // Replace with actual post URL
 ]
 
 export function InstagramFeed() {
+  useEffect(() => {
+    // Load Instagram's embed script
+    const script = document.createElement("script")
+    script.src = "https://www.instagram.com/embed.js"
+    script.async = true
+    document.body.appendChild(script)
+
+    return () => {
+      document.body.removeChild(script)
+    }
+  }, [])
+
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -63,37 +40,26 @@ export function InstagramFeed() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto mb-8">
-          {instagramPosts.map((post) => (
-            <a
-              key={post.id}
-              href="https://www.instagram.com/southlooprunners"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group"
-            >
-              <Card className="overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300">
-                <div className="relative aspect-square overflow-hidden">
-                  <img
-                    src={post.image || "/placeholder.svg"}
-                    alt={post.caption}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="text-white flex gap-6">
-                      <div className="flex items-center gap-2">
-                        <Heart className="h-6 w-6 fill-white" />
-                        <span className="font-semibold">{post.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MessageCircle className="h-6 w-6 fill-white" />
-                        <span className="font-semibold">{post.comments}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </a>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-8">
+          {instagramPostUrls.map((url, index) => (
+            <div key={index} className="flex justify-center">
+              <blockquote
+                className="instagram-media"
+                data-instgrm-permalink={url}
+                data-instgrm-version="14"
+                style={{
+                  background: "#FFF",
+                  border: "0",
+                  borderRadius: "3px",
+                  boxShadow: "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
+                  margin: "1px",
+                  maxWidth: "540px",
+                  minWidth: "326px",
+                  padding: "0",
+                  width: "calc(100% - 2px)",
+                }}
+              />
+            </div>
           ))}
         </div>
 

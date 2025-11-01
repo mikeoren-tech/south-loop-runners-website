@@ -38,16 +38,7 @@ export function JoinCTA() {
                 </Button>
               </div>
 
-              <div className="pt-6 border-t mt-8">
-                <p className="text-sm text-muted-foreground mb-4">Have questions? Reach out to us!</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center text-sm">
-                  <a href="mailto:info@southlooprunners.com" className="text-primary hover:underline">
-                    info@southlooprunners.com
-                  </a>
-                  <span className="hidden sm:inline text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">Chicago, IL - South Loop</span>
-                </div>
-              </div>
+              
             </div>
           </CardContent>
         </Card>
