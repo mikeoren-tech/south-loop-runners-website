@@ -1,0 +1,6 @@
+name = "south-loop-runners"
+compatibility_date = "2025-01-10"
+pages_build_output_dir = ".vercel/output/static"
+
+[env.production]
+compatibility_flags = ["nodejs_compat"]

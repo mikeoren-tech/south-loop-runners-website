@@ -6,6 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
+    "pages:build": "npx @cloudflare/next-on-pages",
     "start": "next start"
   },
   "dependencies": {
