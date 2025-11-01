@@ -17,7 +17,7 @@ const features = [
     title: "Race Support",
     description: "Training plans, group race entries, and cheering squads for Chicago marathons and races.",
     link: {
-      text: "Get AI Training & Nutrition Advice",
+      text: "Member created AI coach",
       url: "https://gemini.google.com/gem/15qZeU56iHf5NOFxDh737EZMpVOV5qSfs?usp=sharing",
     },
   },
