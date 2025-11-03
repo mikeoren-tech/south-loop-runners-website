@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Cloud, CloudRain, Sun, Wind } from "lucide-react"
 
-interface WeatherData {
+export interface WeatherData {
   temperature: number
   condition: string
   windSpeed: number
@@ -12,9 +12,10 @@ interface WeatherData {
 
 interface WeatherWidgetProps {
   day: "thursday" | "saturday"
+  onWeatherLoad?: (weather: WeatherData) => void
 }
 
-export function WeatherWidget({ day }: WeatherWidgetProps) {
+export function WeatherWidget({ day, onWeatherLoad }: WeatherWidgetProps) {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -54,12 +55,17 @@ export function WeatherWidget({ day }: WeatherWidgetProps) {
             const weatherCode = data.hourly.weather_code[hourIndex]
             const condition = getWeatherCondition(weatherCode)
 
-            setWeather({
+            const weatherData = {
               temperature: Math.round(data.hourly.temperature_2m[hourIndex]),
               condition,
               windSpeed: Math.round(data.hourly.wind_speed_10m[hourIndex]),
               precipitation: data.hourly.precipitation_probability[hourIndex],
-            })
+            }
+
+            setWeather(weatherData)
+            if (onWeatherLoad) {
+              onWeatherLoad(weatherData)
+            }
           }
         }
       } catch (error) {
@@ -70,7 +76,7 @@ export function WeatherWidget({ day }: WeatherWidgetProps) {
     }
 
     fetchWeather()
-  }, [day])
+  }, [day, onWeatherLoad])
 
   const getWeatherCondition = (code: number): string => {
     if (code === 0) return "Clear"

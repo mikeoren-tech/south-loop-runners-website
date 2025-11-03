@@ -1,6 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Heart, Trophy, Users, Zap } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Heart, Trophy, Users, Zap, Cloud } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
+import Link from "next/link"
 
 const features = [
   {
@@ -31,7 +33,7 @@ const features = [
 
 export function About() {
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="py-20 bg-muted/30" id="about">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal className="text-center mb-12">

@@ -65,23 +65,23 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#runs" className="text-muted-foreground hover:text-primary transition-colors">
                   Upcoming Runs
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
                   About Us
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Join the Club
+                <a href="/weather-guide" className="text-muted-foreground hover:text-primary transition-colors">
+                  Weather Running Guide
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact
+                <a href="#join" className="text-muted-foreground hover:text-primary transition-colors">
+                  Join the Club
                 </a>
               </li>
             </ul>
