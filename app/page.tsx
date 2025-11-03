@@ -4,10 +4,12 @@ import { About } from "@/components/about"
 import { InstagramFeed } from "@/components/instagram-feed"
 import { JoinCTA } from "@/components/join-cta"
 import { Footer } from "@/components/footer"
+import { AnnouncementBanner } from "@/components/announcement-banner"
 
 export default function Home() {
   return (
     <main className="min-h-screen">
+      <AnnouncementBanner />
       <div id="home">
         <Hero />
       </div>
