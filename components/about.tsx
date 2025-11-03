@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Heart, Trophy, Users, Zap } from "lucide-react"
+import { ScrollReveal } from "@/components/scroll-reveal"
 
 const features = [
   {
@@ -33,57 +34,63 @@ export function About() {
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
+          <ScrollReveal className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">About Our Club</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
               South Loop Runners is more than just a running club—we're a community of passionate runners who love
               exploring Chicago's beautiful lakefront and neighborhoods together.
             </p>
-          </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
-                <Card key={index} className="border-2">
-                  <CardContent className="pt-6">
-                    <div className="flex gap-4">
-                      <div className="shrink-0">
-                        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-6 w-6 text-destructive" />
+                <ScrollReveal key={index} delay={index * 100}>
+                  <Card className="border-2 h-full">
+                    <CardContent className="pt-6">
+                      <div className="flex gap-4">
+                        <div className="shrink-0">
+                          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <Icon className="h-6 w-6 text-destructive" />
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                          <p className="text-muted-foreground">{feature.description}</p>
+                          {feature.link && (
+                            <a
+                              href={feature.link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block mt-3 text-sm font-medium hover:underline text-[rgba(217,42,49,1)]"
+                            >
+                              {feature.link.text} →
+                            </a>
+                          )}
                         </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                        <p className="text-muted-foreground">{feature.description}</p>
-                        {feature.link && (
-                          <a
-                            href={feature.link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block mt-3 text-sm font-medium hover:underline text-[rgba(217,42,49,1)]"
-                          >
-                            {feature.link.text} →
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </ScrollReveal>
               )
             })}
           </div>
 
-          <Card className="bg-primary text-primary-foreground">
-            <CardContent className="p-8 md:p-12">
-              <div className="max-w-3xl mx-auto text-center space-y-4">
-                <h3 className="text-2xl md:text-3xl font-bold text-balance">Running in the Heart of Chicago</h3>
-                <p className="text-lg opacity-90 text-balance">
-                  Based in the South Loop, we have unparalleled access to Grant Park, the Lakefront Trail, Museum Campus, and countless scenic routes. Whether you're training for your first 5K or your tenth marathon, you'll find your pace with us.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <ScrollReveal delay={400}>
+            <Card className="bg-primary text-primary-foreground">
+              <CardContent className="p-8 md:p-12">
+                <div className="max-w-3xl mx-auto text-center space-y-4">
+                  <h3 className="text-2xl md:text-3xl font-bold text-balance">Running in the Heart of Chicago</h3>
+                  <p className="text-lg opacity-90 text-balance">
+                    Based in the South Loop, we have unparalleled access to Grant Park, the Lakefront Trail, Museum
+                    Campus, and countless scenic routes. Whether you're training for your first 5K or your tenth
+                    marathon, you'll find your pace with us.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </ScrollReveal>
         </div>
       </div>
     </section>

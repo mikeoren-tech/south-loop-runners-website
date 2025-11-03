@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, MapPin } from "lucide-react"
+import { ScrollReveal } from "@/components/scroll-reveal"
+import { WeatherWidget } from "@/components/weather-widget"
 
 const weeklyRuns = [
   {
@@ -34,77 +36,83 @@ export function UpcomingRuns() {
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <ScrollReveal className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Weekly Runs</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!
           </p>
-        </div>
+        </ScrollReveal>
 
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
-            {weeklyRuns.map((run) => (
-              <Card key={run.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-xl mb-2">{run.title}</CardTitle>
-                  <CardDescription>{run.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{run.dayOfWeek}s</span>
+            {weeklyRuns.map((run, index) => (
+              <ScrollReveal key={run.id} delay={index * 100}>
+                <Card className="hover:shadow-lg transition-shadow h-full">
+                  <CardHeader>
+                    <CardTitle className="text-xl mb-2">{run.title}</CardTitle>
+                    <CardDescription>{run.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{run.dayOfWeek}s</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>{run.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>{run.location}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{run.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{run.location}</span>
-                    </div>
-                  </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline">{run.distance}</Badge>
-                    <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
-                      {run.pace}
-                    </Badge>
-                  </div>
+                    <WeatherWidget day={run.id === "thursday-light-up" ? "thursday" : "saturday"} />
 
-                  <div className="flex gap-2">
-                    <Button className="flex-1" variant="default" asChild>
-                      <a href={run.facebookLink} target="_blank" rel="noopener noreferrer">
-                        Facebook
-                      </a>
-                    </Button>
-                    <Button className="flex-1 bg-transparent" variant="outline" asChild>
-                      <a href={run.stravaLink} target="_blank" rel="noopener noreferrer">
-                        Strava
-                      </a>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">{run.distance}</Badge>
+                      <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                        {run.pace}
+                      </Badge>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button className="flex-1" variant="default" asChild>
+                        <a href={run.facebookLink} target="_blank" rel="noopener noreferrer">
+                          Facebook
+                        </a>
+                      </Button>
+                      <Button className="flex-1 bg-transparent" variant="outline" asChild>
+                        <a href={run.stravaLink} target="_blank" rel="noopener noreferrer">
+                          Strava
+                        </a>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
             ))}
           </div>
 
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="text-lg">Club Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <iframe
-                allowTransparency
-                frameBorder="0"
-                height="160"
-                scrolling="no"
-                src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=false"
-                width="100%"
-                className="w-full"
-              />
-            </CardContent>
-          </Card>
+          <ScrollReveal delay={200}>
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle className="text-lg">Club Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <iframe
+                  allowTransparency
+                  frameBorder="0"
+                  height="160"
+                  scrolling="no"
+                  src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=false"
+                  width="100%"
+                  className="w-full"
+                />
+              </CardContent>
+            </Card>
+          </ScrollReveal>
         </div>
       </div>
     </section>
