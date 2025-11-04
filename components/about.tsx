@@ -83,8 +83,8 @@ export function About() {
             <Card className="bg-primary text-primary-foreground">
               <CardContent className="p-8 md:p-12">
                 <div className="max-w-3xl mx-auto text-center space-y-4">
-                  <h3 className="text-2xl md:text-3xl font-bold text-balance">Running in the Heart of Chicago</h3>
-                  <p className="text-lg opacity-90 text-balance">
+                  <h3 className="text-2xl md:text-3xl font-bold text-balance text-foreground">Running in the Heart of Chicago</h3>
+                  <p className="text-lg opacity-90 text-balance text-black">
                     Based in the South Loop, we have unparalleled access to Grant Park, the Lakefront Trail, Museum
                     Campus, and countless scenic routes. Whether you're training for your first 5K or your tenth
                     marathon, you'll find your pace with us.
