@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button"
-import { Calendar, MapPin } from "lucide-react"
 import Image from "next/image"
 
 export function Hero() {
@@ -7,7 +5,7 @@ export function Hero() {
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-white">
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-0">
             <Image
               src="/south-loop-runners-logo.png"
               alt="South Loop Runners"
@@ -17,14 +15,13 @@ export function Hero() {
               priority
             />
           </div>
+          <p className="text-base md:text-lg text-gray-500 italic mt-0 mb-10">Chicago Strides, City Pride</p>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-balance text-gray-900">
             South Loop Runners
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 text-balance">
             Chicago's premier running community in the heart of the South Loop
           </p>
-          
-          
         </div>
       </div>
 

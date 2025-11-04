@@ -8,6 +8,7 @@ import { Calendar, Clock, MapPin, BookOpen } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
+import Image from "next/image"
 
 const weeklyRuns = [
   {
@@ -170,7 +171,49 @@ export function UpcomingRuns() {
             })}
           </div>
 
-          <ScrollReveal delay={200}>
+          <div className="grid md:grid-cols-2 gap-6">
+            <ScrollReveal delay={200}>
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="text-lg">Meetup Location</CardTitle>
+                  <CardDescription>Agora Statues at Michigan Ave & Roosevelt</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2971.8!2d-87.6239!3d41.8681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2ca1b2e6e5e5%3A0x1234567890abcdef!2sV99G%2B7M%20Chicago%2C%20Illinois!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                    width="100%"
+                    height="300"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="rounded-b-lg"
+                  />
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+
+            <ScrollReveal delay={250}>
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="text-lg">The Agora Statues</CardTitle>
+                  <CardDescription>South Loop Runners at our meetup spot</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="relative w-full h-[300px]">
+                    <Image
+                      src="/images/design-mode/image.png"
+                      alt="South Loop Runners group photo at the Agora Statues meetup location"
+                      fill
+                      className="object-cover rounded-b-lg"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+          </div>
+
+          <ScrollReveal delay={300}>
             <Card className="w-full">
               <CardHeader>
                 <CardTitle className="text-lg">Club Stats</CardTitle>
