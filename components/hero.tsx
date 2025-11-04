@@ -15,7 +15,7 @@ export function Hero() {
               priority
             />
           </div>
-          <p className="text-base md:text-lg text-gray-500 italic mt-0 mb-10">Chicago Strides, City Pride</p>
+          <p className="text-base md:text-lg text-gray-500 mt-0 mb-10">More Than Miles: South Loop Smiles</p>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-balance text-gray-900">
             South Loop Runners
           </h1>
