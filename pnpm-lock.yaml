@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@cloudflare/workers-types':
-        specifier: 4.20251014.0
+        specifier: latest
         version: 4.20251014.0
       '@hookform/resolvers':
         specifier: ^3.10.0

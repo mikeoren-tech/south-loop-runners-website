@@ -4,11 +4,31 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity } from "lucide-react"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
 import Image from "next/image"
+import useSWR from "swr"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const PACE_GROUPS = [
+  "Under 7:00 min/mile",
+  "7:00 - 7:59 min/mile",
+  "8:00 - 8:59 min/mile",
+  "9:00 - 9:59 min/mile",
+  "10:00 - 10:59 min/mile",
+  "11:00 - 11:59 min/mile",
+  "12:00 - 12:59 min/mile",
+  "13:00 - 13:59 min/mile",
+  "14:00 - 14:59 min/mile",
+  "15:00+ min/mile",
+]
+
+interface PaceInterest {
+  pace: string
+  timestamp: number
+}
 
 const weeklyRuns = [
   {
@@ -36,6 +56,99 @@ const weeklyRuns = [
     stravaLink: "https://www.strava.com/clubs/Southlooprunners",
   },
 ]
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
+function PaceInterestSection({ runId }: { runId: string }) {
+  const [selectedPace, setSelectedPace] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { data: interests = [], mutate } = useSWR<PaceInterest[]>(`/api/run-interest/${runId}`, fetcher, {
+    refreshInterval: 5000,
+    revalidateOnFocus: true,
+  })
+
+  // Count interests by pace group
+  const paceCounts = PACE_GROUPS.reduce(
+    (acc, pace) => {
+      acc[pace] = interests.filter((i) => i.pace === pace).length
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
+  const totalInterested = interests.length
+
+  const handleSubmit = async () => {
+    if (!selectedPace || isSubmitting) return
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/run-interest/${runId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pace: selectedPace }),
+      })
+
+      if (response.ok) {
+        await mutate()
+        setSelectedPace("")
+      }
+    } catch (error) {
+      console.error("Failed to submit interest:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="border-t pt-4 mt-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <Users className="h-4 w-4" />
+        <span>Show Your Interest</span>
+        <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
+      </div>
+
+      <div className="flex gap-2">
+        <Select value={selectedPace} onValueChange={setSelectedPace}>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select your pace" />
+          </SelectTrigger>
+          <SelectContent>
+            {PACE_GROUPS.map((pace) => (
+              <SelectItem key={pace} value={pace}>
+                {pace}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm">
+          {isSubmitting ? "Adding..." : "Add"}
+        </Button>
+      </div>
+
+      {totalInterested > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">
+            {totalInterested} {totalInterested === 1 ? "runner" : "runners"} interested
+          </p>
+          <div className="space-y-1">
+            {PACE_GROUPS.map((pace) => {
+              const count = paceCounts[pace]
+              if (count === 0) return null
+              return (
+                <div key={pace} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{pace}</span>
+                  <Badge variant="secondary">{count}</Badge>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: string } {
   if (!weather) {
@@ -161,6 +274,8 @@ export function UpcomingRuns() {
                           </Button>
                         </div>
                       </div>
+
+                      <PaceInterestSection runId={run.id} />
                     </CardContent>
                   </Card>
                 </ScrollReveal>

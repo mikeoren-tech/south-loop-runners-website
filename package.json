@@ -10,7 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "4.20251014.0",
+    "@cloudflare/workers-types": "latest",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
