@@ -73,16 +73,40 @@ type Attendee = {
   timestamp: number
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+const fetcher = async (url: string) => {
+  console.log("[v0] Fetching RSVPs from:", url)
+  try {
+    const response = await fetch(url)
+    console.log("[v0] Response status:", response.status)
+    console.log("[v0] Response headers:", Object.fromEntries(response.headers.entries()))
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[v0] Fetch error:", errorText)
+      throw new Error(`HTTP ${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log("[v0] Fetched data:", data)
+    return data
+  } catch (error) {
+    console.error("[v0] Fetch failed:", error)
+    throw error
+  }
+}
 
 function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
   const {
     data: attendees = [],
     mutate,
     isLoading,
+    error,
   } = useSWR<Attendee[]>(`/api/rsvp/${race.id}`, fetcher, {
-    refreshInterval: 5000, // Refresh every 5 seconds for real-time updates
+    refreshInterval: 5000,
     revalidateOnFocus: true,
+    onError: (err) => {
+      console.error("[v0] SWR error for race", race.id, ":", err)
+    },
   })
 
   const [showForm, setShowForm] = useState(false)
@@ -110,6 +134,8 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
       timestamp: Date.now(),
     }
 
+    console.log("[v0] Submitting RSVP:", newAttendee)
+
     try {
       const response = await fetch(`/api/rsvp/${race.id}`, {
         method: "POST",
@@ -119,7 +145,11 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
         body: JSON.stringify(newAttendee),
       })
 
+      console.log("[v0] POST response status:", response.status)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[v0] POST error:", errorText)
         throw new Error("Failed to add RSVP")
       }
 
@@ -133,7 +163,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
     } catch (error) {
-      console.error("Failed to add RSVP:", error)
+      console.error("[v0] Failed to add RSVP:", error)
       alert("Failed to add your RSVP. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -141,18 +171,24 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
   }
 
   const handleRemoveAttendee = async (attendeeId: string) => {
+    console.log("[v0] Removing attendee:", attendeeId)
+
     try {
       const response = await fetch(`/api/rsvp/${race.id}?attendeeId=${attendeeId}`, {
         method: "DELETE",
       })
 
+      console.log("[v0] DELETE response status:", response.status)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[v0] DELETE error:", errorText)
         throw new Error("Failed to remove RSVP")
       }
 
       await mutate()
     } catch (error) {
-      console.error("Failed to remove RSVP:", error)
+      console.error("[v0] Failed to remove RSVP:", error)
       alert("Failed to remove RSVP. Please try again.")
     }
   }
@@ -182,7 +218,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
         </CardHeader>
 
         <CardContent className="space-y-6 flex-1 flex flex-col">
-          {/* Event Details */}
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm">
               <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -200,7 +235,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
             </div>
           </div>
 
-          {/* Unique Feature Callout */}
           <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
             <div className="flex items-start gap-3">
               <Trophy className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
@@ -211,7 +245,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
             </div>
           </div>
 
-          {/* Race Highlights */}
           <div className="flex-1">
             <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -351,6 +384,14 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               </form>
             )}
 
+            {error && (
+              <div className="text-xs text-red-600 dark:text-red-400 p-2 bg-red-50 dark:bg-red-950 rounded border border-red-200 dark:border-red-800">
+                <p className="font-semibold">Error loading RSVPs:</p>
+                <p className="mt-1">{error.message}</p>
+                <p className="mt-1 text-muted-foreground">Check browser console for details</p>
+              </div>
+            )}
+
             {attendees.length > 0 && (
               <div className="space-y-3">
                 {racingCount > 0 && (
@@ -415,14 +456,13 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               </div>
             )}
 
-            {attendees.length === 0 && !showForm && !isLoading && (
+            {attendees.length === 0 && !showForm && !isLoading && !error && (
               <p className="text-xs text-muted-foreground italic text-center py-2">
                 Be the first to let others know you're going!
               </p>
             )}
           </div>
 
-          {/* Registration Button */}
           <Button
             className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             size="lg"
