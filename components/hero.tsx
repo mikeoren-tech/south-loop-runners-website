@@ -5,9 +5,9 @@ export function Hero() {
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-white">
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-center mb-0">
+          <div className="flex justify-center mb-10">
             <Image
-              src="/south-loop-runners-logo.png"
+              src="/slr-logo.jpg"
               alt="South Loop Runners"
               width={500}
               height={375}
@@ -15,7 +15,7 @@ export function Hero() {
               priority
             />
           </div>
-          <p className="text-base md:text-lg text-gray-500 mt-0 mb-10">More Than Miles: South Loop Smiles</p>
+          <p className="text-base md:text-lg text-gray-500 mt-0 mb-6">More Than Miles: South Loop Smiles</p>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-balance text-gray-900">
             South Loop Runners
           </h1>

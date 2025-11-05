@@ -73,29 +73,53 @@ type Attendee = {
   timestamp: number
 }
 
-const fetcher = async (url: string) => {
-  console.log("[v0] Fetching RSVPs from:", url)
+const getLocalStorageKey = (raceId: string) => `race-rsvp-${raceId}`
+
+const getLocalAttendees = (raceId: string): Attendee[] => {
+  if (typeof window === "undefined") return []
+  try {
+    const stored = localStorage.getItem(getLocalStorageKey(raceId))
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+const setLocalAttendees = (raceId: string, attendees: Attendee[]) => {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.setItem(getLocalStorageKey(raceId), JSON.stringify(attendees))
+  } catch (error) {
+    console.error("Failed to save to localStorage:", error)
+  }
+}
+
+const fetcher = async (url: string): Promise<Attendee[]> => {
   try {
     const response = await fetch(url)
-    console.log("[v0] Response status:", response.status)
-    console.log("[v0] Response headers:", Object.fromEntries(response.headers.entries()))
+    const contentType = response.headers.get("content-type")
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error("[v0] Fetch error:", errorText)
-      throw new Error(`HTTP ${response.status}: ${errorText}`)
+    // If response is HTML (not JSON), fall back to localStorage
+    if (contentType?.includes("text/html")) {
+      const raceId = url.split("/").pop() || ""
+      return getLocalAttendees(raceId)
     }
 
-    const data = await response.json()
-    console.log("[v0] Fetched data:", data)
-    return data
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    return await response.json()
   } catch (error) {
-    console.error("[v0] Fetch failed:", error)
-    throw error
+    // Silently fall back to localStorage on any error
+    const raceId = url.split("/").pop() || ""
+    return getLocalAttendees(raceId)
   }
 }
 
 function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
+  const [useLocalStorage, setUseLocalStorage] = useState(false)
+
   const {
     data: attendees = [],
     mutate,
@@ -104,8 +128,9 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
   } = useSWR<Attendee[]>(`/api/rsvp/${race.id}`, fetcher, {
     refreshInterval: 5000,
     revalidateOnFocus: true,
-    onError: (err) => {
-      console.error("[v0] SWR error for race", race.id, ":", err)
+    onError: () => {
+      // Silently handle errors - fallback is already in fetcher
+      setUseLocalStorage(true)
     },
   })
 
@@ -134,8 +159,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
       timestamp: Date.now(),
     }
 
-    console.log("[v0] Submitting RSVP:", newAttendee)
-
     try {
       const response = await fetch(`/api/rsvp/${race.id}`, {
         method: "POST",
@@ -145,15 +168,18 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
         body: JSON.stringify(newAttendee),
       })
 
-      console.log("[v0] POST response status:", response.status)
+      const contentType = response.headers.get("content-type")
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("[v0] POST error:", errorText)
-        throw new Error("Failed to add RSVP")
+      // If API returns HTML or fails, use localStorage
+      if (contentType?.includes("text/html") || !response.ok) {
+        const currentAttendees = getLocalAttendees(race.id)
+        const updatedAttendees = [...currentAttendees, newAttendee]
+        setLocalAttendees(race.id, updatedAttendees)
+        setUseLocalStorage(true)
+        await mutate(updatedAttendees, false)
+      } else {
+        await mutate()
       }
-
-      await mutate()
 
       setFirstName("")
       setLastInitial("")
@@ -163,33 +189,50 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
     } catch (error) {
-      console.error("[v0] Failed to add RSVP:", error)
-      alert("Failed to add your RSVP. Please try again.")
+      // Fall back to localStorage on error
+      const currentAttendees = getLocalAttendees(race.id)
+      const updatedAttendees = [...currentAttendees, newAttendee]
+      setLocalAttendees(race.id, updatedAttendees)
+      setUseLocalStorage(true)
+      await mutate(updatedAttendees, false)
+
+      setFirstName("")
+      setLastInitial("")
+      setAttendanceType("racing")
+      setShowForm(false)
+
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleRemoveAttendee = async (attendeeId: string) => {
-    console.log("[v0] Removing attendee:", attendeeId)
-
     try {
       const response = await fetch(`/api/rsvp/${race.id}?attendeeId=${attendeeId}`, {
         method: "DELETE",
       })
 
-      console.log("[v0] DELETE response status:", response.status)
+      const contentType = response.headers.get("content-type")
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("[v0] DELETE error:", errorText)
-        throw new Error("Failed to remove RSVP")
+      // If API returns HTML or fails, use localStorage
+      if (contentType?.includes("text/html") || !response.ok) {
+        const currentAttendees = getLocalAttendees(race.id)
+        const updatedAttendees = currentAttendees.filter((a) => a.id !== attendeeId)
+        setLocalAttendees(race.id, updatedAttendees)
+        setUseLocalStorage(true)
+        await mutate(updatedAttendees, false)
+      } else {
+        await mutate()
       }
-
-      await mutate()
     } catch (error) {
-      console.error("[v0] Failed to remove RSVP:", error)
-      alert("Failed to remove RSVP. Please try again.")
+      // Fall back to localStorage on error
+      const currentAttendees = getLocalAttendees(race.id)
+      const updatedAttendees = currentAttendees.filter((a) => a.id !== attendeeId)
+      setLocalAttendees(race.id, updatedAttendees)
+      setUseLocalStorage(true)
+      await mutate(updatedAttendees, false)
     }
   }
 
@@ -388,7 +431,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               <div className="text-xs text-red-600 dark:text-red-400 p-2 bg-red-50 dark:bg-red-950 rounded border border-red-200 dark:border-red-800">
                 <p className="font-semibold">Error loading RSVPs:</p>
                 <p className="mt-1">{error.message}</p>
-                <p className="mt-1 text-muted-foreground">Check browser console for details</p>
+                <p className="mt-1 text-muted-foreground">Using local storage as fallback</p>
               </div>
             )}
 

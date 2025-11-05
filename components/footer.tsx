@@ -16,13 +16,7 @@ export function Footer() {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <div>
             <div className="mb-4">
-              <Image
-                src="/south-loop-runners-logo.png"
-                alt="South Loop Runners"
-                width={200}
-                height={150}
-                className="h-auto"
-              />
+              <Image src="/slr-logo.jpg" alt="South Loop Runners" width={200} height={150} className="h-auto" />
             </div>
             <h3 className="font-bold text-lg mb-4">South Loop Runners</h3>
             <p className="text-sm text-muted-foreground mb-4">
