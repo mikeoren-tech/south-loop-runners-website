@@ -2,14 +2,26 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Calendar, MapPin, Trophy, Sparkles, Users, ExternalLink, UserPlus, X, CheckCircle2 } from "lucide-react"
+import {
+  Calendar,
+  MapPin,
+  Trophy,
+  Sparkles,
+  Users,
+  ExternalLink,
+  UserPlus,
+  X,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
+import useSWR from "swr"
 
 const races = [
   {
@@ -61,25 +73,24 @@ type Attendee = {
   timestamp: number
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
 function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
-  const [attendees, setAttendees] = useState<Attendee[]>([])
+  const {
+    data: attendees = [],
+    mutate,
+    isLoading,
+  } = useSWR<Attendee[]>(`/api/rsvp/${race.id}`, fetcher, {
+    refreshInterval: 5000, // Refresh every 5 seconds for real-time updates
+    revalidateOnFocus: true,
+  })
+
   const [showForm, setShowForm] = useState(false)
   const [firstName, setFirstName] = useState("")
   const [lastInitial, setLastInitial] = useState("")
   const [attendanceType, setAttendanceType] = useState<"racing" | "cheering">("racing")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-
-  useEffect(() => {
-    const stored = localStorage.getItem(`race-rsvp-${race.id}`)
-    if (stored) {
-      try {
-        setAttendees(JSON.parse(stored))
-      } catch (e) {
-        console.error("Failed to parse stored RSVPs:", e)
-      }
-    }
-  }, [race.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,24 +110,51 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
       timestamp: Date.now(),
     }
 
-    const updatedAttendees = [...attendees, newAttendee]
-    setAttendees(updatedAttendees)
-    localStorage.setItem(`race-rsvp-${race.id}`, JSON.stringify(updatedAttendees))
+    try {
+      const response = await fetch(`/api/rsvp/${race.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newAttendee),
+      })
 
-    setFirstName("")
-    setLastInitial("")
-    setAttendanceType("racing")
-    setShowForm(false)
-    setIsSubmitting(false)
+      if (!response.ok) {
+        throw new Error("Failed to add RSVP")
+      }
 
-    setShowSuccess(true)
-    setTimeout(() => setShowSuccess(false), 3000)
+      await mutate()
+
+      setFirstName("")
+      setLastInitial("")
+      setAttendanceType("racing")
+      setShowForm(false)
+
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
+    } catch (error) {
+      console.error("Failed to add RSVP:", error)
+      alert("Failed to add your RSVP. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleRemoveAttendee = (attendeeId: string) => {
-    const updatedAttendees = attendees.filter((a) => a.id !== attendeeId)
-    setAttendees(updatedAttendees)
-    localStorage.setItem(`race-rsvp-${race.id}`, JSON.stringify(updatedAttendees))
+  const handleRemoveAttendee = async (attendeeId: string) => {
+    try {
+      const response = await fetch(`/api/rsvp/${race.id}?attendeeId=${attendeeId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to remove RSVP")
+      }
+
+      await mutate()
+    } catch (error) {
+      console.error("Failed to remove RSVP:", error)
+      alert("Failed to remove RSVP. Please try again.")
+    }
   }
 
   const racingCount = attendees.filter((a) => a.type === "racing").length
@@ -193,7 +231,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
             <div className="flex items-center justify-between">
               <h4 className="font-semibold text-sm flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-muted-foreground" />
-                Who's Going? ({attendees.length})
+                Who's Going? {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : `(${attendees.length})`}
               </h4>
               <div className="flex items-center gap-2">
                 {showSuccess && (
@@ -286,7 +324,14 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
                 <div className="flex gap-2">
                   <Button type="submit" size="sm" className="flex-1" disabled={isSubmitting}>
-                    Add My Name
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                        Adding...
+                      </>
+                    ) : (
+                      "Add My Name"
+                    )}
                   </Button>
                   <Button
                     type="button"
@@ -370,7 +415,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               </div>
             )}
 
-            {attendees.length === 0 && !showForm && (
+            {attendees.length === 0 && !showForm && !isLoading && (
               <p className="text-xs text-muted-foreground italic text-center py-2">
                 Be the first to let others know you're going!
               </p>
