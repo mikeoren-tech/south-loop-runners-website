@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, MapPin, BookOpen } from "lucide-react"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
@@ -106,7 +106,6 @@ export function UpcomingRuns() {
             {weeklyRuns.map((run, index) => {
               const isThursday = run.id === "thursday-light-up"
               const weather = isThursday ? thursdayWeather : saturdayWeather
-              const guideLink = getWeatherGuideLink(weather)
 
               return (
                 <ScrollReveal key={run.id} delay={index * 100}>
@@ -136,15 +135,6 @@ export function UpcomingRuns() {
                         onWeatherLoad={isThursday ? setThursdayWeather : setSaturdayWeather}
                       />
 
-                      {weather && (
-                        <Button variant="outline" size="sm" className="w-full bg-transparent" asChild>
-                          <Link href={guideLink.url}>
-                            <BookOpen className="h-4 w-4 mr-2" />
-                            {guideLink.text}
-                          </Link>
-                        </Button>
-                      )}
-
                       <div className="flex flex-wrap gap-2">
                         <Badge variant="outline">{run.distance}</Badge>
                         <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
@@ -152,17 +142,24 @@ export function UpcomingRuns() {
                         </Badge>
                       </div>
 
-                      <div className="flex gap-2">
-                        <Button className="flex-1" variant="default" asChild>
-                          <a href={run.facebookLink} target="_blank" rel="noopener noreferrer">
-                            RSVP on Facebook
-                          </a>
-                        </Button>
-                        <Button className="flex-1 bg-transparent" variant="outline" asChild>
-                          <a href={run.stravaLink} target="_blank" rel="noopener noreferrer">
-                            RSVP on Strava
-                          </a>
-                        </Button>
+                      <div className="space-y-3">
+                        <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
+                          RSVP on the club pages / get the most up-to-date info
+                        </p>
+                        <div className="flex gap-2">
+                          <Button className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0" asChild>
+                            <a href={run.facebookLink} target="_blank" rel="noopener noreferrer">
+                              <FacebookIcon className="h-4 w-4 mr-2" />
+                              Facebook
+                            </a>
+                          </Button>
+                          <Button className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0" asChild>
+                            <a href={run.stravaLink} target="_blank" rel="noopener noreferrer">
+                              <Activity className="h-4 w-4 mr-2" />
+                              Strava
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
