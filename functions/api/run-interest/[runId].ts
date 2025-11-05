@@ -9,10 +9,52 @@ interface PaceInterest {
   timestamp: number
 }
 
+function shouldResetData(runId: string): boolean {
+  const now = new Date()
+  const chicagoTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Chicago" }))
+
+  const currentDay = chicagoTime.getDay() // 0 = Sunday, 2 = Tuesday, 6 = Saturday
+  const currentHour = chicagoTime.getHours()
+
+  // Tuesday run resets at 10 PM Tuesday (day 2)
+  if (runId === "tuesday-run" && currentDay === 2 && currentHour >= 22) {
+    return true
+  }
+
+  // Saturday run resets at 10 PM Saturday (day 6)
+  if (runId === "saturday-run" && currentDay === 6 && currentHour >= 22) {
+    return true
+  }
+
+  // After reset time, clear data until next week
+  if (runId === "tuesday-run" && (currentDay > 2 || (currentDay === 2 && currentHour >= 22))) {
+    return true
+  }
+
+  if (runId === "saturday-run" && (currentDay === 0 || (currentDay === 6 && currentHour >= 22))) {
+    return true
+  }
+
+  return false
+}
+
 export async function onRequestGet(context: { env: Env; params: { runId: string } }) {
   try {
     const { runId } = context.params
     const key = `run-interest:${runId}`
+
+    if (shouldResetData(runId)) {
+      // Clear the data
+      await context.env.RACE_RSVPS.delete(key)
+      return new Response(JSON.stringify([]), {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+      })
+    }
+
     const data = await context.env.RACE_RSVPS.get(key)
 
     const interests: PaceInterest[] = data ? JSON.parse(data) : []
@@ -47,6 +89,26 @@ export async function onRequestPost(context: { env: Env; params: { runId: string
     }
 
     const key = `run-interest:${runId}`
+
+    if (shouldResetData(runId)) {
+      // Start fresh with just this new interest
+      const interests: PaceInterest[] = [
+        {
+          pace,
+          timestamp: Date.now(),
+        },
+      ]
+
+      await context.env.RACE_RSVPS.put(key, JSON.stringify(interests))
+
+      return new Response(JSON.stringify(interests), {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      })
+    }
+
     const data = await context.env.RACE_RSVPS.get(key)
     const interests: PaceInterest[] = data ? JSON.parse(data) : []
 
