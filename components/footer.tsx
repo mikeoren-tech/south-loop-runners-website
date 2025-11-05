@@ -1,6 +1,5 @@
 import { Facebook, Instagram, MapPin } from "lucide-react"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
 
 function StravaIcon({ className }: { className?: string }) {
   return (
@@ -89,7 +88,7 @@ export function Footer() {
 
           <div>
             <h4 className="font-semibold mb-4">Meet-up Location</h4>
-            <div className="flex gap-2 text-sm text-muted-foreground mb-6">
+            <div className="flex gap-2 text-sm text-muted-foreground">
               <MapPin className="h-5 w-5 shrink-0" />
               <div>
                 <p className="font-medium">Agora Statues</p>
@@ -97,11 +96,6 @@ export function Footer() {
                 <p>South Loop, Chicago, IL</p>
               </div>
             </div>
-            <Button className="w-full" asChild>
-              <a href="https://www.strava.com/clubs/Southlooprunners" target="_blank" rel="noopener noreferrer">
-                Join Our Strava Club
-              </a>
-            </Button>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageCircle } from "lucide-react"
+import { Facebook } from "lucide-react"
 
 function StravaIcon({ className }: { className?: string }) {
   return (
@@ -25,14 +25,22 @@ export function JoinCTA() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button size="lg" className="gap-2" asChild>
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-[#1877F2] hover:bg-[#166FE5] text-white shadow-lg hover:shadow-xl transition-all"
+                    asChild
+                  >
                     <a href="https://www.facebook.com/groups/665701690539939" target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="h-5 w-5" />
+                      <Facebook className="h-5 w-5" />
                       Join Our Facebook Group
                     </a>
                   </Button>
-                  <Button size="lg" className="gap-2 bg-[#FC4C02] hover:bg-[#E34402] text-white" asChild>
-                    <a href="https://www.strava.com/clubs/Southlooprunners" target="_blank" rel="noopener noreferrer">
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-[#FC4C02] hover:bg-[#E34402] text-white shadow-lg hover:shadow-xl transition-all"
+                    asChild
+                  >
+                    <a href="https://www.strava.com/clubs/southlooprunners" target="_blank" rel="noopener noreferrer">
                       <StravaIcon className="h-5 w-5" />
                       Join Our Strava Club
                     </a>
