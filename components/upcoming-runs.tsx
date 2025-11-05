@@ -155,12 +155,12 @@ export function UpcomingRuns() {
                       <div className="flex gap-2">
                         <Button className="flex-1" variant="default" asChild>
                           <a href={run.facebookLink} target="_blank" rel="noopener noreferrer">
-                            Facebook
+                            RSVP on Facebook
                           </a>
                         </Button>
                         <Button className="flex-1 bg-transparent" variant="outline" asChild>
                           <a href={run.stravaLink} target="_blank" rel="noopener noreferrer">
-                            Strava
+                            RSVP on Strava
                           </a>
                         </Button>
                       </div>
