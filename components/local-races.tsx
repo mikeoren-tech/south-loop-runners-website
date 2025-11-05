@@ -2,27 +2,14 @@
 
 import type React from "react"
 
-import { useState, useTransition } from "react"
-import useSWR from "swr"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import {
-  Calendar,
-  MapPin,
-  Trophy,
-  Sparkles,
-  Users,
-  ExternalLink,
-  UserPlus,
-  X,
-  Loader2,
-  CheckCircle2,
-} from "lucide-react"
+import { Calendar, MapPin, Trophy, Sparkles, Users, ExternalLink, UserPlus, X, CheckCircle2 } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
-import { getRSVPs, addRSVP, removeRSVP } from "@/app/actions/race-rsvp"
 
 const races = [
   {
@@ -75,22 +62,24 @@ type Attendee = {
 }
 
 function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
-  const {
-    data: attendees = [],
-    mutate,
-    isLoading,
-  } = useSWR<Attendee[]>(`race-rsvp-${race.id}`, () => getRSVPs(race.id), {
-    refreshInterval: 5000, // Refresh every 5 seconds for real-time updates
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-  })
-
+  const [attendees, setAttendees] = useState<Attendee[]>([])
   const [showForm, setShowForm] = useState(false)
   const [firstName, setFirstName] = useState("")
   const [lastInitial, setLastInitial] = useState("")
   const [attendanceType, setAttendanceType] = useState<"racing" | "cheering">("racing")
-  const [isPending, startTransition] = useTransition()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem(`race-rsvp-${race.id}`)
+    if (stored) {
+      try {
+        setAttendees(JSON.parse(stored))
+      } catch (e) {
+        console.error("Failed to parse stored RSVPs:", e)
+      }
+    }
+  }, [race.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,36 +90,33 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
     const fullName = `${firstName.trim()} ${lastInitial.trim().toUpperCase()}.`
 
-    startTransition(async () => {
-      try {
-        const result = await addRSVP(race.id, fullName, attendanceType)
+    setIsSubmitting(true)
 
-        if (result.success) {
-          mutate()
+    const newAttendee: Attendee = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: fullName,
+      type: attendanceType,
+      timestamp: Date.now(),
+    }
 
-          setFirstName("")
-          setLastInitial("")
-          setAttendanceType("racing")
-          setShowForm(false)
+    const updatedAttendees = [...attendees, newAttendee]
+    setAttendees(updatedAttendees)
+    localStorage.setItem(`race-rsvp-${race.id}`, JSON.stringify(updatedAttendees))
 
-          setShowSuccess(true)
-          setTimeout(() => setShowSuccess(false), 3000)
-        }
-      } catch (error) {
-        console.error("Failed to add RSVP:", error)
-      }
-    })
+    setFirstName("")
+    setLastInitial("")
+    setAttendanceType("racing")
+    setShowForm(false)
+    setIsSubmitting(false)
+
+    setShowSuccess(true)
+    setTimeout(() => setShowSuccess(false), 3000)
   }
 
-  const handleRemoveAttendee = async (attendeeId: string) => {
-    startTransition(async () => {
-      try {
-        await removeRSVP(race.id, attendeeId)
-        mutate()
-      } catch (error) {
-        console.error("Failed to remove RSVP:", error)
-      }
-    })
+  const handleRemoveAttendee = (attendeeId: string) => {
+    const updatedAttendees = attendees.filter((a) => a.id !== attendeeId)
+    setAttendees(updatedAttendees)
+    localStorage.setItem(`race-rsvp-${race.id}`, JSON.stringify(updatedAttendees))
   }
 
   const racingCount = attendees.filter((a) => a.type === "racing").length
@@ -207,12 +193,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
             <div className="flex items-center justify-between">
               <h4 className="font-semibold text-sm flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-muted-foreground" />
-                Who's Going?
-                {isLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                ) : (
-                  <span>({attendees.length})</span>
-                )}
+                Who's Going? ({attendees.length})
               </h4>
               <div className="flex items-center gap-2">
                 {showSuccess && (
@@ -227,7 +208,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                     size="sm"
                     onClick={() => setShowForm(true)}
                     className="text-xs"
-                    disabled={isPending}
+                    disabled={isSubmitting}
                   >
                     Add Me
                   </Button>
@@ -250,7 +231,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                         placeholder="John"
                         required
                         className="h-9"
-                        disabled={isPending}
+                        disabled={isSubmitting}
                       />
                     </div>
                     <div>
@@ -265,7 +246,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                         maxLength={1}
                         required
                         className="h-9"
-                        disabled={isPending}
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -275,7 +256,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                     <RadioGroup
                       value={attendanceType}
                       onValueChange={(v) => setAttendanceType(v as "racing" | "cheering")}
-                      disabled={isPending}
+                      disabled={isSubmitting}
                     >
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
@@ -304,15 +285,8 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button type="submit" size="sm" className="flex-1" disabled={isPending}>
-                    {isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                        Adding...
-                      </>
-                    ) : (
-                      "Add My Name"
-                    )}
+                  <Button type="submit" size="sm" className="flex-1" disabled={isSubmitting}>
+                    Add My Name
                   </Button>
                   <Button
                     type="button"
@@ -324,7 +298,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                       setLastInitial("")
                       setAttendanceType("racing")
                     }}
-                    disabled={isPending}
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </Button>
@@ -354,9 +328,9 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                               onClick={() => handleRemoveAttendee(attendee.id)}
                               className="ml-1.5 hover:bg-destructive/20 rounded-full p-0.5"
                               aria-label="Remove"
-                              disabled={isPending}
+                              disabled={isSubmitting}
                             >
-                              {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                              <X className="h-3 w-3" />
                             </button>
                           </Badge>
                         ))}
@@ -384,9 +358,9 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                               onClick={() => handleRemoveAttendee(attendee.id)}
                               className="ml-1.5 hover:bg-primary/20 rounded-full p-0.5"
                               aria-label="Remove"
-                              disabled={isPending}
+                              disabled={isSubmitting}
                             >
-                              {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                              <X className="h-3 w-3" />
                             </button>
                           </Badge>
                         ))}
@@ -396,7 +370,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               </div>
             )}
 
-            {attendees.length === 0 && !showForm && !isLoading && (
+            {attendees.length === 0 && !showForm && (
               <p className="text-xs text-muted-foreground italic text-center py-2">
                 Be the first to let others know you're going!
               </p>
