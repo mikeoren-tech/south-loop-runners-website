@@ -191,16 +191,33 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               Who's Going from South Loop Runners? ({attendees.length})
             </h4>
 
+            {console.log(
+              "[v0] Race:",
+              race.id,
+              "hasRSVPd:",
+              hasRSVPd,
+              "showForm:",
+              showForm,
+              "attendees:",
+              attendees.length,
+            )}
+
             {!hasRSVPd && !showForm && (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setShowForm(true)}
-                className="w-full border-2 border-primary hover:bg-primary hover:text-primary-foreground"
-              >
-                <UserPlus className="mr-2 h-5 w-5" />
-                I'm Going! Add My Name
-              </Button>
+              <>
+                {console.log("[v0] Rendering button for race:", race.id)}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    console.log("[v0] Button clicked for race:", race.id)
+                    setShowForm(true)
+                  }}
+                  className="w-full border-2 border-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  <UserPlus className="mr-2 h-5 w-5" />
+                  I'm Going! Add My Name
+                </Button>
+              </>
             )}
 
             {hasRSVPd && (
