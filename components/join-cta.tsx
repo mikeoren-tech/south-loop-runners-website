@@ -12,9 +12,9 @@ function StravaIcon({ className }: { className?: string }) {
 
 export function JoinCTA() {
   return (
-    <section className="py-20 bg-gradient-to-br from-[#b4def7] to-[#9dd3f0]">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <Card className="max-w-6xl mx-auto border-0 shadow-2xl">
+        <Card className="max-w-6xl mx-auto glass-strong shadow-soft-lg border-0">
           <CardContent className="p-8 md:p-12">
             <div className="grid lg:grid-cols-2 gap-8 items-start">
               <div className="space-y-6">
@@ -49,7 +49,7 @@ export function JoinCTA() {
               </div>
 
               <div className="flex justify-center lg:justify-end">
-                <Card className="w-full max-w-[300px]">
+                <Card className="w-full max-w-[300px] glass shadow-soft border-0">
                   <CardHeader>
                     <CardTitle className="text-lg">Recent Activities</CardTitle>
                   </CardHeader>

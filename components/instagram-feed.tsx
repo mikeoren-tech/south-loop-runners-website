@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Instagram } from "lucide-react"
 import { useEffect } from "react"
 import { ScrollReveal } from "@/components/scroll-reveal"
+import { WaveTransition } from "@/components/wave-transition"
 
 const instagramPostUrls = [
   "https://www.instagram.com/p/DP9K4vRjQFC/", // Replace with actual post URL
@@ -28,11 +29,10 @@ export function InstagramFeed() {
   }, [])
 
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="relative py-20 bg-[rgba(249,250,251,0.5)]">
       <div className="container mx-auto px-4">
         <ScrollReveal className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Instagram className="h-8 w-8 text-primary" />
+          <div className="mb-4">
             <h2 className="text-4xl md:text-5xl font-bold">Follow Our Journey</h2>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
@@ -40,29 +40,29 @@ export function InstagramFeed() {
           </p>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-8">
-          {instagramPostUrls.map((url, index) => (
-            <ScrollReveal key={index} delay={index * 50}>
-              <div className="flex justify-center">
-                <blockquote
-                  className="instagram-media"
-                  data-instgrm-permalink={url}
-                  data-instgrm-version="14"
-                  style={{
-                    background: "#FFF",
-                    border: "0",
-                    borderRadius: "3px",
-                    boxShadow: "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
-                    margin: "1px",
-                    maxWidth: "540px",
-                    minWidth: "326px",
-                    padding: "0",
-                    width: "calc(100% - 2px)",
-                  }}
-                />
-              </div>
-            </ScrollReveal>
-          ))}
+        <div className="max-w-7xl mx-auto mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {instagramPostUrls.map((url, index) => (
+              <ScrollReveal key={url} delay={index * 50}>
+                <div className="glassmorphism rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover-lift">
+                  <blockquote
+                    className="instagram-media"
+                    data-instgrm-permalink={url}
+                    data-instgrm-version="14"
+                    style={{
+                      background: "transparent",
+                      border: "0",
+                      borderRadius: "12px",
+                      margin: "0",
+                      padding: "0",
+                      width: "100%",
+                      minWidth: "326px",
+                    }}
+                  />
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
 
         <ScrollReveal className="text-center" delay={300}>
@@ -74,6 +74,7 @@ export function InstagramFeed() {
           </Button>
         </ScrollReveal>
       </div>
+      <WaveTransition fillColor="#ffffff" />
     </section>
   )
 }

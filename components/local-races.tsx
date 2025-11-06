@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { WaveTransition } from "@/components/wave-transition"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,21 +19,33 @@ import {
   X,
   CheckCircle2,
   Loader2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Flag,
+  Route,
+  PartyPopper,
+  Wind,
 } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import useSWR from "swr"
+import Image from "next/image"
 
 const races = [
   {
     id: "f3-lake",
     title: "F³ Lake Half Marathon & 5K",
     tagline: "Run the Lakefront, Finish at Soldier Field",
-    date: "January 2026",
+    date: "2026-01-17", // ISO format for countdown
+    displayDate: "January 17, 2026",
     time: "10:00 AM",
     location: "Soldier Field",
     departFrom: "South Loop",
     distances: ["Half Marathon", "5K"],
     registrationUrl: "https://runsignup.com/Race/IL/Chicago/F3LakeHalfMarathon5k",
+    registrationDeadline: "2026-01-10",
+    registrationDeadlineDisplay: "January 10, 2026",
+    status: "registration-open" as const,
     highlights: [
       "Scenic lakefront course with stunning Chicago skyline views",
       "Finish line inside historic Soldier Field",
@@ -41,19 +53,29 @@ const races = [
       "Packet pickup at Fleet Feet South Loop",
       "16th annual event with strong community support",
     ],
-    uniqueFeature: "Finish inside Soldier Field stadium",
-    color: "primary",
+    uniqueFeature: "Finish inside Soldier Field stadium with post-race celebration",
+    keyFeatures: [
+      { icon: Flag, label: "Soldier Field Finish", color: "text-blue-600" },
+      { icon: Route, label: "Lakefront Route", color: "text-cyan-600" },
+      { icon: PartyPopper, label: "Post-Race Party", color: "text-purple-600" },
+    ],
+    accentColor: "from-blue-500 to-cyan-500",
+    imageUrl: "/chicago-lakefront-running-soldier-field-skyline.jpg",
   },
   {
     id: "miles-per-hour",
     title: "Miles Per Hour Run",
     tagline: "Run Through the Chicago Auto Show",
-    date: "February 2026",
+    date: "2026-02-14",
+    displayDate: "February 14, 2026",
     time: "8:00 AM",
     location: "McCormick Place",
     departFrom: "South Loop",
     distances: ["1 Hour Challenge"],
     registrationUrl: "https://register.hakuapp.com/?event=e735b096f63aaf72e58d",
+    registrationDeadline: "2026-02-07",
+    registrationDeadlineDisplay: "February 7, 2026",
+    status: "upcoming" as const,
     highlights: [
       "Unique indoor running experience through the Chicago Auto Show",
       "Run as many miles as you can in one hour",
@@ -61,8 +83,14 @@ const races = [
       "Perfect for winter training when weather is challenging",
       "See the latest cars while getting your miles in",
     ],
-    uniqueFeature: "Only race where you run through an auto show",
-    color: "destructive",
+    uniqueFeature: "Only race where you run through an auto show while seeing the latest vehicles",
+    keyFeatures: [
+      { icon: Trophy, label: "1-Hour Challenge", color: "text-orange-600" },
+      { icon: Wind, label: "Indoor Course", color: "text-green-600" },
+      { icon: Sparkles, label: "Auto Show Access", color: "text-red-600" },
+    ],
+    accentColor: "from-orange-500 to-red-500",
+    imageUrl: "/mccormick-place-chicago-auto-show-indoor-running.jpg",
   },
 ]
 
@@ -99,7 +127,6 @@ const fetcher = async (url: string): Promise<Attendee[]> => {
     const response = await fetch(url)
     const contentType = response.headers.get("content-type")
 
-    // If response is HTML (not JSON), fall back to localStorage
     if (contentType?.includes("text/html")) {
       const raceId = url.split("/").pop() || ""
       return getLocalAttendees(raceId)
@@ -111,14 +138,62 @@ const fetcher = async (url: string): Promise<Attendee[]> => {
 
     return await response.json()
   } catch (error) {
-    // Silently fall back to localStorage on any error
     const raceId = url.split("/").pop() || ""
     return getLocalAttendees(raceId)
   }
 }
 
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = +new Date(targetDate) - +new Date()
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        })
+      }
+    }
+
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+
+    return () => clearInterval(timer)
+  }, [targetDate])
+
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+      <div className="flex gap-4">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-foreground">{timeLeft.days}</div>
+          <div className="text-xs text-muted-foreground">days</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-foreground">{timeLeft.hours}</div>
+          <div className="text-xs text-muted-foreground">hrs</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-foreground">{timeLeft.minutes}</div>
+          <div className="text-xs text-muted-foreground">min</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-foreground">{timeLeft.seconds}</div>
+          <div className="text-xs text-muted-foreground">sec</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
   const [useLocalStorage, setUseLocalStorage] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
 
   const {
     data: attendees = [],
@@ -129,7 +204,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
     refreshInterval: 5000,
     revalidateOnFocus: true,
     onError: () => {
-      // Silently handle errors - fallback is already in fetcher
       setUseLocalStorage(true)
     },
   })
@@ -170,7 +244,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
       const contentType = response.headers.get("content-type")
 
-      // If API returns HTML or fails, use localStorage
       if (contentType?.includes("text/html") || !response.ok) {
         const currentAttendees = getLocalAttendees(race.id)
         const updatedAttendees = [...currentAttendees, newAttendee]
@@ -189,7 +262,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
     } catch (error) {
-      // Fall back to localStorage on error
       const currentAttendees = getLocalAttendees(race.id)
       const updatedAttendees = [...currentAttendees, newAttendee]
       setLocalAttendees(race.id, updatedAttendees)
@@ -216,7 +288,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
       const contentType = response.headers.get("content-type")
 
-      // If API returns HTML or fails, use localStorage
       if (contentType?.includes("text/html") || !response.ok) {
         const currentAttendees = getLocalAttendees(race.id)
         const updatedAttendees = currentAttendees.filter((a) => a.id !== attendeeId)
@@ -227,7 +298,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
         await mutate()
       }
     } catch (error) {
-      // Fall back to localStorage on error
       const currentAttendees = getLocalAttendees(race.id)
       const updatedAttendees = currentAttendees.filter((a) => a.id !== attendeeId)
       setLocalAttendees(race.id, updatedAttendees)
@@ -241,74 +311,116 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
   return (
     <ScrollReveal key={race.id} delay={index * 150}>
-      <Card className="border-2 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-        <CardHeader className="space-y-3">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="text-2xl mb-2 text-balance">{race.title}</CardTitle>
-              <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
+      <Card className="glass-strong shadow-soft hover-lift border-0 h-full flex flex-col overflow-hidden group">
+        <div className="relative h-48 overflow-hidden">
+          <Image
+            src={race.imageUrl || "/placeholder.svg"}
+            alt={race.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className={`absolute inset-0 bg-gradient-to-t ${race.accentColor} opacity-60`} />
+        </div>
+
+        <CardHeader className="space-y-4 pb-4">
+          <div className="space-y-2">
+            <CardTitle className="text-3xl md:text-4xl font-bold text-balance leading-tight">{race.title}</CardTitle>
+            <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
+          </div>
+
+          <div className="space-y-3 p-4 bg-gradient-to-br from-primary/10 to-destructive/10 rounded-lg border-2 border-primary/20">
+            <div className="flex items-center gap-3">
+              <Calendar className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wide">Race Day</div>
+                <div className="text-xl font-bold text-foreground">{race.displayDate}</div>
+                <div className="text-sm text-muted-foreground">
+                  {race.time} • {race.location}
+                </div>
+              </div>
             </div>
-            <Sparkles className="h-6 w-6 text-destructive shrink-0" />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {race.keyFeatures.map((feature, idx) => (
+              <Badge key={idx} variant="outline" className="px-3 py-1.5 border-2 hover:scale-105 transition-transform">
+                <feature.icon className={`h-4 w-4 mr-1.5 ${feature.color}`} />
+                <span className="font-medium">{feature.label}</span>
+              </Badge>
+            ))}
           </div>
 
           <div className="flex flex-wrap gap-2">
             {race.distances.map((distance) => (
-              <Badge key={distance} variant="outline" className="border-[#d92a31] text-[#d92a31]">
+              <Badge key={distance} className="bg-destructive/90 text-white border-0 px-3 py-1">
                 {distance}
               </Badge>
             ))}
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 flex-1 flex flex-col">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div>
-                <span className="font-semibold">{race.date}</span>
-                <span className="text-muted-foreground"> at {race.time}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div>
-                <span className="font-semibold">{race.location}</span>
-                <span className="text-muted-foreground"> • Departs from {race.departFrom}</span>
-              </div>
-            </div>
-          </div>
-
+        <CardContent className="space-y-4 flex-1 flex flex-col">
           <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
             <div className="flex items-start gap-3">
-              <Trophy className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-sm mb-1">What Makes It Special</p>
-                <p className="text-sm text-muted-foreground">{race.uniqueFeature}</p>
-              </div>
+              <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <p className="text-sm font-medium leading-relaxed">{race.uniqueFeature}</p>
             </div>
           </div>
 
-          <div className="flex-1">
-            <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              Race Highlights
-            </h4>
-            <ul className="space-y-2">
-              {race.highlights.map((highlight, idx) => (
-                <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <span className="text-primary mt-1 shrink-0">•</span>
-                  <span>{highlight}</span>
-                </li>
-              ))}
-            </ul>
+          <div className="p-4 bg-muted/30 rounded-lg border">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Time Until Race
+            </div>
+            <CountdownTimer targetDate={race.date} />
+          </div>
+
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="w-full flex items-center justify-between p-4 bg-muted/30 hover:bg-muted/50 transition-colors"
+            >
+              <span className="font-semibold text-sm">Race Details & Highlights</span>
+              {showDetails ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+
+            {showDetails && (
+              <div className="p-4 space-y-3 bg-muted/10">
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">Departs from {race.departFrom}</span>
+                </div>
+
+                <div className="pt-2 border-t">
+                  <h4 className="font-semibold text-sm mb-2">Highlights</h4>
+                  <ul className="space-y-2">
+                    {race.highlights.map((highlight, idx) => (
+                      <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-primary mt-1 shrink-0">•</span>
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="border-t pt-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-sm flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-muted-foreground" />
-                Who's Going? {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : `(${attendees.length})`}
-              </h4>
+              <div>
+                <h4 className="font-semibold text-sm flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  South Loop Runners Going
+                </h4>
+                <p className="text-2xl font-bold text-primary mt-1">
+                  {racingCount} {isLoading && <Loader2 className="inline h-4 w-4 animate-spin ml-2" />}
+                </p>
+                <p className="text-xs text-muted-foreground">{cheeringCount} cheering from the sidelines</p>
+              </div>
               <div className="flex items-center gap-2">
                 {showSuccess && (
                   <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
@@ -324,6 +436,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                     className="text-xs"
                     disabled={isSubmitting}
                   >
+                    <UserPlus className="h-3 w-3 mr-1" />
                     Add Me
                   </Button>
                 )}
@@ -427,14 +540,6 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               </form>
             )}
 
-            {error && (
-              <div className="text-xs text-red-600 dark:text-red-400 p-2 bg-red-50 dark:bg-red-950 rounded border border-red-200 dark:border-red-800">
-                <p className="font-semibold">Error loading RSVPs:</p>
-                <p className="mt-1">{error.message}</p>
-                <p className="mt-1 text-muted-foreground">Using local storage as fallback</p>
-              </div>
-            )}
-
             {attendees.length > 0 && (
               <div className="space-y-3">
                 {racingCount > 0 && (
@@ -499,7 +604,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               </div>
             )}
 
-            {attendees.length === 0 && !showForm && !isLoading && !error && (
+            {attendees.length === 0 && !showForm && !isLoading && (
               <p className="text-xs text-muted-foreground italic text-center py-2">
                 Be the first to let others know you're going!
               </p>
@@ -507,7 +612,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
           </div>
 
           <Button
-            className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all"
             size="lg"
             asChild
           >
@@ -524,7 +629,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
 export function LocalRaces() {
   return (
-    <section className="py-20 bg-muted/30" id="races">
+    <section className="relative py-20 bg-white" id="races">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal className="text-center mb-12">
@@ -546,6 +651,7 @@ export function LocalRaces() {
           </div>
         </div>
       </div>
+      <WaveTransition fillColor="rgba(249, 250, 251, 0.5)" />
     </section>
   )
 }

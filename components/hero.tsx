@@ -2,24 +2,24 @@ import Image from "next/image"
 
 export function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-white">
+    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-white">
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-center mb-10">
+        <div className="max-w-4xl mx-auto space-y-4">
+          <div className="flex justify-center mb-6">
             <Image
               src="/slr-logo.jpg"
               alt="South Loop Runners"
-              width={500}
-              height={375}
-              className="w-full max-w-lg h-auto"
+              width={350}
+              height={262}
+              className="w-full max-w-sm h-auto"
               priority
             />
           </div>
-          <p className="text-base md:text-lg text-gray-500 mt-0 mb-6">More Than Miles: South Loop Smiles</p>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-balance text-gray-900">
+          <p className="text-sm md:text-base text-gray-500 mt-0 mb-4">More Than Miles: South Loop Smiles</p>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-balance text-gray-900">
             South Loop Runners
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 text-balance">
+          <p className="text-lg md:text-xl text-gray-600 text-balance">
             Chicago's premier running community in the heart of the South Loop
           </p>
         </div>
