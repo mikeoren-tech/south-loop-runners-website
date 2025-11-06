@@ -66,7 +66,11 @@ export function InstagramFeed() {
         </div>
 
         <ScrollReveal className="text-center" delay={300}>
-          <Button size="lg" className="gap-2" asChild>
+          <Button
+            size="lg"
+            className="relative z-20 gap-2 backdrop-blur-md bg-primary/80 hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
+            asChild
+          >
             <a href="https://www.instagram.com/southlooprunners" target="_blank" rel="noopener noreferrer">
               <Instagram className="h-5 w-5" />
               Follow @southlooprunners

@@ -27,7 +27,7 @@ export function JoinCTA() {
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button
                     size="lg"
-                    className="gap-2 bg-[#1877F2] hover:bg-[#166FE5] text-white shadow-lg hover:shadow-xl transition-all"
+                    className="relative z-20 gap-2 backdrop-blur-md bg-[#1877F2]/80 hover:bg-[#1877F2]/90 text-white shadow-lg hover:shadow-xl transition-all"
                     asChild
                   >
                     <a href="https://www.facebook.com/groups/665701690539939" target="_blank" rel="noopener noreferrer">
@@ -37,7 +37,7 @@ export function JoinCTA() {
                   </Button>
                   <Button
                     size="lg"
-                    className="gap-2 bg-[#FC4C02] hover:bg-[#E34402] text-white shadow-lg hover:shadow-xl transition-all"
+                    className="relative z-20 gap-2 backdrop-blur-md bg-[#FC4C02]/80 hover:bg-[#FC4C02]/90 text-white shadow-lg hover:shadow-xl transition-all"
                     asChild
                   >
                     <a href="https://www.strava.com/clubs/southlooprunners" target="_blank" rel="noopener noreferrer">

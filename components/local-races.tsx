@@ -612,7 +612,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
           </div>
 
           <Button
-            className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all"
+            className="relative z-20 w-full backdrop-blur-md bg-destructive/80 hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all"
             size="lg"
             asChild
           >
