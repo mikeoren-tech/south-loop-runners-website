@@ -5,7 +5,7 @@ interface WaveTransitionProps {
 
 export function WaveTransition({ fillColor, className = "" }: WaveTransitionProps) {
   return (
-    <div className={`absolute bottom-0 left-0 right-0 ${className}`}>
+    <div className={`absolute bottom-0 left-0 right-0 z-0 ${className}`}>
       <svg
         viewBox="0 0 1440 120"
         fill="none"

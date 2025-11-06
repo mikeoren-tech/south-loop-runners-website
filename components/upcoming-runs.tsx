@@ -217,7 +217,7 @@ export function UpcomingRuns() {
         </ScrollReveal>
 
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
             {/* Thursday Run - Large card spanning 2 rows */}
             <ScrollReveal delay={0} className="md:col-span-6 lg:col-span-7 md:row-span-2">
               <Card className="glass-strong shadow-soft hover-lift h-full border-0">

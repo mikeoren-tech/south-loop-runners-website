@@ -630,7 +630,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 export function LocalRaces() {
   return (
     <section className="relative py-20 bg-white" id="races">
-      <div className="container mx-auto px-4">
+      <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-primary/20 text-primary-foreground px-4 py-2 rounded-full mb-4">
