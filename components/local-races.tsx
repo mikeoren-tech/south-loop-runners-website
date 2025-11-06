@@ -311,9 +311,9 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
   return (
     <ScrollReveal key={race.id} delay={index * 150}>
-      <article className="glass-strong shadow-soft hover-lift border-0 h-full flex flex-col overflow-hidden group">
-        <Card className="h-full border-0">
-          <div className="relative h-48 overflow-hidden">
+      <article className="glass-strong rounded-3xl shadow-soft hover-lift border-0 h-full flex flex-col group">
+        <Card className="h-full border-0 rounded-3xl overflow-hidden p-0">
+          <div className="relative h-48 overflow-hidden rounded-t-3xl">
             <Image
               src={race.imageUrl || "/placeholder.svg"}
               alt={`${race.title} - ${race.tagline}`}
@@ -323,7 +323,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
             <div className={`absolute inset-0 bg-gradient-to-t ${race.accentColor} opacity-60`} />
           </div>
 
-          <CardHeader className="space-y-4 pb-4">
+          <CardHeader className="space-y-4 pb-4 pt-6">
             <div className="space-y-2">
               <CardTitle className="text-3xl md:text-4xl font-bold text-balance leading-tight">{race.title}</CardTitle>
               <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
@@ -364,7 +364,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4 flex-1 flex flex-col">
+          <CardContent className="space-y-4 flex-1 flex flex-col pb-6">
             <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
               <div className="flex items-start gap-3">
                 <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />

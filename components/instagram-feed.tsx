@@ -48,7 +48,7 @@ export function InstagramFeed() {
               {instagramPostUrls.map((url, index) => (
                 <ScrollReveal key={url} delay={index * 50}>
                   <div
-                    className="glassmorphism rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover-lift"
+                    className="glassmorphism rounded-3xl shadow-card hover:shadow-card-hover transition-all duration-300 hover-lift"
                     role="article"
                     aria-label={`Instagram post ${index + 1}`}
                   >
@@ -59,7 +59,7 @@ export function InstagramFeed() {
                       style={{
                         background: "transparent",
                         border: "0",
-                        borderRadius: "12px",
+                        borderRadius: "24px",
                         margin: "0",
                         padding: "0",
                         width: "100%",

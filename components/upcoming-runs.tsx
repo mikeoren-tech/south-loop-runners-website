@@ -222,8 +222,8 @@ export function UpcomingRuns() {
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
             {/* Thursday Run - Large card spanning 2 rows */}
             <ScrollReveal delay={0} className="md:col-span-6 lg:col-span-7 md:row-span-2">
-              <article className="glass-strong shadow-soft hover-lift h-full border-0">
-                <Card className="h-full border-0">
+              <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
+                <Card className="h-full border-0 rounded-3xl">
                   <CardHeader>
                     <CardTitle className="text-xl mb-2">{weeklyRuns[0].title}</CardTitle>
                     <CardDescription>{weeklyRuns[0].description}</CardDescription>
@@ -302,8 +302,8 @@ export function UpcomingRuns() {
 
             {/* Agora Statues Image - Image only, no text */}
             <ScrollReveal delay={100} className="md:col-span-3 lg:col-span-5 md:row-span-1">
-              <Card className="glass shadow-soft hover-scale h-full overflow-hidden border-0 p-0">
-                <div className="relative w-full h-full min-h-[250px]">
+              <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0">
+                <div className="relative w-full h-full min-h-[250px] overflow-hidden rounded-3xl">
                   <Image
                     src="/images/design-mode/image.png"
                     alt="South Loop Runners group photo at the Agora Statues meetup location"
@@ -316,16 +316,16 @@ export function UpcomingRuns() {
 
             {/* Map - No text */}
             <ScrollReveal delay={150} className="md:col-span-3 lg:col-span-5 md:row-span-1">
-              <Card className="glass shadow-soft hover-scale h-full overflow-hidden border-0 p-0">
+              <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0 overflow-hidden">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2971.8!2d-87.6239!3d41.8681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2ca1b2e6e5e5%3A0x1234567890abcdef!2sV99G%2B7M%20Chicago%2C%20Illinois!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
                   width="100%"
                   height="100%"
-                  style={{ border: 0, minHeight: "250px" }}
+                  style={{ border: 0, minHeight: "250px", borderRadius: "24px" }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  className="rounded-xl"
+                  className="rounded-3xl"
                   title="Map showing Agora Statues meetup location at Michigan Ave & Roosevelt"
                 />
               </Card>
@@ -333,8 +333,8 @@ export function UpcomingRuns() {
 
             {/* Saturday Run - Large card spanning 2 rows */}
             <ScrollReveal delay={200} className="md:col-span-6 lg:col-span-7 md:row-span-2">
-              <article className="glass-strong shadow-soft hover-lift h-full border-0">
-                <Card className="h-full border-0">
+              <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
+                <Card className="h-full border-0 rounded-3xl">
                   <CardHeader>
                     <CardTitle className="text-xl mb-2">{weeklyRuns[1].title}</CardTitle>
                     <CardDescription>{weeklyRuns[1].description}</CardDescription>
@@ -414,7 +414,7 @@ export function UpcomingRuns() {
 
             {/* Strava Club Stats - Wide card */}
             <ScrollReveal delay={250} className="md:col-span-6 lg:col-span-5 md:row-span-1">
-              <Card className="glass shadow-soft hover-lift h-full border-0">
+              <Card className="glass rounded-3xl shadow-soft hover-lift h-full border-0 overflow-hidden">
                 <CardHeader>
                   <CardTitle className="text-lg">Club Stats</CardTitle>
                 </CardHeader>

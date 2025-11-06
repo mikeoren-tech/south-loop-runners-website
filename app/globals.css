@@ -204,24 +204,35 @@
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Removed border to prevent visible edges */
   }
 
   .dark .glass {
     background: rgba(38, 38, 38, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Removed border to prevent visible edges */
   }
 
   .glass-strong {
     background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* Removed border to prevent visible edges */
   }
 
   .dark .glass-strong {
     background: rgba(38, 38, 38, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    /* Removed border to prevent visible edges */
+  }
+
+  /* Added glassmorphism utility for Instagram cards */
+  .glassmorphism {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .dark .glassmorphism {
+    background: rgba(38, 38, 38, 0.5);
   }
 
   /* Added visible focus indicators for keyboard navigation */
