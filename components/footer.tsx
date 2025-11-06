@@ -16,7 +16,7 @@ export function Footer() {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <div>
             <div className="mb-4">
-              <Image src="/slr-logo.jpg" alt="South Loop Runners" width={200} height={150} className="h-auto" />
+              <Image src="/slr-logo.jpg" alt="South Loop Runners logo" width={200} height={150} className="h-auto" />
             </div>
             <h3 className="font-bold text-lg mb-4">South Loop Runners</h3>
             <p className="text-sm text-muted-foreground mb-4">
@@ -28,67 +28,79 @@ export function Footer() {
                 href="https://www.facebook.com/groups/665701690539939"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                aria-label="Visit our Facebook group"
               >
-                <Facebook className="h-5 w-5" />
-                <span className="sr-only">Facebook</span>
+                <Facebook className="h-5 w-5" aria-hidden="true" />
               </a>
               <a
                 href="https://www.instagram.com/southlooprunners"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                aria-label="Follow us on Instagram"
               >
-                <Instagram className="h-5 w-5" />
-                <span className="sr-only">Instagram</span>
+                <Instagram className="h-5 w-5" aria-hidden="true" />
               </a>
               <a
                 href="https://www.strava.com/clubs/Southlooprunners"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                aria-label="Join our Strava club"
               >
-                <StravaIcon className="h-5 w-5" />
-                <span className="sr-only">Strava</span>
+                <StravaIcon className="h-5 w-5" aria-hidden="true" />
               </a>
             </div>
           </div>
 
-          <div>
+          <nav aria-label="Footer navigation">
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#runs" className="text-muted-foreground hover:text-primary transition-colors">
+                <a
+                  href="#runs"
+                  className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:underline"
+                >
                   Upcoming Runs
                 </a>
               </li>
               <li>
-                <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
+                <a
+                  href="#about"
+                  className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:underline"
+                >
                   About Us
                 </a>
               </li>
               <li>
-                <a href="/weather-guide" className="text-muted-foreground hover:text-primary transition-colors">
+                <a
+                  href="/weather-guide"
+                  className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:underline"
+                >
                   Weather Running Guide
                 </a>
               </li>
               <li>
-                <a href="#join" className="text-muted-foreground hover:text-primary transition-colors">
+                <a
+                  href="#join"
+                  className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:underline"
+                >
                   Join the Club
                 </a>
               </li>
             </ul>
-          </div>
+          </nav>
 
           <div>
             <h4 className="font-semibold mb-4">Meet-up Location</h4>
             <div className="flex gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-5 w-5 shrink-0" />
-              <div>
+              <MapPin className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <address className="not-italic">
                 <p className="font-medium">Agora Statues</p>
                 <p>Michigan Ave & Roosevelt</p>
                 <p>South Loop, Chicago, IL</p>
-              </div>
+              </address>
             </div>
           </div>
         </div>

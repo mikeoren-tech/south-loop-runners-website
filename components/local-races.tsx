@@ -311,333 +311,360 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
   return (
     <ScrollReveal key={race.id} delay={index * 150}>
-      <Card className="glass-strong shadow-soft hover-lift border-0 h-full flex flex-col overflow-hidden group">
-        <div className="relative h-48 overflow-hidden">
-          <Image
-            src={race.imageUrl || "/placeholder.svg"}
-            alt={race.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className={`absolute inset-0 bg-gradient-to-t ${race.accentColor} opacity-60`} />
-        </div>
-
-        <CardHeader className="space-y-4 pb-4">
-          <div className="space-y-2">
-            <CardTitle className="text-3xl md:text-4xl font-bold text-balance leading-tight">{race.title}</CardTitle>
-            <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
+      <article className="glass-strong shadow-soft hover-lift border-0 h-full flex flex-col overflow-hidden group">
+        <Card className="h-full border-0">
+          <div className="relative h-48 overflow-hidden">
+            <Image
+              src={race.imageUrl || "/placeholder.svg"}
+              alt={`${race.title} - ${race.tagline}`}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className={`absolute inset-0 bg-gradient-to-t ${race.accentColor} opacity-60`} />
           </div>
 
-          <div className="space-y-3 p-4 bg-gradient-to-br from-primary/10 to-destructive/10 rounded-lg border-2 border-primary/20">
-            <div className="flex items-center gap-3">
-              <Calendar className="h-5 w-5 text-primary shrink-0" />
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">Race Day</div>
-                <div className="text-xl font-bold text-foreground">{race.displayDate}</div>
-                <div className="text-sm text-muted-foreground">
-                  {race.time} • {race.location}
+          <CardHeader className="space-y-4 pb-4">
+            <div className="space-y-2">
+              <CardTitle className="text-3xl md:text-4xl font-bold text-balance leading-tight">{race.title}</CardTitle>
+              <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
+            </div>
+
+            <div className="space-y-3 p-4 bg-gradient-to-br from-primary/10 to-destructive/10 rounded-lg border-2 border-primary/20">
+              <div className="flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Race Day</div>
+                  <div className="text-xl font-bold text-foreground">{race.displayDate}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {race.time} • {race.location}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap gap-2">
-            {race.keyFeatures.map((feature, idx) => (
-              <Badge key={idx} variant="outline" className="px-3 py-1.5 border-2 hover:scale-105 transition-transform">
-                <feature.icon className={`h-4 w-4 mr-1.5 ${feature.color}`} />
-                <span className="font-medium">{feature.label}</span>
-              </Badge>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {race.distances.map((distance) => (
-              <Badge key={distance} className="bg-destructive/90 text-white border-0 px-3 py-1">
-                {distance}
-              </Badge>
-            ))}
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4 flex-1 flex flex-col">
-          <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
-            <div className="flex items-start gap-3">
-              <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-              <p className="text-sm font-medium leading-relaxed">{race.uniqueFeature}</p>
+            <div className="flex flex-wrap gap-2">
+              {race.keyFeatures.map((feature, idx) => (
+                <Badge
+                  key={idx}
+                  variant="outline"
+                  className="px-3 py-1.5 border-2 hover:scale-105 transition-transform"
+                >
+                  <feature.icon className={`h-4 w-4 mr-1.5 ${feature.color}`} />
+                  <span className="font-medium">{feature.label}</span>
+                </Badge>
+              ))}
             </div>
-          </div>
 
-          <div className="p-4 bg-muted/30 rounded-lg border">
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Time Until Race
+            <div className="flex flex-wrap gap-2">
+              {race.distances.map((distance) => (
+                <Badge key={distance} className="bg-destructive/90 text-white border-0 px-3 py-1">
+                  {distance}
+                </Badge>
+              ))}
             </div>
-            <CountdownTimer targetDate={race.date} />
-          </div>
+          </CardHeader>
 
-          <div className="border rounded-lg overflow-hidden">
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="w-full flex items-center justify-between p-4 bg-muted/30 hover:bg-muted/50 transition-colors"
-            >
-              <span className="font-semibold text-sm">Race Details & Highlights</span>
-              {showDetails ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <CardContent className="space-y-4 flex-1 flex flex-col">
+            <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                <p className="text-sm font-medium leading-relaxed">{race.uniqueFeature}</p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-muted/30 rounded-lg border">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Time Until Race
+              </div>
+              <CountdownTimer targetDate={race.date} />
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="w-full flex items-center justify-between p-4 bg-muted/30 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                aria-expanded={showDetails}
+                aria-label={`${showDetails ? "Hide" : "Show"} race details and highlights`}
+              >
+                <span className="font-semibold text-sm">Race Details & Highlights</span>
+                {showDetails ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                )}
+              </button>
+
+              {showDetails && (
+                <div className="p-4 space-y-3 bg-muted/10">
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground">Departs from {race.departFrom}</span>
+                  </div>
+
+                  <div className="pt-2 border-t">
+                    <h4 className="font-semibold text-sm mb-2">Highlights</h4>
+                    <ul className="space-y-2">
+                      {race.highlights.map((highlight, idx) => (
+                        <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                          <span className="text-primary mt-1 shrink-0">•</span>
+                          <span>{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               )}
-            </button>
-
-            {showDetails && (
-              <div className="p-4 space-y-3 bg-muted/10">
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-muted-foreground">Departs from {race.departFrom}</span>
-                </div>
-
-                <div className="pt-2 border-t">
-                  <h4 className="font-semibold text-sm mb-2">Highlights</h4>
-                  <ul className="space-y-2">
-                    {race.highlights.map((highlight, idx) => (
-                      <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <span className="text-primary mt-1 shrink-0">•</span>
-                        <span>{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="border-t pt-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  South Loop Runners Going
-                </h4>
-                <p className="text-2xl font-bold text-primary mt-1">
-                  {racingCount} {isLoading && <Loader2 className="inline h-4 w-4 animate-spin ml-2" />}
-                </p>
-                <p className="text-xs text-muted-foreground">{cheeringCount} cheering from the sidelines</p>
-              </div>
-              <div className="flex items-center gap-2">
-                {showSuccess && (
-                  <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                    <CheckCircle2 className="h-3 w-3" />
-                    <span>Added!</span>
-                  </div>
-                )}
-                {!showForm && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowForm(true)}
-                    className="text-xs"
-                    disabled={isSubmitting}
-                  >
-                    <UserPlus className="h-3 w-3 mr-1" />
-                    Add Me
-                  </Button>
-                )}
-              </div>
             </div>
 
-            {showForm && (
-              <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-muted/30 rounded-lg border">
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor={`firstName-${race.id}`} className="text-xs font-medium mb-1.5 block">
-                        First Name
-                      </label>
-                      <Input
-                        id={`firstName-${race.id}`}
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="John"
-                        required
-                        className="h-9"
-                        disabled={isSubmitting}
-                      />
+            <div className="border-t pt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    South Loop Runners Going
+                  </h4>
+                  <p className="text-2xl font-bold text-primary mt-1">
+                    {racingCount} {isLoading && <Loader2 className="inline h-4 w-4 animate-spin ml-2" />}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{cheeringCount} cheering from the sidelines</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {showSuccess && (
+                    <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span>Added!</span>
                     </div>
-                    <div>
-                      <label htmlFor={`lastInitial-${race.id}`} className="text-xs font-medium mb-1.5 block">
-                        Last Initial
-                      </label>
-                      <Input
-                        id={`lastInitial-${race.id}`}
-                        value={lastInitial}
-                        onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
-                        placeholder="D"
-                        maxLength={1}
-                        required
-                        className="h-9"
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-medium mb-2 block">I'm planning to:</label>
-                    <RadioGroup
-                      value={attendanceType}
-                      onValueChange={(v) => setAttendanceType(v as "racing" | "cheering")}
+                  )}
+                  {!showForm && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowForm(true)}
+                      className="text-xs"
                       disabled={isSubmitting}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="racing" id={`racing-${race.id}`} />
-                          <label
-                            htmlFor={`racing-${race.id}`}
-                            className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
-                          >
-                            <Trophy className="h-3.5 w-3.5 text-destructive" />
-                            Race
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="cheering" id={`cheering-${race.id}`} />
-                          <label
-                            htmlFor={`cheering-${race.id}`}
-                            className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
-                          >
-                            <Users className="h-3.5 w-3.5 text-primary" />
-                            Cheer
-                          </label>
-                        </div>
-                      </div>
-                    </RadioGroup>
-                  </div>
+                      <UserPlus className="h-3 w-3 mr-1" />
+                      Add Me
+                    </Button>
+                  )}
                 </div>
-
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" className="flex-1" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-3 w-3 animate-spin mr-2" />
-                        Adding...
-                      </>
-                    ) : (
-                      "Add My Name"
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowForm(false)
-                      setFirstName("")
-                      setLastInitial("")
-                      setAttendanceType("racing")
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {attendees.length > 0 && (
-              <div className="space-y-3">
-                {racingCount > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-                      <Trophy className="h-3 w-3 text-destructive" />
-                      Racing ({racingCount})
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {attendees
-                        .filter((a) => a.type === "racing")
-                        .map((attendee) => (
-                          <Badge
-                            key={attendee.id}
-                            variant="destructive"
-                            className="bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20 pr-1"
-                          >
-                            {attendee.name}
-                            <button
-                              onClick={() => handleRemoveAttendee(attendee.id)}
-                              className="ml-1.5 hover:bg-destructive/20 rounded-full p-0.5"
-                              aria-label="Remove"
-                              disabled={isSubmitting}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {cheeringCount > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-                      <Users className="h-3 w-3 text-primary" />
-                      Cheering ({cheeringCount})
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {attendees
-                        .filter((a) => a.type === "cheering")
-                        .map((attendee) => (
-                          <Badge
-                            key={attendee.id}
-                            variant="default"
-                            className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 pr-1"
-                          >
-                            {attendee.name}
-                            <button
-                              onClick={() => handleRemoveAttendee(attendee.id)}
-                              className="ml-1.5 hover:bg-primary/20 rounded-full p-0.5"
-                              aria-label="Remove"
-                              disabled={isSubmitting}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
 
-            {attendees.length === 0 && !showForm && !isLoading && (
-              <p className="text-xs text-muted-foreground italic text-center py-2">
-                Be the first to let others know you're going!
-              </p>
-            )}
-          </div>
+              {showForm && (
+                <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+                  <fieldset disabled={isSubmitting} className="space-y-3">
+                    <legend className="sr-only">RSVP for {race.title}</legend>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor={`firstName-${race.id}`} className="text-xs font-medium mb-1.5 block">
+                          First Name{" "}
+                          <span className="text-destructive" aria-label="required">
+                            *
+                          </span>
+                        </label>
+                        <Input
+                          id={`firstName-${race.id}`}
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="John"
+                          required
+                          className="h-9"
+                          disabled={isSubmitting}
+                          aria-required="true"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={`lastInitial-${race.id}`} className="text-xs font-medium mb-1.5 block">
+                          Last Initial{" "}
+                          <span className="text-destructive" aria-label="required">
+                            *
+                          </span>
+                        </label>
+                        <Input
+                          id={`lastInitial-${race.id}`}
+                          value={lastInitial}
+                          onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
+                          placeholder="D"
+                          maxLength={1}
+                          required
+                          className="h-9"
+                          disabled={isSubmitting}
+                          aria-required="true"
+                        />
+                      </div>
+                    </div>
 
-          <Button
-            className="relative z-20 w-full backdrop-blur-md bg-destructive/80 hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all"
-            size="lg"
-            asChild
-          >
-            <a href={race.registrationUrl} target="_blank" rel="noopener noreferrer">
-              Register Now
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+                    <div>
+                      <label id={`attendance-label-${race.id}`} className="text-xs font-medium mb-2 block">
+                        I'm planning to:{" "}
+                        <span className="text-destructive" aria-label="required">
+                          *
+                        </span>
+                      </label>
+                      <RadioGroup
+                        value={attendanceType}
+                        onValueChange={(v) => setAttendanceType(v as "racing" | "cheering")}
+                        disabled={isSubmitting}
+                        aria-labelledby={`attendance-label-${race.id}`}
+                        aria-required="true"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="racing" id={`racing-${race.id}`} />
+                            <label
+                              htmlFor={`racing-${race.id}`}
+                              className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Trophy className="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
+                              Race
+                            </label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="cheering" id={`cheering-${race.id}`} />
+                            <label
+                              htmlFor={`cheering-${race.id}`}
+                              className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Users className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                              Cheer
+                            </label>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  </fieldset>
+
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" className="flex-1" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin mr-2" aria-hidden="true" />
+                          Adding...
+                        </>
+                      ) : (
+                        "Add My Name"
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowForm(false)
+                        setFirstName("")
+                        setLastInitial("")
+                        setAttendanceType("racing")
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {attendees.length > 0 && (
+                <div className="space-y-3">
+                  {racingCount > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <Trophy className="h-3 w-3 text-destructive" aria-hidden="true" />
+                        Racing ({racingCount})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {attendees
+                          .filter((a) => a.type === "racing")
+                          .map((attendee) => (
+                            <Badge
+                              key={attendee.id}
+                              variant="destructive"
+                              className="bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20 pr-1"
+                            >
+                              {attendee.name}
+                              <button
+                                onClick={() => handleRemoveAttendee(attendee.id)}
+                                className="ml-1.5 hover:bg-destructive/20 rounded-full p-0.5 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-1"
+                                aria-label={`Remove ${attendee.name} from racing list`}
+                                disabled={isSubmitting}
+                              >
+                                <X className="h-3 w-3" aria-hidden="true" />
+                              </button>
+                            </Badge>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {cheeringCount > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <Users className="h-3 w-3 text-primary" aria-hidden="true" />
+                        Cheering ({cheeringCount})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {attendees
+                          .filter((a) => a.type === "cheering")
+                          .map((attendee) => (
+                            <Badge
+                              key={attendee.id}
+                              variant="default"
+                              className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 pr-1"
+                            >
+                              {attendee.name}
+                              <button
+                                onClick={() => handleRemoveAttendee(attendee.id)}
+                                className="ml-1.5 hover:bg-primary/20 rounded-full p-0.5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                                aria-label={`Remove ${attendee.name} from cheering list`}
+                                disabled={isSubmitting}
+                              >
+                                <X className="h-3 w-3" aria-hidden="true" />
+                              </button>
+                            </Badge>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {attendees.length === 0 && !showForm && !isLoading && (
+                <p className="text-xs text-muted-foreground italic text-center py-2">
+                  Be the first to let others know you're going!
+                </p>
+              )}
+            </div>
+
+            <Button
+              className="relative z-20 w-full backdrop-blur-md bg-destructive/80 hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
+              size="lg"
+              asChild
+            >
+              <a href={race.registrationUrl} target="_blank" rel="noopener noreferrer">
+                Register Now
+                <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
+                <span className="sr-only">Opens in new window</span>
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      </article>
     </ScrollReveal>
   )
 }
 
 export function LocalRaces() {
   return (
-    <section className="relative py-20 bg-white" id="races">
+    <section className="relative py-20 bg-white" id="races" aria-labelledby="races-heading">
       <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-primary/20 text-primary-foreground px-4 py-2 rounded-full mb-4">
-              <Trophy className="h-5 w-5 text-destructive" />
+              <Trophy className="h-5 w-5 text-destructive" aria-hidden="true" />
               <span className="font-semibold text-foreground">Local Races</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Upcoming South Loop Races</h2>
+            <h2 id="races-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+              Upcoming South Loop Races
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
               Join fellow South Loop Runners at these exciting local races. Both events depart from our neighborhood,
               making them perfect for our community!
