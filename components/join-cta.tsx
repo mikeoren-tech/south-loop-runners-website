@@ -4,7 +4,7 @@ import { Facebook } from "lucide-react"
 
 function StravaIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
     </svg>
   )
@@ -13,62 +13,71 @@ function StravaIcon({ className }: { className?: string }) {
 export function JoinCTA() {
   return (
     <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <Card className="max-w-6xl mx-auto glass-strong shadow-soft-lg border-0">
-          <CardContent className="p-8 md:p-12">
-            <div className="grid lg:grid-cols-2 gap-8 items-start">
-              <div className="space-y-6">
-                <h2 className="text-3xl md:text-4xl font-bold text-balance">Ready to Join the Pack?</h2>
-                <p className="text-lg text-muted-foreground text-balance">
-                  Whether you're new to running or a seasoned marathoner, there's a place for you in South Loop Runners.
-                  Come run with us!
-                </p>
+      <div className="relative z-10">
+        <div className="container mx-auto px-4">
+          <Card className="max-w-6xl mx-auto glass-strong shadow-soft-lg border-0">
+            <CardContent className="p-8 md:p-12">
+              <div className="grid lg:grid-cols-2 gap-8 items-start">
+                <div className="space-y-6">
+                  <h2 className="text-3xl md:text-4xl font-bold text-balance">Ready to Join the Pack?</h2>
+                  <p className="text-lg text-muted-foreground text-balance">
+                    Whether you're new to running or a seasoned marathoner, there's a place for you in South Loop
+                    Runners. Come run with us!
+                  </p>
 
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button
-                    size="lg"
-                    className="relative z-20 gap-2 backdrop-blur-md bg-[#1877F2]/80 hover:bg-[#1877F2]/90 text-white shadow-lg hover:shadow-xl transition-all"
-                    asChild
-                  >
-                    <a href="https://www.facebook.com/groups/665701690539939" target="_blank" rel="noopener noreferrer">
-                      <Facebook className="h-5 w-5" />
-                      Join Our Facebook Group
-                    </a>
-                  </Button>
-                  <Button
-                    size="lg"
-                    className="relative z-20 gap-2 backdrop-blur-md bg-[#FC4C02]/80 hover:bg-[#FC4C02]/90 text-white shadow-lg hover:shadow-xl transition-all"
-                    asChild
-                  >
-                    <a href="https://www.strava.com/clubs/southlooprunners" target="_blank" rel="noopener noreferrer">
-                      <StravaIcon className="h-5 w-5" />
-                      Join Our Strava Club
-                    </a>
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                    <Button
+                      size="lg"
+                      className="relative z-30 gap-2 backdrop-blur-md bg-[#1877F2]/80 hover:bg-[#1877F2]/90 text-white shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
+                      asChild
+                    >
+                      <a
+                        href="https://www.facebook.com/groups/665701690539939"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Facebook className="h-5 w-5" aria-hidden="true" />
+                        Join Our Facebook Group
+                        <span className="sr-only">Opens in new window</span>
+                      </a>
+                    </Button>
+                    <Button
+                      size="lg"
+                      className="relative z-30 gap-2 backdrop-blur-md bg-[#FC4C02]/80 hover:bg-[#FC4C02]/90 text-white shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
+                      asChild
+                    >
+                      <a href="https://www.strava.com/clubs/southlooprunners" target="_blank" rel="noopener noreferrer">
+                        <StravaIcon className="h-5 w-5" />
+                        Join Our Strava Club
+                        <span className="sr-only">Opens in new window</span>
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex justify-center lg:justify-end">
+                  <Card className="w-full max-w-[300px] glass shadow-soft border-0">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Recent Activities</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <iframe
+                        title="Strava Club Recent Activities"
+                        allowTransparency
+                        frameBorder="0"
+                        height="454"
+                        scrolling="no"
+                        src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=true"
+                        width="100%"
+                        className="w-full"
+                      />
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-
-              <div className="flex justify-center lg:justify-end">
-                <Card className="w-full max-w-[300px] glass shadow-soft border-0">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Recent Activities</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <iframe
-                      allowTransparency
-                      frameBorder="0"
-                      height="454"
-                      scrolling="no"
-                      src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=true"
-                      width="100%"
-                      className="w-full"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </section>
   )
