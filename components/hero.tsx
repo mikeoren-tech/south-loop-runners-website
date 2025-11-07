@@ -16,10 +16,9 @@ export function Hero() {
         {/* Gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50" />
       </div>
-      {/* </CHANGE> */}
 
-      <div className="absolute inset-0 z-10 flex items-center justify-center pt-16 sm:pt-0">
-        <div className="container mx-auto px-4 text-center">
+      <div className="absolute bottom-[80px] left-0 right-0 z-10 px-4">
+        <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-black/50 backdrop-blur-md rounded-3xl p-8 mx-auto max-w-3xl shadow-2xl">
               <p className="text-sm md:text-base text-white/90 font-semibold mb-4 drop-shadow-lg tracking-wide uppercase">
@@ -38,7 +37,7 @@ export function Hero() {
       {/* </CHANGE> */}
 
       {/* Wave transition to content below */}
-      <div className="relative z-10 -mb-1">
+      <div className="absolute bottom-0 left-0 right-0 z-20 -mb-1 opacity-80">
         <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <path
             d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
