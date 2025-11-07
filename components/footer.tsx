@@ -67,6 +67,14 @@ export function Footer() {
               </li>
               <li>
                 <a
+                  href="/calendar"
+                  className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:underline"
+                >
+                  Events Calendar
+                </a>
+              </li>
+              <li>
+                <a
                   href="#about"
                   className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:underline"
                 >

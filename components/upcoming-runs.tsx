@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users } from "lucide-react"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
@@ -229,6 +229,18 @@ export function UpcomingRuns() {
             </Link>{" "}
             for tips on running in different conditions.
           </p>
+          <div className="mt-6">
+            <Button
+              asChild
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+            >
+              <Link href="/calendar">
+                View Events Calendar
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </ScrollReveal>
 
         <div className="max-w-7xl mx-auto">

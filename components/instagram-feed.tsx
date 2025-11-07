@@ -21,10 +21,27 @@ export function InstagramFeed() {
     const script = document.createElement("script")
     script.src = "https://www.instagram.com/embed.js"
     script.async = true
+
+    script.onload = () => {
+      // Process Instagram embeds after script loads
+      if (window.instgrm) {
+        window.instgrm.Embeds.process()
+      }
+    }
+
     document.body.appendChild(script)
 
+    // If script was already loaded, process embeds immediately
+    if (window.instgrm) {
+      window.instgrm.Embeds.process()
+    }
+
     return () => {
-      document.body.removeChild(script)
+      try {
+        document.body.removeChild(script)
+      } catch (e) {
+        // Script may have already been removed
+      }
     }
   }, [])
 
