@@ -2,30 +2,43 @@ import Image from "next/image"
 
 export function Hero() {
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-white">
-      <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="max-w-4xl mx-auto space-y-4">
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/slr-logo.jpg"
-              alt="South Loop Runners"
-              width={350}
-              height={262}
-              className="w-full max-w-sm h-auto"
-              priority
-            />
+    <section className="relative w-full bg-gray-900 overflow-hidden">
+      <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px]">
+        <Image
+          src="/slr-group-photo-with-logo.jpg"
+          alt="South Loop Runners group photo with team celebrating race finish"
+          fill
+          className="object-cover object-left-top"
+          priority
+          quality={95}
+          sizes="100vw"
+        />
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50" />
+      </div>
+      {/* </CHANGE> */}
+
+      <div className="absolute inset-0 z-10 flex items-center justify-center pt-16 sm:pt-0">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="bg-black/50 backdrop-blur-md rounded-3xl p-8 mx-auto max-w-3xl shadow-2xl">
+              <p className="text-sm md:text-base text-white/90 font-semibold mb-4 drop-shadow-lg tracking-wide uppercase">
+                More Than Miles: South Loop Smiles
+              </p>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-balance text-white drop-shadow-2xl mb-4">
+                South Loop Runners
+              </h1>
+              <p className="text-lg sm:text-xl lg:text-2xl text-white/95 font-medium text-balance drop-shadow-lg">
+                Chicago's premier running community in the heart of the South Loop
+              </p>
+            </div>
           </div>
-          <p className="text-sm md:text-base text-gray-500 mt-0 mb-4">More Than Miles: South Loop Smiles</p>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-balance text-gray-900">
-            South Loop Runners
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 text-balance">
-            Chicago's premier running community in the heart of the South Loop
-          </p>
         </div>
       </div>
+      {/* </CHANGE> */}
 
-      <div className="absolute bottom-0 left-0 right-0">
+      {/* Wave transition to content below */}
+      <div className="relative z-10 -mb-1">
         <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <path
             d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
