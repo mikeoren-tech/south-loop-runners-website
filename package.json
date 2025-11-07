@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "npx @cloudflare/next-on-pages",
+    "build": "next build",
     "db:migrate": "wrangler d1 execute slr-events --file=scripts/01-create-events-schema.sql",
     "db:seed": "wrangler d1 execute slr-events --file=scripts/02-seed-sample-events.sql",
     "dev": "next dev",
