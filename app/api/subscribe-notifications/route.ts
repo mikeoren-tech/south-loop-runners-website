@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const { email } = await request.json()
 
@@ -11,10 +11,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Valid email is required" }, { status: 400 })
     }
 
+    // Check if required environment variables are set
+    if (!process.env.RESEND_API_KEY || !process.env.RESEND_AUDIENCE_ID) {
+      console.error("[v0] Missing RESEND_API_KEY or RESEND_AUDIENCE_ID environment variables")
+      return NextResponse.json(
+        { error: "Email service not configured. Please contact the administrator." },
+        { status: 500 },
+      )
+    }
+
     // Add contact to Resend audience
     const result = await resend.contacts.create({
       email,
-      audienceId: process.env.RESEND_AUDIENCE_ID!,
+      audienceId: process.env.RESEND_AUDIENCE_ID,
     })
 
     return NextResponse.json({

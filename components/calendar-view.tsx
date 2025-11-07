@@ -39,12 +39,12 @@ const weeklyRuns = [
   },
   {
     id: "saturday-anchor",
-    title: "Anchor Run",
+    title: "Saturday Anchor Run",
     dayOfWeek: 6, // Saturday
-    time: "9:00 AM",
+    time: "8:00 AM",
     location: "Agora Statues",
-    distance: "6.5 miles",
-    pace: "Pace Groups",
+    distance: "6-13 miles",
+    pace: "8-11 min/mile",
     type: "weekly-run" as const,
   },
   {
@@ -55,6 +55,18 @@ const weeklyRuns = [
     location: "Agora Statues",
     distance: "30 minutes",
     pace: "11-12 min/mile",
+    type: "weekly-run" as const,
+  },
+]
+
+const specialEvents = [
+  {
+    id: "field-trip-waterfall-glen",
+    title: "Field Trip: Waterfall Glen Forest Preserve",
+    date: "2025-11-15", // Updated from February 15, 2026 to November 15, 2025
+    time: "8:00 AM",
+    location: "South Loop (departure)",
+    distance: "9.5 miles",
     type: "weekly-run" as const,
   },
 ]
@@ -211,7 +223,30 @@ export function CalendarView() {
     const events: CalendarEvent[] = []
 
     weeklyRuns.forEach((run) => {
-      events.push(...generateWeeklyRunOccurrences(run, new Date(), 12))
+      const occurrences = generateWeeklyRunOccurrences(run, new Date(), 12)
+      const filtered = occurrences.filter((event) => {
+        if (run.id === "saturday-anchor") {
+          const eventDate = event.date.toISOString().split("T")[0]
+          return eventDate !== "2025-11-15"
+        }
+        return true
+      })
+      events.push(...filtered)
+    })
+
+    specialEvents.forEach((event) => {
+      const [year, month, day] = event.date.split("-").map(Number)
+      const localDate = new Date(year, month - 1, day)
+      events.push({
+        id: event.id,
+        title: event.title,
+        date: localDate,
+        time: event.time,
+        location: event.location,
+        type: "weekly-run",
+        details: event.distance,
+        isRecurring: false,
+      })
     })
 
     races.forEach((race) => {
