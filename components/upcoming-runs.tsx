@@ -43,7 +43,7 @@ const weeklyRuns = [
     pace: "Party Pace",
     description: "Thursday evening run along the lakefront. All paces welcome!",
     facebookLink: "https://www.facebook.com/groups/665701690539939",
-    stravaLink: "https://www.strava.com/clubs/Southlooprunners",
+    stravaLink: "https://www.strava.com/clubs/943959",
   },
   {
     id: "saturday-anchor",
@@ -55,7 +55,7 @@ const weeklyRuns = [
     pace: "Pace Groups",
     description: "Saturday morning long run. Join us for our signature Anchor Run!",
     facebookLink: "https://www.facebook.com/groups/665701690539939",
-    stravaLink: "https://www.strava.com/clubs/Southlooprunners",
+    stravaLink: "https://www.strava.com/clubs/943959",
   },
 ]
 

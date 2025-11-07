@@ -43,7 +43,7 @@ export function Footer() {
                 <Instagram className="h-5 w-5" aria-hidden="true" />
               </a>
               <a
-                href="https://www.strava.com/clubs/Southlooprunners"
+                href="https://www.strava.com/clubs/943959"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"

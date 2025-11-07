@@ -46,7 +46,7 @@ export function JoinCTA() {
                       className="relative z-30 gap-2 backdrop-blur-md bg-[#FC4C02]/80 hover:bg-[#FC4C02]/90 text-white shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
                       asChild
                     >
-                      <a href="https://www.strava.com/clubs/southlooprunners" target="_blank" rel="noopener noreferrer">
+                      <a href="https://www.strava.com/clubs/943959" target="_blank" rel="noopener noreferrer">
                         <StravaIcon className="h-5 w-5" />
                         Join Our Strava Club
                         <span className="sr-only">Opens in new window</span>
