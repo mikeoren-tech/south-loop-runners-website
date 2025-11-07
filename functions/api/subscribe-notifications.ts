@@ -1,4 +1,9 @@
-export async function onRequestPost(context: { request: Request }) {
+interface Env {
+  RESEND_API_KEY: string
+  RESEND_AUDIENCE_ID: string
+}
+
+export async function onRequestPost(context: { request: Request; env: Env }) {
   try {
     const body = await context.request.json()
     const { email } = body
@@ -13,9 +18,8 @@ export async function onRequestPost(context: { request: Request }) {
       })
     }
 
-    // Check for Resend API key and Audience ID
-    const resendApiKey = process.env.RESEND_API_KEY
-    const audienceId = process.env.RESEND_AUDIENCE_ID
+    const resendApiKey = context.env.RESEND_API_KEY
+    const audienceId = context.env.RESEND_AUDIENCE_ID
 
     if (!resendApiKey) {
       console.error("[v0] Missing RESEND_API_KEY environment variable")

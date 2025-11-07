@@ -13,26 +13,33 @@ function shouldResetData(runId: string): boolean {
   const now = new Date()
   const chicagoTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Chicago" }))
 
-  const currentDay = chicagoTime.getDay() // 0 = Sunday, 2 = Tuesday, 6 = Saturday
+  const currentDay = chicagoTime.getDay() // 0 = Sunday, 4 = Thursday, 6 = Saturday
   const currentHour = chicagoTime.getHours()
 
-  // Tuesday run resets at 10 PM Tuesday (day 2)
-  if (runId === "tuesday-run" && currentDay === 2 && currentHour >= 22) {
-    return true
+  // Thursday run resets at 10 PM Thursday (day 4)
+  if (runId === "thursday-light-up") {
+    // Reset after 10 PM Thursday until next Thursday
+    if (currentDay === 4 && currentHour >= 22) return true
+    if (currentDay > 4) return true // Friday, Saturday
+    if (currentDay < 4) return true // Sunday, Monday, Tuesday, Wednesday
+    return false
   }
 
   // Saturday run resets at 10 PM Saturday (day 6)
-  if (runId === "saturday-run" && currentDay === 6 && currentHour >= 22) {
-    return true
+  if (runId === "saturday-anchor") {
+    // Reset after 10 PM Saturday until next Saturday
+    if (currentDay === 6 && currentHour >= 22) return true
+    if (currentDay === 0) return true // Sunday
+    if (currentDay < 6) return true // Monday-Friday
+    return false
   }
 
-  // After reset time, clear data until next week
-  if (runId === "tuesday-run" && (currentDay > 2 || (currentDay === 2 && currentHour >= 22))) {
-    return true
-  }
-
-  if (runId === "saturday-run" && (currentDay === 0 || (currentDay === 6 && currentHour >= 22))) {
-    return true
+  // Sunday run resets at 10 PM Sunday (day 0)
+  if (runId === "sunday-social") {
+    // Reset after 10 PM Sunday until next Sunday
+    if (currentDay === 0 && currentHour >= 22) return true
+    if (currentDay > 0) return true // Monday-Saturday
+    return false
   }
 
   return false
