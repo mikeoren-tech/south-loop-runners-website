@@ -9,40 +9,72 @@ interface PaceInterest {
   timestamp: number
 }
 
-function shouldResetData(runId: string): boolean {
+interface RunData {
+  interests: PaceInterest[]
+  lastResetTimestamp: number
+}
+
+function getNextDayOfWeek(dayOfWeek: number, afterDate: Date): Date {
+  const result = new Date(afterDate)
+  result.setHours(22, 0, 0, 0) // Set to 10 PM on that day
+
+  const daysUntilTarget = (dayOfWeek - afterDate.getDay() + 7) % 7
+  if (daysUntilTarget === 0 && afterDate.getHours() < 22) {
+    // If it's the same day but before 10 PM, use today at 10 PM
+    return result
+  }
+
+  result.setDate(result.getDate() + (daysUntilTarget || 7))
+  return result
+}
+
+function shouldResetData(runId: string, lastResetTimestamp: number): boolean {
   const now = new Date()
   const chicagoTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Chicago" }))
 
-  const currentDay = chicagoTime.getDay() // 0 = Sunday, 4 = Thursday, 6 = Saturday
-  const currentHour = chicagoTime.getHours()
-
-  // Thursday run resets at 10 PM Thursday (day 4)
+  // Determine which day this run occurs on
+  let runDayOfWeek: number
   if (runId === "thursday-light-up") {
-    // Reset after 10 PM Thursday until next Thursday
-    if (currentDay === 4 && currentHour >= 22) return true
-    if (currentDay > 4) return true // Friday, Saturday
-    if (currentDay < 4) return true // Sunday, Monday, Tuesday, Wednesday
+    runDayOfWeek = 4 // Thursday
+  } else if (runId === "saturday-anchor") {
+    runDayOfWeek = 6 // Saturday
+  } else if (runId === "sunday-social") {
+    runDayOfWeek = 0 // Sunday
+  } else {
     return false
   }
 
-  // Saturday run resets at 10 PM Saturday (day 6)
-  if (runId === "saturday-anchor") {
-    // Reset after 10 PM Saturday until next Saturday
-    if (currentDay === 6 && currentHour >= 22) return true
-    if (currentDay === 0) return true // Sunday
-    if (currentDay < 6) return true // Monday-Friday
+  // If never reset, check if we're past 10 PM on the run day
+  if (lastResetTimestamp === 0) {
+    const currentDay = chicagoTime.getDay()
+    const currentHour = chicagoTime.getHours()
+
+    if (currentDay === runDayOfWeek && currentHour >= 22) {
+      return true
+    }
+    if (currentDay !== runDayOfWeek) {
+      // Check if we're between the run day at 10 PM and now
+      const lastRunDay = new Date(chicagoTime)
+      const daysSinceRun = (currentDay - runDayOfWeek + 7) % 7
+      lastRunDay.setDate(lastRunDay.getDate() - daysSinceRun)
+      lastRunDay.setHours(22, 0, 0, 0)
+
+      if (chicagoTime >= lastRunDay) {
+        return true
+      }
+    }
     return false
   }
 
-  // Sunday run resets at 10 PM Sunday (day 0)
-  if (runId === "sunday-social") {
-    // Reset after 10 PM Sunday until next Sunday
-    if (currentDay === 0 && currentHour >= 22) return true
-    if (currentDay > 0) return true // Monday-Saturday
-    return false
-  }
+  // Convert last reset timestamp to Chicago time
+  const lastReset = new Date(lastResetTimestamp)
+  const lastResetChicago = new Date(lastReset.toLocaleString("en-US", { timeZone: "America/Chicago" }))
 
-  return false
+  // Get the next reset time (next occurrence of run day at 10 PM after last reset)
+  const nextResetTime = getNextDayOfWeek(runDayOfWeek, lastResetChicago)
+
+  // Reset only if current time is past the next reset time
+  return chicagoTime >= nextResetTime
 }
 
 export async function onRequestGet(context: { env: Env; params: { runId: string } }) {
@@ -50,23 +82,21 @@ export async function onRequestGet(context: { env: Env; params: { runId: string 
     const { runId } = context.params
     const key = `run-interest:${runId}`
 
-    if (shouldResetData(runId)) {
-      // Clear the data
-      await context.env.RACE_RSVPS.delete(key)
-      return new Response(JSON.stringify([]), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-        },
-      })
-    }
-
     const data = await context.env.RACE_RSVPS.get(key)
 
-    const interests: PaceInterest[] = data ? JSON.parse(data) : []
+    let runData: RunData = data ? JSON.parse(data) : { interests: [], lastResetTimestamp: 0 }
 
-    return new Response(JSON.stringify(interests), {
+    if (shouldResetData(runId, runData.lastResetTimestamp)) {
+      console.log("[v0] Resetting data for", runId, "last reset was:", new Date(runData.lastResetTimestamp))
+      // Reset the data and update last reset timestamp
+      runData = {
+        interests: [],
+        lastResetTimestamp: Date.now(),
+      }
+      await context.env.RACE_RSVPS.put(key, JSON.stringify(runData))
+    }
+
+    return new Response(JSON.stringify(runData.interests), {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -97,37 +127,26 @@ export async function onRequestPost(context: { env: Env; params: { runId: string
 
     const key = `run-interest:${runId}`
 
-    if (shouldResetData(runId)) {
-      // Start fresh with just this new interest
-      const interests: PaceInterest[] = [
-        {
-          pace,
-          timestamp: Date.now(),
-        },
-      ]
+    const data = await context.env.RACE_RSVPS.get(key)
+    let runData: RunData = data ? JSON.parse(data) : { interests: [], lastResetTimestamp: 0 }
 
-      await context.env.RACE_RSVPS.put(key, JSON.stringify(interests))
-
-      return new Response(JSON.stringify(interests), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      })
+    if (shouldResetData(runId, runData.lastResetTimestamp)) {
+      console.log("[v0] Resetting data on POST for", runId)
+      runData = {
+        interests: [],
+        lastResetTimestamp: Date.now(),
+      }
     }
 
-    const data = await context.env.RACE_RSVPS.get(key)
-    const interests: PaceInterest[] = data ? JSON.parse(data) : []
-
     // Add new interest
-    interests.push({
+    runData.interests.push({
       pace,
       timestamp: Date.now(),
     })
 
-    await context.env.RACE_RSVPS.put(key, JSON.stringify(interests))
+    await context.env.RACE_RSVPS.put(key, JSON.stringify(runData))
 
-    return new Response(JSON.stringify(interests), {
+    return new Response(JSON.stringify(runData.interests), {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
