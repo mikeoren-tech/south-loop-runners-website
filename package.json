@@ -12,6 +12,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "latest",
     "@cloudflare/workers-types": "latest",
     "@hookform/resolvers": "latest",
     "@radix-ui/react-accordion": "1.2.2",
@@ -66,6 +67,8 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
+    "vercel": "latest",
+    "wrangler": "latest",
     "zod": "3.25.76"
   },
   "devDependencies": {

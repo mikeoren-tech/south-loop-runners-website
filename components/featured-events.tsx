@@ -35,6 +35,65 @@ function formatEventTime(isoDate: string): string {
   })
 }
 
+const fallbackWeeklyRuns = [
+  {
+    id: "thursday-light-up",
+    title: "Light Up the Lakefront",
+    description: "Thursday evening run along the lakefront. All paces welcome!",
+    start_datetime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+    location: "Agora Statues",
+    meeting_point: "Michigan Ave & Roosevelt",
+    distance: "30 minutes",
+    pace: "Party Pace",
+    registration_url: "https://www.facebook.com/groups/665701690539939",
+  },
+  {
+    id: "saturday-anchor",
+    title: "Anchor Run",
+    description: "Saturday morning long run. Join us for our signature Anchor Run!",
+    start_datetime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days from now
+    location: "Agora Statues",
+    meeting_point: "Michigan Ave & Roosevelt",
+    distance: "6.5 miles",
+    pace: "Pace Groups",
+    registration_url: "https://www.strava.com/clubs/943959",
+  },
+  {
+    id: "sunday-social",
+    title: "Sunday Social Run",
+    description: "30-minute 11-12/mile run followed by coffee in a South Loop café.",
+    start_datetime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
+    location: "Agora Statues",
+    meeting_point: "Michigan Ave & Roosevelt",
+    distance: "30 minutes",
+    pace: "11-12 min/mile",
+    registration_url: "https://fb.me/e/6SQ3Vaigo",
+  },
+]
+
+const fallbackRaces = [
+  {
+    id: "shamrock-shuffle",
+    title: "Shamrock Shuffle",
+    description: "Chicago's official kickoff to running season with 20,000+ participants!",
+    start_datetime: new Date("2025-03-23T08:00:00-05:00").toISOString(),
+    location: "Grant Park",
+    distance: "8K",
+    registration_url: "https://www.shamrockshuffle.com",
+    image_url: "/public/chicago-shamrock-shuffle-race.jpg",
+  },
+  {
+    id: "chicago-half-marathon",
+    title: "Chicago Half Marathon",
+    description: "Fast and flat course through the South Loop and Museum Campus.",
+    start_datetime: new Date("2025-09-28T07:00:00-05:00").toISOString(),
+    location: "South Loop",
+    distance: "Half Marathon",
+    registration_url: "https://www.chicagohalfmarathon.com",
+    image_url: "/public/chicago-marathon-start-line.jpg",
+  },
+]
+
 export function FeaturedWeeklyRuns() {
   const { data, isLoading, error } = useSWR<Event[]>("/api/events?upcoming=true&type=weekly_run", fetcher, {
     refreshInterval: 60000,
@@ -42,6 +101,8 @@ export function FeaturedWeeklyRuns() {
 
   const events = Array.isArray(data) ? data : []
   const featuredEvents = events.filter((e) => e.is_featured === 1).slice(0, 3)
+
+  const displayEvents = featuredEvents.length > 0 ? featuredEvents : fallbackWeeklyRuns
 
   if (isLoading) {
     return (
@@ -53,16 +114,11 @@ export function FeaturedWeeklyRuns() {
 
   if (error) {
     console.error("[v0] Error loading weekly runs:", error)
-    return null
-  }
-
-  if (featuredEvents.length === 0) {
-    return null
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {featuredEvents.map((event, index) => (
+      {displayEvents.map((event, index) => (
         <ScrollReveal key={event.id} delay={index * 100}>
           <Card className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
             <CardHeader>
@@ -120,6 +176,8 @@ export function FeaturedRaces() {
   const events = Array.isArray(data) ? data : []
   const featuredEvents = events.filter((e) => e.is_featured === 1).slice(0, 2)
 
+  const displayEvents = featuredEvents.length > 0 ? featuredEvents : fallbackRaces
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -130,16 +188,11 @@ export function FeaturedRaces() {
 
   if (error) {
     console.error("[v0] Error loading races:", error)
-    return null
-  }
-
-  if (featuredEvents.length === 0) {
-    return null
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {featuredEvents.map((event, index) => (
+      {displayEvents.map((event, index) => (
         <ScrollReveal key={event.id} delay={index * 150}>
           <Card className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
             {event.image_url && (

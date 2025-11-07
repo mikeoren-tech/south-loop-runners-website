@@ -1,13 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getRequestContext } from "@cloudflare/next-on-pages"
 import { addSubscriber, getActiveSubscribers } from "@/lib/db"
 import { addToResendAudience } from "@/lib/email"
 
+export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    // @ts-ignore - D1 binding available in Cloudflare Workers
-    const db = process.env.DB || globalThis.DB
+    const { env } = getRequestContext()
+    const db = env.DB
 
     if (!db) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
@@ -23,8 +25,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    // @ts-ignore - D1 binding available in Cloudflare Workers
-    const db = process.env.DB || globalThis.DB
+    const { env } = getRequestContext()
+    const db = env.DB
 
     if (!db) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })

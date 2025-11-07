@@ -1,13 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getRequestContext } from "@cloudflare/next-on-pages"
 import { getEvent, updateEvent, deleteEvent, getActiveSubscribers, logNotification } from "@/lib/db"
 import { sendEventNotification } from "@/lib/email"
 
+export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // @ts-ignore - D1 binding available in Cloudflare Workers
-    const db = process.env.DB || globalThis.DB
+    const { env } = getRequestContext()
+    const db = env.DB
 
     if (!db) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
@@ -29,8 +31,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // @ts-ignore - D1 binding available in Cloudflare Workers
-    const db = process.env.DB || globalThis.DB
+    const { env } = getRequestContext()
+    const db = env.DB
 
     if (!db) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
@@ -68,8 +70,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // @ts-ignore - D1 binding available in Cloudflare Workers
-    const db = process.env.DB || globalThis.DB
+    const { env } = getRequestContext()
+    const db = env.DB
 
     if (!db) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })

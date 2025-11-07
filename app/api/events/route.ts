@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getRequestContext } from "@cloudflare/next-on-pages"
 import {
   getAllEvents,
   createEvent,
@@ -9,12 +10,13 @@ import {
 } from "@/lib/db"
 import { sendEventNotification } from "@/lib/email"
 
+export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
-    // @ts-ignore - D1 binding available in Cloudflare Workers
-    const db = process.env.DB || globalThis.DB
+    const { env } = getRequestContext()
+    const db = env.DB
 
     if (!db) {
       console.error("[v0] Database not configured")
@@ -46,8 +48,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // @ts-ignore - D1 binding available in Cloudflare Workers
-    const db = process.env.DB || globalThis.DB
+    const { env } = getRequestContext()
+    const db = env.DB
 
     if (!db) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
