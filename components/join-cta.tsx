@@ -58,16 +58,16 @@ export function JoinCTA() {
                 <div className="flex justify-center lg:justify-end">
                   <Card className="w-full max-w-[300px] glass shadow-soft border-0">
                     <CardHeader>
-                      <CardTitle className="text-lg">Recent Activities</CardTitle>
+                      <CardTitle className="text-lg">Club Stats</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                       <iframe
-                        title="Strava Club Recent Activities"
+                        title="Strava Club Statistics"
                         allowTransparency
                         frameBorder="0"
-                        height="454"
+                        height="160"
                         scrolling="no"
-                        src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=true"
+                        src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=false"
                         width="100%"
                         className="w-full"
                       />

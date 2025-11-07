@@ -57,6 +57,18 @@ const weeklyRuns = [
     facebookLink: "https://www.facebook.com/groups/665701690539939",
     stravaLink: "https://www.strava.com/clubs/943959",
   },
+  {
+    id: "sunday-social",
+    title: "Sunday Social Run",
+    dayOfWeek: "Sunday",
+    time: "9:00 AM",
+    location: "Agora Statues (Michigan Ave & Roosevelt)",
+    distance: "30 minutes",
+    pace: "11-12 min/mile",
+    description: "30-minute 11-12/mile run followed by coffee in a South Loop café. Perfect way to start your Sunday!",
+    facebookLink: "https://fb.me/e/6SQ3Vaigo",
+    stravaLink: "https://www.strava.com/clubs/943959/group_events/3421718402079309428",
+  },
 ]
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -201,6 +213,7 @@ function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: 
 export function UpcomingRuns() {
   const [thursdayWeather, setThursdayWeather] = useState<WeatherData | null>(null)
   const [saturdayWeather, setSaturdayWeather] = useState<WeatherData | null>(null)
+  const [sundayWeather, setSundayWeather] = useState<WeatherData | null>(null)
 
   return (
     <section className="relative py-20 bg-[#f9fafb]" aria-labelledby="runs-heading">
@@ -412,25 +425,94 @@ export function UpcomingRuns() {
               </article>
             </ScrollReveal>
 
-            {/* Strava Club Stats - Wide card */}
-            <ScrollReveal delay={250} className="md:col-span-6 lg:col-span-5 md:row-span-1">
+            <ScrollReveal delay={250} className="md:col-span-6 lg:col-span-5 md:row-span-2">
               <Card className="glass rounded-3xl shadow-soft hover-lift h-full border-0 overflow-hidden">
                 <CardHeader>
-                  <CardTitle className="text-lg">Club Stats</CardTitle>
+                  <CardTitle className="text-lg">Recent Activities</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <iframe
                     allowTransparency
                     frameBorder="0"
-                    height="160"
+                    height="454"
                     scrolling="no"
-                    src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=false"
+                    src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=true"
                     width="100%"
                     className="w-full"
-                    title="South Loop Runners Strava Club Statistics"
+                    title="South Loop Runners Strava Club Recent Activities"
                   />
                 </CardContent>
               </Card>
+            </ScrollReveal>
+
+            {/* Sunday Social Run Card */}
+            <ScrollReveal delay={300} className="md:col-span-6 lg:col-span-12 md:row-span-1">
+              <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
+                <Card className="h-full border-0 rounded-3xl">
+                  <CardHeader>
+                    <CardTitle className="text-xl mb-2">{weeklyRuns[2].title}</CardTitle>
+                    <CardDescription>{weeklyRuns[2].description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{weeklyRuns[2].dayOfWeek}s</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>{weeklyRuns[2].time}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{weeklyRuns[2].location}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <WeatherWidget day="sunday" onWeatherLoad={setSundayWeather} />
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline">{weeklyRuns[2].distance}</Badge>
+                          <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                            {weeklyRuns[2].pace}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <p className="text-sm font-medium text-center text-muted-foreground">
+                          RSVP on the club pages / get the most up-to-date info
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
+                            asChild
+                          >
+                            <a href={weeklyRuns[2].facebookLink} target="_blank" rel="noopener noreferrer">
+                              <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
+                              Facebook
+                              <span className="sr-only">Opens in new window</span>
+                            </a>
+                          </Button>
+                          <Button
+                            className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
+                            asChild
+                          >
+                            <a href={weeklyRuns[2].stravaLink} target="_blank" rel="noopener noreferrer">
+                              <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
+                              Strava
+                              <span className="sr-only">Opens in new window</span>
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <PaceInterestSection runId={weeklyRuns[2].id} />
+                  </CardContent>
+                </Card>
+              </article>
             </ScrollReveal>
           </div>
         </div>
