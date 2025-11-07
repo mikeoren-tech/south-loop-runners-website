@@ -5,16 +5,27 @@ export function Hero() {
     <section className="relative w-full bg-gray-900 overflow-hidden">
       <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px]">
         <Image
-          src="/slr-group-photo-with-logo.jpg"
-          alt="South Loop Runners group photo with team celebrating race finish"
+          src="/slr-group-celebrating-medals.jpg"
+          alt="South Loop Runners group celebrating after Chicago Marathon with medals"
           fill
-          className="object-cover object-left-top"
+          className="object-cover object-center"
           priority
           quality={95}
           sizes="100vw"
         />
         {/* Gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50" />
+
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10">
+          <Image
+            src="/slr-logo.png"
+            alt="South Loop Runners Logo"
+            width={120}
+            height={120}
+            className="drop-shadow-2xl"
+            priority
+          />
+        </div>
       </div>
 
       <div className="absolute bottom-[80px] left-0 right-0 z-10 px-4">
@@ -34,8 +45,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-      {/* </CHANGE> */}
-
       {/* Wave transition to content below */}
       <div className="absolute bottom-0 left-0 right-0 z-20 -mb-1 opacity-80">
         <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
