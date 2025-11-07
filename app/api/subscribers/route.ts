@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { addSubscriber, getActiveSubscribers } from "@/lib/db"
 import { addToResendAudience } from "@/lib/email"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     // @ts-ignore - D1 binding available in Cloudflare Workers

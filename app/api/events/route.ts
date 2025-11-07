@@ -9,6 +9,8 @@ import {
 } from "@/lib/db"
 import { sendEventNotification } from "@/lib/email"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   try {
     // @ts-ignore - D1 binding available in Cloudflare Workers

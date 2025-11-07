@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getEvent, updateEvent, deleteEvent, getActiveSubscribers, logNotification } from "@/lib/db"
 import { sendEventNotification } from "@/lib/email"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // @ts-ignore - D1 binding available in Cloudflare Workers
