@@ -7,8 +7,6 @@ import { JoinCTA } from "@/components/join-cta"
 import { Footer } from "@/components/footer"
 import { AnnouncementBanner } from "@/components/announcement-banner"
 
-export const runtime = "edge"
-
 export default function Home() {
   return (
     <main className="min-h-screen">

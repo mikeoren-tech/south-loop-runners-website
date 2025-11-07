@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollReveal } from "@/components/scroll-reveal"
 
-export const runtime = "edge"
-
 const temperatureGuidance = [
   {
     range: "Above 80°F (27°C)",
