@@ -27,6 +27,7 @@ export interface EmailSubscriber {
   is_active: number
   subscribed_at: string
   unsubscribed_at: string | null
+  event_preferences: string | null // JSON string array: '["weekly_run"]', '["race"]', '["weekly_run","race"]', or null for all
 }
 
 export interface EventNotification {
@@ -201,12 +202,33 @@ export async function addSubscriber(db: any, email: string): Promise<EmailSubscr
     .bind(id, email, now)
     .run()
 
-  return { id, email, is_active: 1, subscribed_at: now, unsubscribed_at: null }
+  return { id, email, is_active: 1, subscribed_at: now, unsubscribed_at: null, event_preferences: null }
 }
 
-export async function getActiveSubscribers(db: any): Promise<EmailSubscriber[]> {
+export async function getActiveSubscribers(db: any, eventType?: "weekly_run" | "race"): Promise<EmailSubscriber[]> {
   const result = await db.prepare("SELECT * FROM email_subscribers WHERE is_active = 1").all()
-  return result.results as EmailSubscriber[]
+  const subscribers = result.results as EmailSubscriber[]
+
+  // Filter by event preferences if eventType is specified
+  if (eventType) {
+    return subscribers.filter((subscriber) => {
+      // If no preferences set (null), send all notifications (backward compatible)
+      if (!subscriber.event_preferences) {
+        return true
+      }
+
+      try {
+        const preferences = JSON.parse(subscriber.event_preferences) as string[]
+        return preferences.includes(eventType)
+      } catch (error) {
+        console.error("[v0] Error parsing event_preferences:", error)
+        // If preferences are invalid, default to sending all notifications
+        return true
+      }
+    })
+  }
+
+  return subscribers
 }
 
 // Event notification tracking

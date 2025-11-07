@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getRequestContext } from "@cloudflare/next-on-pages"
 import {
   getAllEvents,
   createEvent,
@@ -9,14 +8,34 @@ import {
   logNotification,
 } from "@/lib/db"
 import { sendEventNotification } from "@/lib/email"
+import type { D1Database } from "@cloudflare/workers-types"
 
 export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
+function getDB(request: NextRequest): D1Database | null {
+  try {
+    // Try accessing from Cloudflare Workers context
+    const cfContext = (request as any).cf || (globalThis as any).cloudflare
+    if (cfContext?.env?.DB) {
+      return cfContext.env.DB
+    }
+
+    // Fallback to process.env
+    if (process.env.DB) {
+      return process.env.DB as any
+    }
+
+    return null
+  } catch (error) {
+    console.error("[v0] Error accessing DB:", error)
+    return null
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const { env } = getRequestContext()
-    const db = env.DB
+    const db = getDB(request)
 
     if (!db) {
       console.error("[v0] Database not configured")
@@ -48,8 +67,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { env } = getRequestContext()
-    const db = env.DB
+    const db = getDB(request)
 
     if (!db) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
@@ -64,8 +82,7 @@ export async function POST(request: NextRequest) {
 
     const event = await createEvent(db, eventData)
 
-    // Send notification emails to subscribers
-    const subscribers = await getActiveSubscribers(db)
+    const subscribers = await getActiveSubscribers(db, event.event_type)
     if (subscribers.length > 0) {
       const emails = subscribers.map((s) => s.email)
       const result = await sendEventNotification(emails, event, "created")
