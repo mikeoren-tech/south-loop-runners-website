@@ -9,39 +9,51 @@ export async function onRequestGet(context: { env: Env; params: { runId: string 
     const { runId } = context.params
 
     if (!context.env.DB) {
-      console.error("[Cloudflare Function] DB binding not found")
+      console.error("[v0] DB binding not found")
       return new Response(JSON.stringify([]), {
+        status: 200,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
         },
       })
     }
 
-    const { results } = await context.env.DB.prepare(
-      `SELECT pace, count FROM pace_interests WHERE event_id = ? ORDER BY pace`,
-    )
-      .bind(runId)
-      .all()
+    let results
+    try {
+      const queryResult = await context.env.DB.prepare(
+        `SELECT pace, count FROM pace_interests WHERE event_id = ? ORDER BY pace`,
+      )
+        .bind(runId)
+        .all()
+      results = queryResult.results
+    } catch (dbError) {
+      console.error("[v0] DB query error:", dbError)
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      })
+    }
 
     const paceInterests = Array.isArray(results) ? results : []
 
     return new Response(JSON.stringify(paceInterests), {
+      status: 200,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
       },
     })
   } catch (error) {
-    console.error("[Cloudflare Function] Error fetching pace interests:", error)
+    console.error("[v0] Error in pace interests endpoint:", error)
     return new Response(JSON.stringify([]), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
       },
     })
   }
@@ -81,7 +93,7 @@ export async function onRequestPost(context: { env: Env; params: { runId: string
       },
     })
   } catch (error) {
-    console.error("[Cloudflare Function] Error adding pace interest:", error)
+    console.error("[v0] Error adding pace interest:", error)
     return new Response(JSON.stringify({ error: "Failed to add pace interest" }), {
       status: 500,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },

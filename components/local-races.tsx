@@ -284,7 +284,11 @@ function RaceCard({ race, index }: { race: any; index: number }) {
         <Card className="h-full border-0 rounded-3xl overflow-hidden p-0">
           <div className="relative h-48 overflow-hidden rounded-t-3xl">
             <Image
-              src={race.image_url || "/placeholder.svg"}
+              src={
+                race.image_url && race.image_url !== ""
+                  ? race.image_url
+                  : `/placeholder.svg?height=400&width=800&query=${encodeURIComponent(race.title + " race")}`
+              }
               alt={`${race.title} - ${race.tagline || ""}`}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"

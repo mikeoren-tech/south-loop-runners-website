@@ -7,7 +7,7 @@ interface Env {
 export async function onRequestGet(context: { env: Env }) {
   try {
     const { results } = await context.env.DB.prepare(
-      `SELECT * FROM events WHERE type = 'weekly-run' AND is_recurring = 1 AND deleted_at IS NULL ORDER BY day_of_week`,
+      `SELECT * FROM events WHERE type = 'weekly-run' AND is_recurring = 1 AND deleted_at IS NULL ORDER BY display_order ASC`,
     ).all()
 
     return new Response(JSON.stringify(results), {
