@@ -70,7 +70,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // If sendEmail is true, trigger email notification
     if (sendEmail) {
       console.log("[v0] Attempting to send new event email...")
-      const emailUrl = `${new URL(context.request.url).origin}/api/admin/new-event`
+      const emailUrl = `${new URL(context.request.url).origin}/api/admin/emails/new-event`
       console.log("[v0] Email endpoint URL:", emailUrl)
       
       const emailResponse = await fetch(emailUrl, {
