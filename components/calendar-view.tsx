@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,72 +25,25 @@ import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-// Import existing event data
-const weeklyRuns = [
-  {
-    id: "thursday-light-up",
-    title: "Light Up the Lakefront",
-    dayOfWeek: 4, // Thursday
-    time: "6:15 PM",
-    location: "Agora Statues",
-    distance: "30 minutes",
-    pace: "Party Pace",
-    type: "weekly-run" as const,
-  },
-  {
-    id: "saturday-anchor",
-    title: "Saturday Anchor Run",
-    dayOfWeek: 6, // Saturday
-    time: "8:00 AM",
-    location: "Agora Statues",
-    distance: "6-13 miles",
-    pace: "8-11 min/mile",
-    type: "weekly-run" as const,
-  },
-  {
-    id: "sunday-social",
-    title: "Sunday Social Run",
-    dayOfWeek: 0, // Sunday
-    time: "9:00 AM",
-    location: "Agora Statues",
-    distance: "30 minutes",
-    pace: "11-12 min/mile",
-    type: "weekly-run" as const,
-  },
-]
-
-const specialEvents = [
-  {
-    id: "field-trip-waterfall-glen",
-    title: "Field Trip: Waterfall Glen Forest Preserve",
-    date: "2025-11-15", // Updated from February 15, 2026 to November 15, 2025
-    time: "8:00 AM",
-    location: "South Loop (departure)",
-    distance: "9.5 miles",
-    type: "weekly-run" as const,
-  },
-]
-
-const races = [
-  {
-    id: "f3-lake",
-    title: "F³ Lake Half Marathon & 5K",
-    date: "2026-01-17",
-    time: "10:00 AM",
-    location: "Soldier Field",
-    distances: ["Half Marathon", "5K"],
-    type: "race" as const,
-  },
-  {
-    id: "miles-per-hour",
-    title: "Miles Per Hour Run",
-    date: "2026-02-14",
-    time: "8:00 AM",
-    location: "McCormick Place",
-    distances: ["1 Hour Challenge"],
-    type: "race" as const,
-  },
-]
+interface DatabaseEvent {
+  id: string
+  title: string
+  description: string
+  date: string | null
+  time: string
+  location: string
+  distance: string | null
+  pace: string | null
+  type: string
+  is_recurring: number
+  day_of_week: number | null
+  display_order: number | null
+  facebook_link: string | null
+  strava_link: string | null
+  distances: string | null
+  registration_url: string | null
+  highlights: string | null
+}
 
 interface CalendarEvent {
   id: string
@@ -101,14 +54,19 @@ interface CalendarEvent {
   type: "weekly-run" | "race"
   details: string
   isRecurring: boolean
+  description?: string
+  facebookLink?: string
+  stravaLink?: string
+  registrationUrl?: string
 }
 
-function generateWeeklyRunOccurrences(run: (typeof weeklyRuns)[0], startDate: Date, weeks: number): CalendarEvent[] {
+function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks: number): CalendarEvent[] {
   const events: CalendarEvent[] = []
   const start = new Date(startDate)
 
-  // Move to the next occurrence of the run's day
-  const daysUntilRun = (run.dayOfWeek - start.getDay() + 7) % 7
+  if (run.day_of_week === null) return []
+
+  const daysUntilRun = (run.day_of_week - start.getDay() + 7) % 7
   start.setDate(start.getDate() + daysUntilRun)
 
   for (let i = 0; i < weeks; i++) {
@@ -121,9 +79,12 @@ function generateWeeklyRunOccurrences(run: (typeof weeklyRuns)[0], startDate: Da
       date: eventDate,
       time: run.time,
       location: run.location,
-      type: "weekly-run",
-      details: `${run.distance} • ${run.pace}`,
+      type: run.type === "race" ? "race" : "weekly-run",
+      details: `${run.distance || ""} • ${run.pace || ""}`.trim(),
       isRecurring: true,
+      description: run.description,
+      facebookLink: run.facebook_link || undefined,
+      stravaLink: run.strava_link || undefined,
     })
   }
 
@@ -141,7 +102,7 @@ function exportToICS(events: CalendarEvent[]) {
       if (period === "AM" && hour === 12) hour = 0
 
       start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
-      const end = new Date(start.getTime() + 90 * 60 * 1000) // 90 min duration
+      const end = new Date(start.getTime() + 90 * 60 * 1000)
 
       const formatDate = (date: Date) => {
         return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
@@ -181,7 +142,6 @@ function exportToICS(events: CalendarEvent[]) {
 }
 
 function addToGoogleCalendar(events: CalendarEvent[]) {
-  // For simplicity, we'll add the next upcoming event
   const nextEvent = events.find((e) => e.date >= new Date())
   if (!nextEvent) return
 
@@ -209,6 +169,83 @@ function addToGoogleCalendar(events: CalendarEvent[]) {
   window.open(googleCalUrl.toString(), "_blank")
 }
 
+function addSingleEventToGoogleCalendar(event: CalendarEvent) {
+  const start = new Date(event.date)
+  const [hours, minutes] = event.time.split(":")
+  const period = event.time.includes("PM") ? "PM" : "AM"
+  let hour = Number.parseInt(hours)
+  if (period === "PM" && hour !== 12) hour += 12
+  if (period === "AM" && hour === 12) hour = 0
+  start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
+
+  const end = new Date(start.getTime() + 90 * 60 * 1000)
+
+  const formatGoogleDate = (date: Date) => {
+    return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
+  }
+
+  const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
+  googleCalUrl.searchParams.set("action", "TEMPLATE")
+  googleCalUrl.searchParams.set("text", event.title)
+  googleCalUrl.searchParams.set("dates", `${formatGoogleDate(start)}/${formatGoogleDate(end)}`)
+  googleCalUrl.searchParams.set("details", event.details)
+  googleCalUrl.searchParams.set("location", event.location)
+
+  window.open(googleCalUrl.toString(), "_blank")
+}
+
+function exportSingleEventToICS(event: CalendarEvent) {
+  const start = new Date(event.date)
+  const [hours, minutes] = event.time.split(":")
+  const period = event.time.includes("PM") ? "PM" : "AM"
+  let hour = Number.parseInt(hours)
+  if (period === "PM" && hour !== 12) hour += 12
+  if (period === "AM" && hour === 12) hour = 0
+
+  start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
+  const end = new Date(start.getTime() + 90 * 60 * 1000)
+
+  const formatDate = (date: Date) => {
+    return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
+  }
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//South Loop Runners//Events Calendar//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${event.id}@southlooprunners.com`,
+    `DTSTAMP:${formatDate(new Date())}`,
+    `DTSTART:${formatDate(start)}`,
+    `DTEND:${formatDate(end)}`,
+    `SUMMARY:${event.title}`,
+    `LOCATION:${event.location}`,
+    `DESCRIPTION:${event.details}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n")
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(blob)
+  link.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}.ics`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+function toggleFilter(filters: Set<string>, type: string): Set<string> {
+  const newFilters = new Set(filters)
+  if (newFilters.has(type)) {
+    newFilters.delete(type)
+  } else {
+    newFilters.add(type)
+  }
+  return newFilters
+}
+
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<"month" | "list">("month")
@@ -218,52 +255,58 @@ export function CalendarView() {
   const [subscribed, setSubscribed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [dbEvents, setDbEvents] = useState<DatabaseEvent[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const response = await fetch("/api/events/all")
+        if (response.ok) {
+          const data = await response.json()
+          setDbEvents(data)
+        }
+      } catch (error) {
+        console.error("[v0] Failed to fetch events:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchEvents()
+  }, [])
 
   const allEvents = useMemo(() => {
+    if (isLoading || dbEvents.length === 0) return []
+
     const events: CalendarEvent[] = []
 
-    weeklyRuns.forEach((run) => {
-      const occurrences = generateWeeklyRunOccurrences(run, new Date(), 12)
-      const filtered = occurrences.filter((event) => {
-        if (run.id === "saturday-anchor") {
-          const eventDate = event.date.toISOString().split("T")[0]
-          return eventDate !== "2025-11-15"
-        }
-        return true
-      })
-      events.push(...filtered)
-    })
+    dbEvents.forEach((event) => {
+      if (event.is_recurring && event.day_of_week !== null) {
+        const occurrences = generateWeeklyRunOccurrences(event, new Date(), 12)
+        events.push(...occurrences)
+      } else if (event.date) {
+        const [year, month, day] = event.date.split("-").map(Number)
+        const localDate = new Date(year, month - 1, day)
 
-    specialEvents.forEach((event) => {
-      const [year, month, day] = event.date.split("-").map(Number)
-      const localDate = new Date(year, month - 1, day)
-      events.push({
-        id: event.id,
-        title: event.title,
-        date: localDate,
-        time: event.time,
-        location: event.location,
-        type: "weekly-run",
-        details: event.distance,
-        isRecurring: false,
-      })
-    })
-
-    races.forEach((race) => {
-      events.push({
-        id: race.id,
-        title: race.title,
-        date: new Date(race.date),
-        time: race.time,
-        location: race.location,
-        type: "race",
-        details: race.distances.join(", "),
-        isRecurring: false,
-      })
+        events.push({
+          id: event.id,
+          title: event.title,
+          date: localDate,
+          time: event.time,
+          location: event.location,
+          type: event.type === "race" ? "race" : "weekly-run",
+          details: event.distances ? JSON.parse(event.distances).join(", ") : event.distance || "",
+          isRecurring: false,
+          description: event.description,
+          facebookLink: event.facebook_link || undefined,
+          stravaLink: event.strava_link || undefined,
+          registrationUrl: event.registration_url || undefined,
+        })
+      }
     })
 
     return events.sort((a, b) => a.date.getTime() - b.date.getTime())
-  }, [])
+  }, [dbEvents, isLoading])
 
   const filteredEvents = useMemo(() => {
     return allEvents.filter((event) => filters.has(event.type))
@@ -333,83 +376,6 @@ export function CalendarView() {
     }
   }
 
-  const addSingleEventToGoogleCalendar = (event: CalendarEvent) => {
-    const start = new Date(event.date)
-    const [hours, minutes] = event.time.split(":")
-    const period = event.time.includes("PM") ? "PM" : "AM"
-    let hour = Number.parseInt(hours)
-    if (period === "PM" && hour !== 12) hour += 12
-    if (period === "AM" && hour === 12) hour = 0
-    start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
-
-    const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-    const formatGoogleDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
-    }
-
-    const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
-    googleCalUrl.searchParams.set("action", "TEMPLATE")
-    googleCalUrl.searchParams.set("text", event.title)
-    googleCalUrl.searchParams.set("dates", `${formatGoogleDate(start)}/${formatGoogleDate(end)}`)
-    googleCalUrl.searchParams.set("details", event.details)
-    googleCalUrl.searchParams.set("location", event.location)
-
-    window.open(googleCalUrl.toString(), "_blank")
-  }
-
-  const exportSingleEventToICS = (event: CalendarEvent) => {
-    const start = new Date(event.date)
-    const [hours, minutes] = event.time.split(":")
-    const period = event.time.includes("PM") ? "PM" : "AM"
-    let hour = Number.parseInt(hours)
-    if (period === "PM" && hour !== 12) hour += 12
-    if (period === "AM" && hour === 12) hour = 0
-
-    start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
-    const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-    const formatDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
-    }
-
-    const icsContent = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//South Loop Runners//Events Calendar//EN",
-      "CALSCALE:GREGORIAN",
-      "METHOD:PUBLISH",
-      "BEGIN:VEVENT",
-      `UID:${event.id}@southlooprunners.com`,
-      `DTSTAMP:${formatDate(new Date())}`,
-      `DTSTART:${formatDate(start)}`,
-      `DTEND:${formatDate(end)}`,
-      `SUMMARY:${event.title}`,
-      `LOCATION:${event.location}`,
-      `DESCRIPTION:${event.details}`,
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].join("\r\n")
-
-    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
-    const link = document.createElement("a")
-    link.href = URL.createObjectURL(blob)
-    link.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}.ics`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  const toggleFilter = (type: string) => {
-    const newFilters = new Set(filters)
-    if (newFilters.has(type)) {
-      newFilters.delete(type)
-    } else {
-      newFilters.add(type)
-    }
-    setFilters(newFilters)
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f9fafb] to-white py-20">
       <div className="container mx-auto px-4">
@@ -430,7 +396,7 @@ export function CalendarView() {
                     <Button
                       variant={filters.has("weekly-run") ? "default" : "outline"}
                       size="sm"
-                      onClick={() => toggleFilter("weekly-run")}
+                      onClick={() => setFilters(toggleFilter(filters, "weekly-run"))}
                       className="gap-2"
                     >
                       <Activity className="h-4 w-4" />
@@ -439,7 +405,7 @@ export function CalendarView() {
                     <Button
                       variant={filters.has("race") ? "default" : "outline"}
                       size="sm"
-                      onClick={() => toggleFilter("race")}
+                      onClick={() => setFilters(toggleFilter(filters, "race"))}
                       className="gap-2"
                     >
                       <Trophy className="h-4 w-4" />
@@ -672,6 +638,8 @@ export function CalendarView() {
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
+            {selectedEvent?.description && <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>}
+
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <CalendarDays className="h-4 w-4 text-muted-foreground" />
@@ -693,6 +661,43 @@ export function CalendarView() {
                 <span>{selectedEvent?.location}</span>
               </div>
             </div>
+
+            {(selectedEvent?.facebookLink || selectedEvent?.stravaLink || selectedEvent?.registrationUrl) && (
+              <div className="border-t pt-4 space-y-3">
+                <p className="text-sm font-medium text-muted-foreground">RSVP & More Info</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedEvent.facebookLink && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={selectedEvent.facebookLink} target="_blank" rel="noopener noreferrer" className="gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Facebook
+                      </a>
+                    </Button>
+                  )}
+                  {selectedEvent.stravaLink && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={selectedEvent.stravaLink} target="_blank" rel="noopener noreferrer" className="gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Strava
+                      </a>
+                    </Button>
+                  )}
+                  {selectedEvent.registrationUrl && (
+                    <Button variant="default" size="sm" asChild>
+                      <a
+                        href={selectedEvent.registrationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="gap-2"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Register
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="border-t pt-4 space-y-3">
               <p className="text-sm font-medium text-muted-foreground">Add to your calendar</p>
