@@ -407,7 +407,10 @@ export function UpcomingRuns() {
                 </div>
               </div>
 
-              <PaceInterestSection runId={event.id} hasSocial={!!event.has_post_run_social} />
+              <PaceInterestSection runId={event.id} // OLD: hasSocial={event.has_post_run_social === true}
+              // NEW:
+              hasSocial={event.has_post_run_social === 1 || event.has_post_run_social === "1" || event.has_post_run_social === true || event.has_post_run_social === "true"}
+               />
             </CardContent>
           </Card>
         </article>
