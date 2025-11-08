@@ -201,7 +201,7 @@ export function UpcomingRuns() {
   const [saturdayWeather, setSaturdayWeather] = useState<WeatherData | null>(null)
   const [sundayWeather, setSundayWeather] = useState<WeatherData | null>(null)
 
-  const { data: weeklyRuns = [], isLoading } = useSWR("/api/events/weekly-runs", fetcher, {
+  const { data: featuredEvents = [], isLoading } = useSWR("/api/events/featured", fetcher, {
     fallbackData: [
       {
         id: "thursday-light-up",
@@ -214,6 +214,7 @@ export function UpcomingRuns() {
         description: "Thursday evening run along the lakefront. All paces welcome!",
         facebook_link: "https://www.facebook.com/groups/665701690539939",
         strava_link: "https://www.strava.com/clubs/943959",
+        type: "weekly-run",
       },
       {
         id: "saturday-anchor",
@@ -226,6 +227,7 @@ export function UpcomingRuns() {
         description: "Saturday morning long run. Join us for our signature Anchor Run!",
         facebook_link: "https://www.facebook.com/groups/665701690539939",
         strava_link: "https://www.strava.com/clubs/943959",
+        type: "weekly-run",
       },
       {
         id: "sunday-social",
@@ -239,6 +241,7 @@ export function UpcomingRuns() {
           "30-minute 11-12/mile run followed by coffee in a South Loop café. Perfect way to start your Sunday!",
         facebook_link: "https://fb.me/e/6SQ3Vaigo",
         strava_link: "https://www.strava.com/clubs/943959/group_events/3421718402079309428",
+        type: "weekly-run",
       },
     ],
   })
@@ -248,7 +251,141 @@ export function UpcomingRuns() {
     return days[dayOfWeek]
   }
 
-  if (isLoading && weeklyRuns.length === 0) {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return null
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+  }
+
+  const renderEventCard = (event: any, index: number, delay: number, className: string) => {
+    const isWeeklyRun = event.type === "weekly-run"
+    const isSpecialEvent = event.type === "special-event"
+
+    return (
+      <ScrollReveal key={event.id} delay={delay} className={className}>
+        <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
+          <Card className="h-full border-0 rounded-3xl">
+            <CardHeader>
+              <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
+              <CardDescription>{event.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {index === 0 && (
+                <div className="relative animate-pulse-glow">
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 rounded-2xl p-4 shadow-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h3 className="text-sm font-semibold text-amber-900">Help Us Decide: Date Change Survey</h3>
+                        <p className="text-sm text-amber-800">
+                          We're considering changing the day for Light Up the Lakefront. Share your preference!
+                        </p>
+                        <Button
+                          asChild
+                          size="sm"
+                          className="bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg transition-all"
+                        >
+                          <a href="#" target="_blank" rel="noopener noreferrer">
+                            Take Survey
+                            <ArrowRight className="ml-2 h-3 w-3" />
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-3">
+                {isWeeklyRun && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{getDayName(event.day_of_week)}s</span>
+                  </div>
+                )}
+                {isSpecialEvent && event.date && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{formatDate(event.date)}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{event.time}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{event.location}</span>
+                </div>
+              </div>
+
+              {index === 0 && <WeatherWidget day="thursday" onWeatherLoad={setThursdayWeather} />}
+              {index === 1 && <WeatherWidget day="saturday" onWeatherLoad={setSaturdayWeather} />}
+
+              <div className="flex flex-wrap gap-2">
+                {event.distance && <Badge variant="outline">{event.distance}</Badge>}
+                {event.pace && (
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <Badge variant="outline" className="border-[#d92a31] text-[#d92a31] cursor-help">
+                        {event.pace}
+                      </Badge>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">{event.pace}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {event.pace === "Party Pace"
+                            ? "A relaxed, conversational running pace where the focus is on community and enjoyment rather than speed."
+                            : event.pace === "Pace Groups"
+                              ? "Organized running groups based on speed (e.g., 8-min/mile, 10-min/mile, 12-min/mile)."
+                              : "Join us for a fun run at your own pace!"}
+                        </p>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
+                  RSVP on the club pages / get the most up-to-date info
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
+                    asChild
+                  >
+                    <a href={event.facebook_link} target="_blank" rel="noopener noreferrer">
+                      <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
+                      Facebook
+                      <span className="sr-only">Opens in new window</span>
+                    </a>
+                  </Button>
+                  <Button
+                    className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
+                    asChild
+                  >
+                    <a href={event.strava_link} target="_blank" rel="noopener noreferrer">
+                      <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
+                      Strava
+                      <span className="sr-only">Opens in new window</span>
+                    </a>
+                  </Button>
+                </div>
+              </div>
+
+              <PaceInterestSection runId={event.id} />
+            </CardContent>
+          </Card>
+        </article>
+      </ScrollReveal>
+    )
+  }
+
+  if (isLoading && featuredEvents.length === 0) {
     return (
       <section className="relative py-20 bg-[#f9fafb]">
         <div className="container mx-auto px-4 text-center">
@@ -288,110 +425,7 @@ export function UpcomingRuns() {
 
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
-            <ScrollReveal delay={0} className="md:col-span-6 lg:col-span-7 md:row-span-2">
-              <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-                <Card className="h-full border-0 rounded-3xl">
-                  <CardHeader>
-                    <CardTitle className="text-xl mb-2">{weeklyRuns[0]?.title}</CardTitle>
-                    <CardDescription>{weeklyRuns[0]?.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="relative animate-pulse-glow">
-                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 rounded-2xl p-4 shadow-lg">
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0">
-                            <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            <h3 className="text-sm font-semibold text-amber-900">Help Us Decide: Date Change Survey</h3>
-                            <p className="text-sm text-amber-800">
-                              We're considering changing the day for Light Up the Lakefront. Share your preference!
-                            </p>
-                            <Button
-                              asChild
-                              size="sm"
-                              className="bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg transition-all"
-                            >
-                              <a href="#" target="_blank" rel="noopener noreferrer">
-                                Take Survey
-                                <ArrowRight className="ml-2 h-3 w-3" />
-                              </a>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{getDayName(weeklyRuns[0]?.day_of_week)}s</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[0]?.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[0]?.location}</span>
-                      </div>
-                    </div>
-
-                    <WeatherWidget day="thursday" onWeatherLoad={setThursdayWeather} />
-
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">{weeklyRuns[0]?.distance}</Badge>
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <Badge variant="outline" className="border-[#d92a31] text-[#d92a31] cursor-help">
-                            {weeklyRuns[0]?.pace}
-                          </Badge>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-80">
-                          <div className="space-y-2">
-                            <h4 className="font-semibold">Party Pace</h4>
-                            <p className="text-sm text-muted-foreground">
-                              A relaxed, conversational running pace where the focus is on community and enjoyment
-                              rather than speed. If you can chat comfortably while running, you're at party pace!
-                            </p>
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                    </div>
-
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-                        RSVP on the club pages / get the most up-to-date info
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                          asChild
-                        >
-                          <a href={weeklyRuns[0]?.facebook_link} target="_blank" rel="noopener noreferrer">
-                            <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                            Facebook
-                            <span className="sr-only">Opens in new window</span>
-                          </a>
-                        </Button>
-                        <Button
-                          className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                          asChild
-                        >
-                          <a href={weeklyRuns[0]?.strava_link} target="_blank" rel="noopener noreferrer">
-                            <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                            Strava
-                            <span className="sr-only">Opens in new window</span>
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-
-                    <PaceInterestSection runId={weeklyRuns[0]?.id} />
-                  </CardContent>
-                </Card>
-              </article>
-            </ScrollReveal>
+            {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, 0, "md:col-span-6 lg:col-span-7 md:row-span-2")}
 
             <ScrollReveal delay={100} className="md:col-span-3 lg:col-span-5 md:row-span-1">
               <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0">
@@ -422,85 +456,8 @@ export function UpcomingRuns() {
               </Card>
             </ScrollReveal>
 
-            <ScrollReveal delay={200} className="md:col-span-6 lg:col-span-7 md:row-span-2">
-              <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-                <Card className="h-full border-0 rounded-3xl">
-                  <CardHeader>
-                    <CardTitle className="text-xl mb-2">{weeklyRuns[1]?.title}</CardTitle>
-                    <CardDescription>{weeklyRuns[1]?.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{getDayName(weeklyRuns[1]?.day_of_week)}s</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[1]?.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[1]?.location}</span>
-                      </div>
-                    </div>
-
-                    <WeatherWidget day="saturday" onWeatherLoad={setSaturdayWeather} />
-
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">{weeklyRuns[1]?.distance}</Badge>
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <Badge variant="outline" className="border-[#d92a31] text-[#d92a31] cursor-help">
-                            {weeklyRuns[1]?.pace}
-                          </Badge>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-80">
-                          <div className="space-y-2">
-                            <h4 className="font-semibold">Pace Groups</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Organized running groups based on speed (e.g., 8-min/mile, 10-min/mile, 12-min/mile). This
-                              ensures everyone runs with others at their comfortable pace, making runs more enjoyable
-                              and social.
-                            </p>
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                    </div>
-
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-                        RSVP on the club pages / get the most up-to-date info
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                          asChild
-                        >
-                          <a href={weeklyRuns[1]?.facebook_link} target="_blank" rel="noopener noreferrer">
-                            <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                            Facebook
-                            <span className="sr-only">Opens in new window</span>
-                          </a>
-                        </Button>
-                        <Button
-                          className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                          asChild
-                        >
-                          <a href={weeklyRuns[1]?.strava_link} target="_blank" rel="noopener noreferrer">
-                            <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                            Strava
-                            <span className="sr-only">Opens in new window</span>
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-
-                    <PaceInterestSection runId={weeklyRuns[1]?.id} />
-                  </CardContent>
-                </Card>
-              </article>
-            </ScrollReveal>
+            {featuredEvents[1] &&
+              renderEventCard(featuredEvents[1], 1, 200, "md:col-span-6 lg:col-span-7 md:row-span-2")}
 
             <ScrollReveal delay={250} className="md:col-span-6 lg:col-span-5 md:row-span-2">
               <Card className="glass rounded-3xl shadow-soft hover-lift h-full border-0 overflow-hidden">
@@ -522,74 +479,90 @@ export function UpcomingRuns() {
               </Card>
             </ScrollReveal>
 
-            <ScrollReveal delay={300} className="md:col-span-6 lg:col-span-12 md:row-span-1">
-              <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-                <Card className="h-full border-0 rounded-3xl">
-                  <CardHeader>
-                    <CardTitle className="text-xl mb-2">{weeklyRuns[2]?.title}</CardTitle>
-                    <CardDescription>{weeklyRuns[2]?.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{getDayName(weeklyRuns[2]?.day_of_week)}s</span>
+            {featuredEvents[2] && (
+              <ScrollReveal delay={300} className="md:col-span-6 lg:col-span-12 md:row-span-1">
+                <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
+                  <Card className="h-full border-0 rounded-3xl">
+                    <CardHeader>
+                      <CardTitle className="text-xl mb-2">{featuredEvents[2].title}</CardTitle>
+                      <CardDescription>{featuredEvents[2].description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-3">
+                          {featuredEvents[2].type === "weekly-run" && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">{getDayName(featuredEvents[2].day_of_week)}s</span>
+                            </div>
+                          )}
+                          {featuredEvents[2].type === "special-event" && featuredEvents[2].date && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">{formatDate(featuredEvents[2].date)}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span>{featuredEvents[2].time}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span>{featuredEvents[2].location}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{weeklyRuns[2]?.time}</span>
+
+                        <div className="space-y-3">
+                          {featuredEvents[2].day_of_week === 0 && (
+                            <WeatherWidget day="sunday" onWeatherLoad={setSundayWeather} />
+                          )}
+                          <div className="flex flex-wrap gap-2">
+                            {featuredEvents[2].distance && (
+                              <Badge variant="outline">{featuredEvents[2].distance}</Badge>
+                            )}
+                            {featuredEvents[2].pace && (
+                              <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                                {featuredEvents[2].pace}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{weeklyRuns[2]?.location}</span>
+
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
+                            RSVP on the club pages / get the most up-to-date info
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
+                              asChild
+                            >
+                              <a href={featuredEvents[2].facebook_link} target="_blank" rel="noopener noreferrer">
+                                <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
+                                Facebook
+                                <span className="sr-only">Opens in new window</span>
+                              </a>
+                            </Button>
+                            <Button
+                              className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
+                              asChild
+                            >
+                              <a href={featuredEvents[2].strava_link} target="_blank" rel="noopener noreferrer">
+                                <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
+                                Strava
+                                <span className="sr-only">Opens in new window</span>
+                              </a>
+                            </Button>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <WeatherWidget day="sunday" onWeatherLoad={setSundayWeather} />
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant="outline">{weeklyRuns[2]?.distance}</Badge>
-                          <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
-                            {weeklyRuns[2]?.pace}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <p className="text-sm font-medium text-center text-muted-foreground">
-                          RSVP on the club pages / get the most up-to-date info
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                            asChild
-                          >
-                            <a href={weeklyRuns[2]?.facebook_link} target="_blank" rel="noopener noreferrer">
-                              <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                              Facebook
-                              <span className="sr-only">Opens in new window</span>
-                            </a>
-                          </Button>
-                          <Button
-                            className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                            asChild
-                          >
-                            <a href={weeklyRuns[2]?.strava_link} target="_blank" rel="noopener noreferrer">
-                              <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                              Strava
-                              <span className="sr-only">Opens in new window</span>
-                            </a>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <PaceInterestSection runId={weeklyRuns[2]?.id} />
-                  </CardContent>
-                </Card>
-              </article>
-            </ScrollReveal>
+                      <PaceInterestSection runId={featuredEvents[2].id} />
+                    </CardContent>
+                  </Card>
+                </article>
+              </ScrollReveal>
+            )}
           </div>
         </div>
       </div>

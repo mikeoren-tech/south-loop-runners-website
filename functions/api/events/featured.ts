@@ -6,24 +6,25 @@ interface Env {
 
 export async function onRequestGet(context: { env: Env; request: Request }) {
   try {
-    // Fetch events that are featured on homepage, ordered by display_order
     const query = `
       SELECT 
         id, title, description, date, time, location, 
         type, is_recurring, day_of_week, is_featured_homepage, 
-        display_order, created_at, updated_at
+        display_order, distance, pace, facebook_link, strava_link,
+        created_at, updated_at
       FROM events 
       WHERE deleted_at IS NULL 
       AND is_featured_homepage = 1
+      AND type IN ('weekly-run', 'special-event')
       ORDER BY display_order ASC, created_at ASC
     `
 
     const { results } = await context.env.DB.prepare(query).all()
 
-    console.log("[v0] Featured events fetched:", results?.length || 0)
+    console.log("[v0] Featured events fetched (excluding races):", results?.length || 0)
     console.log(
       "[v0] Display orders:",
-      results?.map((r: any) => ({ id: r.id, order: r.display_order })),
+      results?.map((r: any) => ({ id: r.id, type: r.type, order: r.display_order })),
     )
 
     return new Response(JSON.stringify(results), {
