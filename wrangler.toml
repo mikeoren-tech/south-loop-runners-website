@@ -1,0 +1,16 @@
+name = "south-loop-runners"
+compatibility_date = "2024-01-01"
+
+[env.production]
+routes = [
+  { pattern = "southlooprunners.com/*", zone_name = "southlooprunners.com" }
+]
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "slr-events"
+database_id = "7ba37c21-1ce2-4801-938d-4beb617b0964"
+
+# Cron trigger to reset pace interests daily at 4 AM Central Time (10 AM UTC)
+[triggers]
+crons = ["0 10 * * *"]
