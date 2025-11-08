@@ -36,7 +36,7 @@ export async function onRequestGet(context: { env: Env; request: Request }) {
       results?.map((r: any) => ({ id: r.id, type: r.type, order: r.display_order })),
     )
 
-return new Response(JSON.stringify(events), {
+    return new Response(JSON.stringify(events), {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
