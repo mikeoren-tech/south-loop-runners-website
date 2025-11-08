@@ -4,25 +4,15 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  FacebookIcon,
-  Activity,
-  Users,
-  ArrowRight,
-  AlertCircle,
-  CheckIcon as Checkbox,
-  Gavel as Label,
-} from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, AlertCircle } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
 import Image from "next/image"
 import useSWR from "swr"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { WaveTransition } from "@/components/wave-transition"
 
 const PACE_GROUPS = [
@@ -150,42 +140,44 @@ function PaceInterestSection({ runId }: { runId: string }) {
         <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
       </div>
 
-      <div className="flex gap-2">
-        <Select value={selectedPace} onValueChange={setSelectedPace}>
-          <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Select your pace" />
-          </SelectTrigger>
-          <SelectContent>
-            {PACE_GROUPS.map((pace) => (
-              <SelectItem key={pace} value={pace}>
-                {pace}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm">
-          {isSubmitting ? "Adding..." : "Add"}
-        </Button>
-      </div>
-
-      {hasSocial && (
-        <div className="border-t pt-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id={`social-${runId}`}
-                checked={attendingSocial}
-                onCheckedChange={handleSocialToggle}
-                disabled={isSocialSubmitting}
-              />
-              <Label htmlFor={`social-${runId}`} className="text-sm font-medium cursor-pointer">
-                Attending post-run social
-              </Label>
-            </div>
-            {socialData?.socialCount > 0 && <Badge variant="secondary">{socialData.socialCount} attending</Badge>}
-          </div>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Select value={selectedPace} onValueChange={setSelectedPace}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Select your pace" />
+            </SelectTrigger>
+            <SelectContent>
+              {PACE_GROUPS.map((pace) => (
+                <SelectItem key={pace} value={pace}>
+                  {pace}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm">
+            {isSubmitting ? "Adding..." : "Add"}
+          </Button>
         </div>
-      )}
+
+        {hasSocial && (
+          <div className="flex items-center gap-2 pl-1">
+            <Checkbox
+              id={`social-${runId}`}
+              checked={attendingSocial}
+              onCheckedChange={handleSocialToggle}
+              disabled={isSocialSubmitting}
+            />
+            <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
+              Also attending the social?
+              {socialData?.socialCount > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {socialData.socialCount}
+                </Badge>
+              )}
+            </Label>
+          </div>
+        )}
+      </div>
 
       {totalInterested > 0 && (
         <div className="space-y-2">
@@ -388,25 +380,9 @@ export function UpcomingRuns() {
               <div className="flex flex-wrap gap-2">
                 {event.distance && <Badge variant="outline">{event.distance}</Badge>}
                 {event.pace && (
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <Badge variant="outline" className="border-[#d92a31] text-[#d92a31] cursor-help">
-                        {event.pace}
-                      </Badge>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-2">
-                        <h4 className="font-semibold">{event.pace}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {event.pace === "Party Pace"
-                            ? "A relaxed, conversational running pace where the focus is on community and enjoyment rather than speed."
-                            : event.pace === "Pace Groups"
-                              ? "Organized running groups based on speed (e.g., 8-min/mile, 10-min/mile, 12-min/mile)."
-                              : "Join us for a fun run at your own pace!"}
-                        </p>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
+                  <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                    {event.pace}
+                  </Badge>
                 )}
               </div>
 
