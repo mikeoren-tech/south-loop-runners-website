@@ -60,7 +60,7 @@ function PaceInterestSection({ runId }: { runId: string }) {
   })
 
   const currentEvent = Array.isArray(eventData) ? eventData.find((e: any) => e.id === runId) : null
-  const hasSocial = currentEvent?.has_post_run_social
+  const hasSocial = currentEvent?.has_post_run_social === true // Strict equality check
 
   const { data: socialData, mutate: mutateSocial } = useSWR(
     hasSocial ? `/api/events/social-rsvp/${runId}` : null,
@@ -159,7 +159,7 @@ function PaceInterestSection({ runId }: { runId: string }) {
           </Button>
         </div>
 
-        {hasSocial && (
+        {hasSocial === true && socialData?.socialCount && socialData.socialCount > 0 && (
           <div className="flex items-center gap-2 pl-1">
             <Checkbox
               id={`social-${runId}`}
@@ -169,11 +169,23 @@ function PaceInterestSection({ runId }: { runId: string }) {
             />
             <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
               Also attending the social?
-              {socialData?.socialCount > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {socialData.socialCount}
-                </Badge>
-              )}
+              <Badge variant="secondary" className="ml-1">
+                {socialData.socialCount}
+              </Badge>
+            </Label>
+          </div>
+        )}
+
+        {hasSocial === true && (!socialData?.socialCount || socialData.socialCount === 0) && (
+          <div className="flex items-center gap-2 pl-1">
+            <Checkbox
+              id={`social-${runId}`}
+              checked={attendingSocial}
+              onCheckedChange={handleSocialToggle}
+              disabled={isSocialSubmitting}
+            />
+            <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer">
+              Also attending the social?
             </Label>
           </div>
         )}
@@ -187,7 +199,7 @@ function PaceInterestSection({ runId }: { runId: string }) {
           <div className="space-y-1">
             {PACE_GROUPS.map((pace) => {
               const count = paceCounts[pace]
-              if (count === 0) return null
+              if (!count || count === 0) return null
               return (
                 <div key={pace} className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{pace}</span>

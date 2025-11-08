@@ -416,12 +416,16 @@ function RaceCard({ race, index }: { race: any; index: number }) {
                   <p className="text-2xl font-bold text-primary mt-1">
                     {racingCount} {isLoading && <Loader2 className="inline h-4 w-4 animate-spin ml-2" />}
                   </p>
-                  <p className="text-xs text-muted-foreground">{cheeringCount} cheering from the sidelines</p>
-                  {race.has_post_run_social && race.post_run_social_count > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {race.post_run_social_count} attending post-race social
-                    </p>
+                  {cheeringCount > 0 && (
+                    <p className="text-xs text-muted-foreground">{cheeringCount} cheering from the sidelines</p>
                   )}
+                  {race.has_post_run_social === true &&
+                    race.post_run_social_count &&
+                    race.post_run_social_count > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {race.post_run_social_count} attending post-race social
+                      </p>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                   {showSuccess && (
