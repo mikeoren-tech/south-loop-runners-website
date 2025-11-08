@@ -13,11 +13,34 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    loadEvents()
+    checkAuth()
   }, [])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch("/api/admin/auth/check")
+      if (!response.ok) {
+        router.push("/admin/login")
+        return
+      }
+      setIsAuthenticated(true)
+    } catch (error) {
+      router.push("/admin/login")
+    } finally {
+      setCheckingAuth(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadEvents()
+    }
+  }, [isAuthenticated])
 
   const loadEvents = async () => {
     try {
@@ -52,6 +75,18 @@ export default function AdminDashboard() {
     setShowForm(false)
     setEditingEvent(null)
     loadEvents()
+  }
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null
   }
 
   return (
