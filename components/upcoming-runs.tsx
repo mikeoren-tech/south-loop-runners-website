@@ -35,7 +35,7 @@ interface PaceInterest {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-function PaceInterestSection({ runId }: { runId: string }) {
+function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: boolean }) {
   const [selectedPace, setSelectedPace] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [attendingSocial, setAttendingSocial] = useState(false)
@@ -54,13 +54,6 @@ function PaceInterestSection({ runId }: { runId: string }) {
       console.error(`Failed to fetch pace interests for ${runId}:`, err)
     },
   })
-
-  const { data: eventData } = useSWR(`/api/events/all`, fetcher, {
-    fallbackData: [],
-  })
-
-  const currentEvent = Array.isArray(eventData) ? eventData.find((e: any) => e.id === runId) : null
-  const hasSocial = currentEvent?.has_post_run_social === true // Strict equality check
 
   const { data: socialData, mutate: mutateSocial } = useSWR(
     hasSocial ? `/api/events/social-rsvp/${runId}` : null,
@@ -159,7 +152,7 @@ function PaceInterestSection({ runId }: { runId: string }) {
           </Button>
         </div>
 
-        {hasSocial === true && socialData?.socialCount && socialData.socialCount > 0 && (
+        {hasSocial && (
           <div className="flex items-center gap-2 pl-1">
             <Checkbox
               id={`social-${runId}`}
@@ -169,23 +162,11 @@ function PaceInterestSection({ runId }: { runId: string }) {
             />
             <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
               Also attending the social?
-              <Badge variant="secondary" className="ml-1">
-                {socialData.socialCount}
-              </Badge>
-            </Label>
-          </div>
-        )}
-
-        {hasSocial === true && (!socialData?.socialCount || socialData.socialCount === 0) && (
-          <div className="flex items-center gap-2 pl-1">
-            <Checkbox
-              id={`social-${runId}`}
-              checked={attendingSocial}
-              onCheckedChange={handleSocialToggle}
-              disabled={isSocialSubmitting}
-            />
-            <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer">
-              Also attending the social?
+              {socialData?.socialCount && socialData.socialCount > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {socialData.socialCount}
+                </Badge>
+              )}
             </Label>
           </div>
         )}
@@ -426,7 +407,7 @@ export function UpcomingRuns() {
                 </div>
               </div>
 
-              <PaceInterestSection runId={event.id} />
+              <PaceInterestSection runId={event.id} hasSocial={event.has_post_run_social === true} />
             </CardContent>
           </Card>
         </article>
@@ -606,7 +587,10 @@ export function UpcomingRuns() {
                         </div>
                       </div>
 
-                      <PaceInterestSection runId={featuredEvents[2].id} />
+                      <PaceInterestSection
+                        runId={featuredEvents[2].id}
+                        hasSocial={featuredEvents[2].has_post_run_social === true}
+                      />
                     </CardContent>
                   </Card>
                 </article>
