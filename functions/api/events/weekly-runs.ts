@@ -10,6 +10,11 @@ export async function onRequestGet(context: { env: Env }) {
       `SELECT * FROM events WHERE type = 'weekly-run' AND is_recurring = 1 AND deleted_at IS NULL ORDER BY display_order ASC`,
     ).all()
 
+    console.log(
+      "[v0] Weekly runs API - Returned order:",
+      results?.map((r: any) => ({ id: r.id, display_order: r.display_order, title: r.title })),
+    )
+
     return new Response(JSON.stringify(results), {
       headers: {
         "Content-Type": "application/json",
