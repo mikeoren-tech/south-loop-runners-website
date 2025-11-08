@@ -25,7 +25,7 @@ export async function onRequestGet(context: { env: Env; params: { runId: string 
     try {
       console.log("[v0] Querying pace_interests for event_id:", runId)
       const queryResult = await context.env.DB.prepare(
-        `SELECT pace, count FROM pace_interests WHERE event_id = ? ORDER BY pace`,
+        `SELECT pace_group as pace, count FROM pace_interests WHERE event_id = ? ORDER BY pace_group`,
       )
         .bind(runId)
         .all()
@@ -91,7 +91,7 @@ export async function onRequestPost(context: { env: Env; params: { runId: string
 
     try {
       await context.env.DB.prepare(
-        `UPDATE pace_interests SET count = count + 1, updated_at = CURRENT_TIMESTAMP WHERE event_id = ? AND pace = ?`,
+        `UPDATE pace_interests SET count = count + 1, updated_at = CURRENT_TIMESTAMP WHERE event_id = ? AND pace_group = ?`,
       )
         .bind(runId, pace)
         .run()
@@ -108,7 +108,7 @@ export async function onRequestPost(context: { env: Env; params: { runId: string
     let results
     try {
       const queryResult = await context.env.DB.prepare(
-        `SELECT pace, count FROM pace_interests WHERE event_id = ? ORDER BY pace`,
+        `SELECT pace_group as pace, count FROM pace_interests WHERE event_id = ? ORDER BY pace_group`,
       )
         .bind(runId)
         .all()
