@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@cloudflare/workers-types':
         specifier: latest
-        version: 4.20251106.1
+        version: 4.20251107.0
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.66.0(react@19.2.0))
@@ -114,7 +114,7 @@ importers:
         specifier: 1.0.4
         version: 1.0.4(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       date-fns:
-        specifier: 4.1.0
+        specifier: latest
         version: 4.1.0
       embla-carousel-react:
         specifier: 8.5.1
@@ -167,6 +167,9 @@ importers:
       vaul:
         specifier: ^0.9.9
         version: 0.9.9(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      worktop:
+        specifier: latest
+        version: 0.7.3
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -210,8 +213,8 @@ packages:
     resolution: {integrity: sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==}
     engines: {node: '>=6.9.0'}
 
-  '@cloudflare/workers-types@4.20251106.1':
-    resolution: {integrity: sha512-+oD+w4K9VYMb1/d3lQ4A7GIV7Im6xpwaCRAXSUSeYKWw5LSQSpai1kJXh7LGIVE9HnJv9gXKpjaMSgcffW4Igw==}
+  '@cloudflare/workers-types@4.20251107.0':
+    resolution: {integrity: sha512-4y3U2kDxzAMKthjx6iIlxY2oA3l5FVP1WR2Zkz1j0Cx0RI5P1DZknSV5WP86i2anE5eal+pmtzvCO4oZWgcgtA==}
 
   '@date-fns/tz@1.2.0':
     resolution: {integrity: sha512-LBrd7MiJZ9McsOgxqWX7AaxrDjcFVjWH/tIKJd7pnR7McaslGYOP1QmmiBXdJH/H/yLCT+rcQ7FaPBUxRGUtrg==}
@@ -1721,6 +1724,10 @@ packages:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  regexparam@2.0.2:
+    resolution: {integrity: sha512-A1PeDEYMrkLrfyOwv2jwihXbo9qxdGD3atBYQA9JJgreAx8/7rC6IUkWOw2NQlOxLp2wL0ifQbh1HuidDfYA6w==}
+    engines: {node: '>=8'}
+
   requires-port@1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
 
@@ -1865,6 +1872,10 @@ packages:
   victory-vendor@36.9.2:
     resolution: {integrity: sha512-PnpQQMuxlwYdocC8fIJqVXvkeViHYzotI+NJrCuav0ZYFoq912ZHBk3mCeuj+5/VpodOjPe1z0Fk2ihgzlXqjQ==}
 
+  worktop@0.7.3:
+    resolution: {integrity: sha512-WBHP1hk8pLP7ahAw13fugDWcO0SUAOiCD6DHT/bfLWoCIA/PL9u7GKdudT2nGZ8EGR1APbGCAI6ZzKG1+X+PnQ==}
+    engines: {node: '>=12'}
+
   yallist@5.0.0:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
@@ -1883,7 +1894,7 @@ snapshots:
 
   '@babel/runtime@7.28.4': {}
 
-  '@cloudflare/workers-types@4.20251106.1': {}
+  '@cloudflare/workers-types@4.20251107.0': {}
 
   '@date-fns/tz@1.2.0': {}
 
@@ -3292,6 +3303,8 @@ snapshots:
       tiny-invariant: 1.3.3
       victory-vendor: 36.9.2
 
+  regexparam@2.0.2: {}
+
   requires-port@1.0.0: {}
 
   resend@6.4.2(@react-email/render@2.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)):
@@ -3453,6 +3466,10 @@ snapshots:
       d3-shape: 3.2.0
       d3-time: 3.1.0
       d3-timer: 3.0.1
+
+  worktop@0.7.3:
+    dependencies:
+      regexparam: 2.0.2
 
   yallist@5.0.0: {}
 
