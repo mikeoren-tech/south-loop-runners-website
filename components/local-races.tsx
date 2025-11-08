@@ -31,69 +31,6 @@ import { ScrollReveal } from "@/components/scroll-reveal"
 import useSWR from "swr"
 import Image from "next/image"
 
-const races = [
-  {
-    id: "f3-lake",
-    title: "F³ Lake Half Marathon & 5K",
-    tagline: "Run the Lakefront, Finish at Soldier Field",
-    date: "2026-01-17", // ISO format for countdown
-    displayDate: "January 17, 2026",
-    time: "10:00 AM",
-    location: "Soldier Field",
-    departFrom: "South Loop",
-    distances: ["Half Marathon", "5K"],
-    registrationUrl: "https://runsignup.com/Race/IL/Chicago/F3LakeHalfMarathon5k",
-    registrationDeadline: "2026-01-10",
-    registrationDeadlineDisplay: "January 10, 2026",
-    status: "registration-open" as const,
-    highlights: [
-      "Scenic lakefront course with stunning Chicago skyline views",
-      "Finish line inside historic Soldier Field",
-      "Post-race party at Weathermark Tavern (1503 S. Michigan Ave)",
-      "Packet pickup at Fleet Feet South Loop",
-      "16th annual event with strong community support",
-    ],
-    uniqueFeature: "Finish inside Soldier Field stadium with post-race celebration",
-    keyFeatures: [
-      { icon: Flag, label: "Soldier Field Finish", color: "text-blue-600" },
-      { icon: Route, label: "Lakefront Route", color: "text-cyan-600" },
-      { icon: PartyPopper, label: "Post-Race Party", color: "text-purple-600" },
-    ],
-    accentColor: "from-blue-500 to-cyan-500",
-    imageUrl: "/chicago-lakefront-running-soldier-field-skyline.jpg",
-  },
-  {
-    id: "miles-per-hour",
-    title: "Miles Per Hour Run",
-    tagline: "Run Through the Chicago Auto Show",
-    date: "2026-02-14",
-    displayDate: "February 14, 2026",
-    time: "8:00 AM",
-    location: "McCormick Place",
-    departFrom: "South Loop",
-    distances: ["1 Hour Challenge"],
-    registrationUrl: "https://register.hakuapp.com/?event=e735b096f63aaf72e58d",
-    registrationDeadline: "2026-02-07",
-    registrationDeadlineDisplay: "February 7, 2026",
-    status: "upcoming" as const,
-    highlights: [
-      "Unique indoor running experience through the Chicago Auto Show",
-      "Run as many miles as you can in one hour",
-      "Loop through McCormick Place halls and auto show floor",
-      "Perfect for winter training when weather is challenging",
-      "See the latest cars while getting your miles in",
-    ],
-    uniqueFeature: "Only race where you run through an auto show while seeing the latest vehicles",
-    keyFeatures: [
-      { icon: Trophy, label: "1-Hour Challenge", color: "text-orange-600" },
-      { icon: Wind, label: "Indoor Course", color: "text-green-600" },
-      { icon: Sparkles, label: "Auto Show Access", color: "text-red-600" },
-    ],
-    accentColor: "from-orange-500 to-red-500",
-    imageUrl: "/mccormick-place-chicago-auto-show-indoor-running.jpg",
-  },
-]
-
 type Attendee = {
   id: string
   name: string
@@ -122,7 +59,9 @@ const setLocalAttendees = (raceId: string, attendees: Attendee[]) => {
   }
 }
 
-const fetcher = async (url: string): Promise<Attendee[]> => {
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
+const attendeeFetcher = async (url: string): Promise<Attendee[]> => {
   try {
     const response = await fetch(url)
     const contentType = response.headers.get("content-type")
@@ -191,7 +130,7 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
   )
 }
 
-function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
+function RaceCard({ race, index }: { race: any; index: number }) {
   const [useLocalStorage, setUseLocalStorage] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -200,7 +139,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
     mutate,
     isLoading,
     error,
-  } = useSWR<Attendee[]>(`/api/rsvp/${race.id}`, fetcher, {
+  } = useSWR<Attendee[]>(`/api/rsvp/${race.id}`, attendeeFetcher, {
     refreshInterval: 5000,
     revalidateOnFocus: true,
     onError: () => {
@@ -214,6 +153,22 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
   const [attendanceType, setAttendanceType] = useState<"racing" | "cheering">("racing")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  const highlights = race.highlights
+    ? typeof race.highlights === "string"
+      ? JSON.parse(race.highlights)
+      : race.highlights
+    : []
+  const distances = race.distances
+    ? typeof race.distances === "string"
+      ? JSON.parse(race.distances)
+      : race.distances
+    : []
+  const keyFeatures = race.key_features
+    ? typeof race.key_features === "string"
+      ? JSON.parse(race.key_features)
+      : race.key_features
+    : []
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -309,24 +264,42 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
   const racingCount = attendees.filter((a) => a.type === "racing").length
   const cheeringCount = attendees.filter((a) => a.type === "cheering").length
 
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+  }
+
+  const iconMap: Record<string, any> = {
+    Flag: Flag,
+    Route: Route,
+    PartyPopper: PartyPopper,
+    Trophy: Trophy,
+    Wind: Wind,
+    Sparkles: Sparkles,
+  }
+
   return (
     <ScrollReveal key={race.id} delay={index * 150}>
       <article className="glass-strong rounded-3xl shadow-soft hover-lift border-0 h-full flex flex-col group">
         <Card className="h-full border-0 rounded-3xl overflow-hidden p-0">
           <div className="relative h-48 overflow-hidden rounded-t-3xl">
             <Image
-              src={race.imageUrl || "/placeholder.svg"}
-              alt={`${race.title} - ${race.tagline}`}
+              src={race.image_url || "/placeholder.svg"}
+              alt={`${race.title} - ${race.tagline || ""}`}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            <div className={`absolute inset-0 bg-gradient-to-t ${race.accentColor} opacity-60`} />
+            <div
+              className={`absolute inset-0 bg-gradient-to-t ${race.accent_color || "from-blue-500 to-cyan-500"} opacity-60`}
+            />
           </div>
 
           <CardHeader className="space-y-4 pb-4 pt-6">
             <div className="space-y-2">
               <CardTitle className="text-3xl md:text-4xl font-bold text-balance leading-tight">{race.title}</CardTitle>
-              <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
+              {race.tagline && (
+                <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
+              )}
             </div>
 
             <div className="space-y-3 p-4 bg-gradient-to-br from-primary/10 to-destructive/10 rounded-lg border-2 border-primary/20">
@@ -334,7 +307,7 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
                 <Calendar className="h-5 w-5 text-primary shrink-0" />
                 <div>
                   <div className="text-xs text-muted-foreground uppercase tracking-wide">Race Day</div>
-                  <div className="text-xl font-bold text-foreground">{race.displayDate}</div>
+                  <div className="text-xl font-bold text-foreground">{formatDate(race.date)}</div>
                   <div className="text-sm text-muted-foreground">
                     {race.time} • {race.location}
                   </div>
@@ -342,35 +315,44 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {race.keyFeatures.map((feature, idx) => (
-                <Badge
-                  key={idx}
-                  variant="outline"
-                  className="px-3 py-1.5 border-2 hover:scale-105 transition-transform"
-                >
-                  <feature.icon className={`h-4 w-4 mr-1.5 ${feature.color}`} />
-                  <span className="font-medium">{feature.label}</span>
-                </Badge>
-              ))}
-            </div>
+            {keyFeatures.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {keyFeatures.map((feature: any, idx: number) => {
+                  const IconComponent = iconMap[feature.icon] || Flag
+                  return (
+                    <Badge
+                      key={idx}
+                      variant="outline"
+                      className="px-3 py-1.5 border-2 hover:scale-105 transition-transform"
+                    >
+                      <IconComponent className={`h-4 w-4 mr-1.5 ${feature.color}`} />
+                      <span className="font-medium">{feature.label}</span>
+                    </Badge>
+                  )
+                })}
+              </div>
+            )}
 
-            <div className="flex flex-wrap gap-2">
-              {race.distances.map((distance) => (
-                <Badge key={distance} className="bg-destructive/90 text-white border-0 px-3 py-1">
-                  {distance}
-                </Badge>
-              ))}
-            </div>
+            {distances.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {distances.map((distance: string) => (
+                  <Badge key={distance} className="bg-destructive/90 text-white border-0 px-3 py-1">
+                    {distance}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </CardHeader>
 
           <CardContent className="space-y-4 flex-1 flex flex-col pb-6">
-            <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
-              <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                <p className="text-sm font-medium leading-relaxed">{race.uniqueFeature}</p>
+            {race.unique_feature && (
+              <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium leading-relaxed">{race.unique_feature}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="p-4 bg-muted/30 rounded-lg border">
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
@@ -396,22 +378,26 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 
               {showDetails && (
                 <div className="p-4 space-y-3 bg-muted/10">
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">Departs from {race.departFrom}</span>
-                  </div>
+                  {race.depart_from && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">Departs from {race.depart_from}</span>
+                    </div>
+                  )}
 
-                  <div className="pt-2 border-t">
-                    <h4 className="font-semibold text-sm mb-2">Highlights</h4>
-                    <ul className="space-y-2">
-                      {race.highlights.map((highlight, idx) => (
-                        <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                          <span className="text-primary mt-1 shrink-0">•</span>
-                          <span>{highlight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {highlights.length > 0 && (
+                    <div className="pt-2 border-t">
+                      <h4 className="font-semibold text-sm mb-2">Highlights</h4>
+                      <ul className="space-y-2">
+                        {highlights.map((highlight: string, idx: number) => (
+                          <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                            <span className="text-primary mt-1 shrink-0">•</span>
+                            <span>{highlight}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -634,17 +620,19 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
               )}
             </div>
 
-            <Button
-              className="relative z-20 w-full backdrop-blur-md bg-destructive/80 hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
-              size="lg"
-              asChild
-            >
-              <a href={race.registrationUrl} target="_blank" rel="noopener noreferrer">
-                Register Now
-                <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
-                <span className="sr-only">Opens in new window</span>
-              </a>
-            </Button>
+            {race.registration_url && (
+              <Button
+                className="relative z-20 w-full backdrop-blur-md bg-destructive/80 hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
+                size="lg"
+                asChild
+              >
+                <a href={race.registration_url} target="_blank" rel="noopener noreferrer">
+                  Register Now
+                  <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
+                  <span className="sr-only">Opens in new window</span>
+                </a>
+              </Button>
+            )}
           </CardContent>
         </Card>
       </article>
@@ -653,6 +641,73 @@ function RaceCard({ race, index }: { race: (typeof races)[0]; index: number }) {
 }
 
 export function LocalRaces() {
+  const { data: races = [], isLoading } = useSWR("/api/events/races", fetcher, {
+    fallbackData: [
+      {
+        id: "f3-lake",
+        title: "F³ Lake Half Marathon & 5K",
+        tagline: "Run the Lakefront, Finish at Soldier Field",
+        date: "2026-01-17",
+        time: "10:00 AM",
+        location: "Soldier Field",
+        depart_from: "South Loop",
+        distances: ["Half Marathon", "5K"],
+        registration_url: "https://runsignup.com/Race/IL/Chicago/F3LakeHalfMarathon5k",
+        highlights: [
+          "Scenic lakefront course with stunning Chicago skyline views",
+          "Finish line inside historic Soldier Field",
+          "Post-race party at Weathermark Tavern (1503 S. Michigan Ave)",
+          "Packet pickup at Fleet Fleet South Loop",
+          "16th annual event with strong community support",
+        ],
+        unique_feature: "Finish inside Soldier Field stadium with post-race celebration",
+        key_features: [
+          { icon: "Flag", label: "Soldier Field Finish", color: "text-blue-600" },
+          { icon: "Route", label: "Lakefront Route", color: "text-cyan-600" },
+          { icon: "PartyPopper", label: "Post-Race Party", color: "text-purple-600" },
+        ],
+        accent_color: "from-blue-500 to-cyan-500",
+        image_url: "/chicago-lakefront-running-soldier-field-skyline.jpg",
+      },
+      {
+        id: "miles-per-hour",
+        title: "Miles Per Hour Run",
+        tagline: "Run Through the Chicago Auto Show",
+        date: "2026-02-14",
+        time: "8:00 AM",
+        location: "McCormick Place",
+        depart_from: "South Loop",
+        distances: ["1 Hour Challenge"],
+        registration_url: "https://register.hakuapp.com/?event=e735b096f63aaf72e58d",
+        highlights: [
+          "Unique indoor running experience through the Chicago Auto Show",
+          "Run as many miles as you can in one hour",
+          "Loop through McCormick Place halls and auto show floor",
+          "Perfect for winter training when weather is challenging",
+          "See the latest cars while getting your miles in",
+        ],
+        unique_feature: "Only race where you run through an auto show while seeing the latest vehicles",
+        key_features: [
+          { icon: "Trophy", label: "1-Hour Challenge", color: "text-orange-600" },
+          { icon: "Wind", label: "Indoor Course", color: "text-green-600" },
+          { icon: "Sparkles", label: "Auto Show Access", color: "text-red-600" },
+        ],
+        accent_color: "from-orange-500 to-red-500",
+        image_url: "/mccormick-place-chicago-auto-show-indoor-running.jpg",
+      },
+    ],
+  })
+
+  if (isLoading && races.length === 0) {
+    return (
+      <section className="relative py-20 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">Loading upcoming races...</p>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="relative py-20 bg-white" id="races" aria-labelledby="races-heading">
       <div className="relative z-10 container mx-auto px-4">
@@ -672,7 +727,7 @@ export function LocalRaces() {
           </ScrollReveal>
 
           <div className="grid lg:grid-cols-2 gap-8">
-            {races.map((race, index) => (
+            {races.map((race: any, index: number) => (
               <RaceCard key={race.id} race={race} index={index} />
             ))}
           </div>

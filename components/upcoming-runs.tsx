@@ -32,73 +32,38 @@ interface PaceInterest {
   timestamp: number
 }
 
-const weeklyRuns = [
-  {
-    id: "thursday-light-up",
-    title: "Light Up the Lakefront",
-    dayOfWeek: "Thursday",
-    time: "6:15 PM",
-    location: "Agora Statues (Michigan Ave & Roosevelt)",
-    distance: "30 minutes",
-    pace: "Party Pace",
-    description: "Thursday evening run along the lakefront. All paces welcome!",
-    facebookLink: "https://www.facebook.com/groups/665701690539939",
-    stravaLink: "https://www.strava.com/clubs/943959",
-  },
-  {
-    id: "saturday-anchor",
-    title: "Anchor Run",
-    dayOfWeek: "Saturday",
-    time: "9:00 AM",
-    location: "Agora Statues (Michigan Ave & Roosevelt)",
-    distance: "6.5 miles",
-    pace: "Pace Groups",
-    description: "Saturday morning long run. Join us for our signature Anchor Run!",
-    facebookLink: "https://www.facebook.com/groups/665701690539939",
-    stravaLink: "https://www.strava.com/clubs/943959",
-  },
-  {
-    id: "sunday-social",
-    title: "Sunday Social Run",
-    dayOfWeek: "Sunday",
-    time: "9:00 AM",
-    location: "Agora Statues (Michigan Ave & Roosevelt)",
-    distance: "30 minutes",
-    pace: "11-12 min/mile",
-    description: "30-minute 11-12/mile run followed by coffee in a South Loop café. Perfect way to start your Sunday!",
-    facebookLink: "https://fb.me/e/6SQ3Vaigo",
-    stravaLink: "https://www.strava.com/clubs/943959/group_events/3421718402079309428",
-  },
-]
-
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 function PaceInterestSection({ runId }: { runId: string }) {
   const [selectedPace, setSelectedPace] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { data: interests = [], mutate } = useSWR<PaceInterest[]>(`/api/run-interest/${runId}`, fetcher, {
-    refreshInterval: 5000,
-    revalidateOnFocus: true,
-  })
+  const { data: paceInterests = [], mutate } = useSWR<Array<{ pace: string; count: number }>>(
+    `/api/events/pace-interests/${runId}`,
+    fetcher,
+    {
+      refreshInterval: 5000,
+      revalidateOnFocus: true,
+    },
+  )
 
-  // Count interests by pace group
   const paceCounts = PACE_GROUPS.reduce(
     (acc, pace) => {
-      acc[pace] = interests.filter((i) => i.pace === pace).length
+      const interest = paceInterests.find((i) => i.pace === pace)
+      acc[pace] = interest?.count || 0
       return acc
     },
     {} as Record<string, number>,
   )
 
-  const totalInterested = interests.length
+  const totalInterested = paceInterests.reduce((sum, interest) => sum + interest.count, 0)
 
   const handleSubmit = async () => {
     if (!selectedPace || isSubmitting) return
 
     setIsSubmitting(true)
     try {
-      const response = await fetch(`/api/run-interest/${runId}`, {
+      const response = await fetch(`/api/events/pace-interests/${runId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pace: selectedPace }),
@@ -171,7 +136,6 @@ function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: 
 
   const { temperature, windSpeed, precipitation } = weather
 
-  // Determine primary condition
   let section = "temperature-guide"
   let condition = ""
 
@@ -187,7 +151,6 @@ function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: 
     condition = "extreme cold"
   }
 
-  // Add wind or rain if significant
   const additionalConditions = []
   if (windSpeed > 20) {
     additionalConditions.push("high winds")
@@ -214,6 +177,63 @@ export function UpcomingRuns() {
   const [thursdayWeather, setThursdayWeather] = useState<WeatherData | null>(null)
   const [saturdayWeather, setSaturdayWeather] = useState<WeatherData | null>(null)
   const [sundayWeather, setSundayWeather] = useState<WeatherData | null>(null)
+
+  const { data: weeklyRuns = [], isLoading } = useSWR("/api/events/weekly-runs", fetcher, {
+    fallbackData: [
+      {
+        id: "thursday-light-up",
+        title: "Light Up the Lakefront",
+        day_of_week: 4,
+        time: "6:15 PM",
+        location: "Agora Statues (Michigan Ave & Roosevelt)",
+        distance: "30 minutes",
+        pace: "Party Pace",
+        description: "Thursday evening run along the lakefront. All paces welcome!",
+        facebook_link: "https://www.facebook.com/groups/665701690539939",
+        strava_link: "https://www.strava.com/clubs/943959",
+      },
+      {
+        id: "saturday-anchor",
+        title: "Anchor Run",
+        day_of_week: 6,
+        time: "9:00 AM",
+        location: "Agora Statues (Michigan Ave & Roosevelt)",
+        distance: "6.5 miles",
+        pace: "Pace Groups",
+        description: "Saturday morning long run. Join us for our signature Anchor Run!",
+        facebook_link: "https://www.facebook.com/groups/665701690539939",
+        strava_link: "https://www.strava.com/clubs/943959",
+      },
+      {
+        id: "sunday-social",
+        title: "Sunday Social Run",
+        day_of_week: 0,
+        time: "9:00 AM",
+        location: "Agora Statues (Michigan Ave & Roosevelt)",
+        distance: "30 minutes",
+        pace: "11-12 min/mile",
+        description:
+          "30-minute 11-12/mile run followed by coffee in a South Loop café. Perfect way to start your Sunday!",
+        facebook_link: "https://fb.me/e/6SQ3Vaigo",
+        strava_link: "https://www.strava.com/clubs/943959/group_events/3421718402079309428",
+      },
+    ],
+  })
+
+  const getDayName = (dayOfWeek: number) => {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    return days[dayOfWeek]
+  }
+
+  if (isLoading && weeklyRuns.length === 0) {
+    return (
+      <section className="relative py-20 bg-[#f9fafb]">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">Loading weekly runs...</p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="relative py-20 bg-[#f9fafb]" aria-labelledby="runs-heading">
@@ -245,13 +265,12 @@ export function UpcomingRuns() {
 
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
-            {/* Thursday Run - Large card spanning 2 rows */}
             <ScrollReveal delay={0} className="md:col-span-6 lg:col-span-7 md:row-span-2">
               <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
                 <Card className="h-full border-0 rounded-3xl">
                   <CardHeader>
-                    <CardTitle className="text-xl mb-2">{weeklyRuns[0].title}</CardTitle>
-                    <CardDescription>{weeklyRuns[0].description}</CardDescription>
+                    <CardTitle className="text-xl mb-2">{weeklyRuns[0]?.title}</CardTitle>
+                    <CardDescription>{weeklyRuns[0]?.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="relative animate-pulse-glow">
@@ -283,26 +302,26 @@ export function UpcomingRuns() {
                     <div className="grid gap-3">
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{weeklyRuns[0].dayOfWeek}s</span>
+                        <span className="font-medium">{getDayName(weeklyRuns[0]?.day_of_week)}s</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[0].time}</span>
+                        <span>{weeklyRuns[0]?.time}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[0].location}</span>
+                        <span>{weeklyRuns[0]?.location}</span>
                       </div>
                     </div>
 
                     <WeatherWidget day="thursday" onWeatherLoad={setThursdayWeather} />
 
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">{weeklyRuns[0].distance}</Badge>
+                      <Badge variant="outline">{weeklyRuns[0]?.distance}</Badge>
                       <HoverCard>
                         <HoverCardTrigger asChild>
                           <Badge variant="outline" className="border-[#d92a31] text-[#d92a31] cursor-help">
-                            {weeklyRuns[0].pace}
+                            {weeklyRuns[0]?.pace}
                           </Badge>
                         </HoverCardTrigger>
                         <HoverCardContent className="w-80">
@@ -326,7 +345,7 @@ export function UpcomingRuns() {
                           className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
                           asChild
                         >
-                          <a href={weeklyRuns[0].facebookLink} target="_blank" rel="noopener noreferrer">
+                          <a href={weeklyRuns[0]?.facebook_link} target="_blank" rel="noopener noreferrer">
                             <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
                             Facebook
                             <span className="sr-only">Opens in new window</span>
@@ -336,7 +355,7 @@ export function UpcomingRuns() {
                           className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
                           asChild
                         >
-                          <a href={weeklyRuns[0].stravaLink} target="_blank" rel="noopener noreferrer">
+                          <a href={weeklyRuns[0]?.strava_link} target="_blank" rel="noopener noreferrer">
                             <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
                             Strava
                             <span className="sr-only">Opens in new window</span>
@@ -345,13 +364,12 @@ export function UpcomingRuns() {
                       </div>
                     </div>
 
-                    <PaceInterestSection runId={weeklyRuns[0].id} />
+                    <PaceInterestSection runId={weeklyRuns[0]?.id} />
                   </CardContent>
                 </Card>
               </article>
             </ScrollReveal>
 
-            {/* Agora Statues Image - Image only, no text */}
             <ScrollReveal delay={100} className="md:col-span-3 lg:col-span-5 md:row-span-1">
               <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0">
                 <div className="relative w-full h-full min-h-[250px] overflow-hidden rounded-3xl">
@@ -365,7 +383,6 @@ export function UpcomingRuns() {
               </Card>
             </ScrollReveal>
 
-            {/* Map - No text */}
             <ScrollReveal delay={150} className="md:col-span-3 lg:col-span-5 md:row-span-1">
               <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0 overflow-hidden">
                 <iframe
@@ -382,38 +399,37 @@ export function UpcomingRuns() {
               </Card>
             </ScrollReveal>
 
-            {/* Saturday Run - Large card spanning 2 rows */}
             <ScrollReveal delay={200} className="md:col-span-6 lg:col-span-7 md:row-span-2">
               <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
                 <Card className="h-full border-0 rounded-3xl">
                   <CardHeader>
-                    <CardTitle className="text-xl mb-2">{weeklyRuns[1].title}</CardTitle>
-                    <CardDescription>{weeklyRuns[1].description}</CardDescription>
+                    <CardTitle className="text-xl mb-2">{weeklyRuns[1]?.title}</CardTitle>
+                    <CardDescription>{weeklyRuns[1]?.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-3">
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{weeklyRuns[1].dayOfWeek}s</span>
+                        <span className="font-medium">{getDayName(weeklyRuns[1]?.day_of_week)}s</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[1].time}</span>
+                        <span>{weeklyRuns[1]?.time}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>{weeklyRuns[1].location}</span>
+                        <span>{weeklyRuns[1]?.location}</span>
                       </div>
                     </div>
 
                     <WeatherWidget day="saturday" onWeatherLoad={setSaturdayWeather} />
 
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">{weeklyRuns[1].distance}</Badge>
+                      <Badge variant="outline">{weeklyRuns[1]?.distance}</Badge>
                       <HoverCard>
                         <HoverCardTrigger asChild>
                           <Badge variant="outline" className="border-[#d92a31] text-[#d92a31] cursor-help">
-                            {weeklyRuns[1].pace}
+                            {weeklyRuns[1]?.pace}
                           </Badge>
                         </HoverCardTrigger>
                         <HoverCardContent className="w-80">
@@ -438,7 +454,7 @@ export function UpcomingRuns() {
                           className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
                           asChild
                         >
-                          <a href={weeklyRuns[1].facebookLink} target="_blank" rel="noopener noreferrer">
+                          <a href={weeklyRuns[1]?.facebook_link} target="_blank" rel="noopener noreferrer">
                             <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
                             Facebook
                             <span className="sr-only">Opens in new window</span>
@@ -448,7 +464,7 @@ export function UpcomingRuns() {
                           className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
                           asChild
                         >
-                          <a href={weeklyRuns[1].stravaLink} target="_blank" rel="noopener noreferrer">
+                          <a href={weeklyRuns[1]?.strava_link} target="_blank" rel="noopener noreferrer">
                             <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
                             Strava
                             <span className="sr-only">Opens in new window</span>
@@ -457,7 +473,7 @@ export function UpcomingRuns() {
                       </div>
                     </div>
 
-                    <PaceInterestSection runId={weeklyRuns[1].id} />
+                    <PaceInterestSection runId={weeklyRuns[1]?.id} />
                   </CardContent>
                 </Card>
               </article>
@@ -483,37 +499,36 @@ export function UpcomingRuns() {
               </Card>
             </ScrollReveal>
 
-            {/* Sunday Social Run Card */}
             <ScrollReveal delay={300} className="md:col-span-6 lg:col-span-12 md:row-span-1">
               <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
                 <Card className="h-full border-0 rounded-3xl">
                   <CardHeader>
-                    <CardTitle className="text-xl mb-2">{weeklyRuns[2].title}</CardTitle>
-                    <CardDescription>{weeklyRuns[2].description}</CardDescription>
+                    <CardTitle className="text-xl mb-2">{weeklyRuns[2]?.title}</CardTitle>
+                    <CardDescription>{weeklyRuns[2]?.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-3">
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{weeklyRuns[2].dayOfWeek}s</span>
+                          <span className="font-medium">{getDayName(weeklyRuns[2]?.day_of_week)}s</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{weeklyRuns[2].time}</span>
+                          <span>{weeklyRuns[2]?.time}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{weeklyRuns[2].location}</span>
+                          <span>{weeklyRuns[2]?.location}</span>
                         </div>
                       </div>
 
                       <div className="space-y-3">
                         <WeatherWidget day="sunday" onWeatherLoad={setSundayWeather} />
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="outline">{weeklyRuns[2].distance}</Badge>
+                          <Badge variant="outline">{weeklyRuns[2]?.distance}</Badge>
                           <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
-                            {weeklyRuns[2].pace}
+                            {weeklyRuns[2]?.pace}
                           </Badge>
                         </div>
                       </div>
@@ -527,7 +542,7 @@ export function UpcomingRuns() {
                             className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
                             asChild
                           >
-                            <a href={weeklyRuns[2].facebookLink} target="_blank" rel="noopener noreferrer">
+                            <a href={weeklyRuns[2]?.facebook_link} target="_blank" rel="noopener noreferrer">
                               <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
                               Facebook
                               <span className="sr-only">Opens in new window</span>
@@ -537,7 +552,7 @@ export function UpcomingRuns() {
                             className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
                             asChild
                           >
-                            <a href={weeklyRuns[2].stravaLink} target="_blank" rel="noopener noreferrer">
+                            <a href={weeklyRuns[2]?.strava_link} target="_blank" rel="noopener noreferrer">
                               <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
                               Strava
                               <span className="sr-only">Opens in new window</span>
@@ -547,7 +562,7 @@ export function UpcomingRuns() {
                       </div>
                     </div>
 
-                    <PaceInterestSection runId={weeklyRuns[2].id} />
+                    <PaceInterestSection runId={weeklyRuns[2]?.id} />
                   </CardContent>
                 </Card>
               </article>
