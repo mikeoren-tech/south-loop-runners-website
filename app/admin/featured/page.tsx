@@ -229,18 +229,29 @@ export default function FeaturedEventsAdmin() {
   const saveOrder = async (eventIds: string[]) => {
     setSaving(true)
     try {
+      console.log("[v0] Saving order:", eventIds)
       const response = await fetch("/api/admin/events/featured/reorder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ eventIds }),
       })
 
+      console.log("[v0] Save order response status:", response.status)
+      const responseData = await response.json()
+      console.log("[v0] Save order response data:", responseData)
+
       if (!response.ok) {
-        alert("Failed to save order")
+        alert(`Failed to save order: ${responseData.details || responseData.error}`)
+        await loadEvents()
+      } else {
+        console.log("[v0] Order saved successfully, reloading to verify...")
+        await loadEvents()
       }
     } catch (error) {
       console.error("Failed to save order:", error)
-      alert("Failed to save order")
+      alert(`Failed to save order: ${error}`)
+      await loadEvents()
     } finally {
       setSaving(false)
     }
@@ -307,11 +318,20 @@ export default function FeaturedEventsAdmin() {
 
   const loadEvents = async () => {
     try {
-      const [featuredRes, allRes] = await Promise.all([fetch("/api/events/featured"), fetch("/api/events/all")])
+      const timestamp = Date.now()
+      const [featuredRes, allRes] = await Promise.all([
+        fetch(`/api/events/featured?_t=${timestamp}`, { cache: "no-store" }),
+        fetch(`/api/events/all?_t=${timestamp}`, { cache: "no-store" }),
+      ])
 
       if (featuredRes.ok && allRes.ok) {
         const featured = await featuredRes.json()
         const all = await allRes.json()
+
+        console.log(
+          "[v0] Loaded featured events:",
+          featured.map((e: Event) => ({ id: e.id, order: e.display_order, title: e.title })),
+        )
 
         setFeaturedEvents(featured)
         setAvailableEvents(all.filter((e: Event) => !e.is_featured_homepage))
