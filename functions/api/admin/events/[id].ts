@@ -19,6 +19,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       description,
       type,
       is_recurring,
+      has_post_run_social,
       date,
       time,
       day_of_week,
@@ -32,13 +33,15 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       sendEmail,
     } = body
 
-    // Update event in database
+    console.log("[v0] Updating event with data:", { has_post_run_social, id })
+
     await DB.prepare(`
       UPDATE events SET
         title = ?,
         description = ?,
         type = ?,
         is_recurring = ?,
+        has_post_run_social = ?,
         date = ?,
         time = ?,
         day_of_week = ?,
@@ -57,6 +60,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         description || null,
         type,
         is_recurring ? 1 : 0,
+        has_post_run_social ? 1 : 0,
         date || null,
         time || null,
         day_of_week ? Number.parseInt(day_of_week) : null,
@@ -70,6 +74,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         id,
       )
       .run()
+
+    console.log("[v0] Event updated successfully")
 
     // If sendEmail is true, trigger email notification
     if (sendEmail) {
