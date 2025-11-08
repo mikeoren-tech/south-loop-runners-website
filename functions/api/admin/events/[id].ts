@@ -5,6 +5,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
   const { DB } = context.env
   const { id } = context.params
 
+  console.log("[v0] PATCH request received for event ID:", id)
+
   if (!DB) {
     return new Response(JSON.stringify({ error: "Database not configured" }), {
       status: 500,
@@ -14,6 +16,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
 
   try {
     const body = await context.request.json()
+    console.log("[v0] Request body:", JSON.stringify(body, null, 2))
+
     const {
       title,
       description,
@@ -33,9 +37,14 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       sendEmail,
     } = body
 
-    console.log("[v0] Updating event with data:", { has_post_run_social, id })
+    console.log("[v0] Updating event with data:", {
+      id,
+      title,
+      has_post_run_social,
+      sendEmail,
+    })
 
-    await DB.prepare(`
+    const result = await DB.prepare(`
       UPDATE events SET
         title = ?,
         description = ?,
@@ -75,15 +84,33 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       )
       .run()
 
-    console.log("[v0] Event updated successfully")
+    console.log("[v0] Database update result:", result)
+    console.log("[v0] Event updated successfully, changes:", result.meta.changes)
+
+    const verifyEvent = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(id).first()
+    console.log("[v0] Verified event after update:", JSON.stringify(verifyEvent, null, 2))
 
     // If sendEmail is true, trigger email notification
     if (sendEmail) {
-      await fetch(`${new URL(context.request.url).origin}/api/admin/emails/updated-event`, {
+      console.log("[v0] Attempting to send email notification...")
+      const emailUrl = `${new URL(context.request.url).origin}/api/admin/emails/updated-event`
+      console.log("[v0] Email endpoint URL:", emailUrl)
+
+      const emailResponse = await fetch(emailUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eventId: id }),
       })
+
+      console.log("[v0] Email API response status:", emailResponse.status)
+      const emailResult = await emailResponse.json()
+      console.log("[v0] Email API response:", emailResult)
+
+      if (!emailResponse.ok) {
+        console.error("[v0] Email send failed:", emailResult)
+      }
+    } else {
+      console.log("[v0] Email notification skipped (sendEmail = false)")
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -92,6 +119,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     })
   } catch (error: any) {
     console.error("[v0] Error updating event:", error)
+    console.error("[v0] Error stack:", error.stack)
     return new Response(JSON.stringify({ error: error.message || "Failed to update event" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

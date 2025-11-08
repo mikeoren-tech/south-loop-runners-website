@@ -68,19 +68,27 @@ export function EventForm({ event, onClose }: EventFormProps) {
 
       const method = event ? "PATCH" : "POST"
 
+      console.log("[v0] Submitting form:", { url, method, formData, sendEmail })
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, sendEmail }),
       })
 
+      console.log("[v0] Response status:", response.status)
+      const result = await response.json()
+      console.log("[v0] Response body:", result)
+
       if (response.ok) {
+        console.log("[v0] Event saved successfully, closing form...")
         onClose()
       } else {
-        const error = await response.json()
-        alert(error.error || "Failed to save event")
+        console.error("[v0] Save failed:", result)
+        alert(result.error || "Failed to save event")
       }
     } catch (error) {
+      console.error("[v0] Error submitting form:", error)
       alert("Failed to save event")
     } finally {
       setLoading(false)

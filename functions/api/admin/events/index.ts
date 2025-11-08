@@ -18,6 +18,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       description,
       type,
       is_recurring,
+      has_post_run_social,
       date,
       time,
       day_of_week,
@@ -37,10 +38,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Insert event into database
     await DB.prepare(`
       INSERT INTO events (
-        id, title, description, type, is_recurring, date, time,
+        id, title, description, type, is_recurring, has_post_run_social, date, time,
         day_of_week, location, distance, pace, facebook_link,
         strava_link, registration_url, display_order
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
       .bind(
         id,
@@ -48,6 +49,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         description || null,
         type,
         is_recurring ? 1 : 0,
+        has_post_run_social ? 1 : 0,
         date || null,
         time || null,
         day_of_week ? Number.parseInt(day_of_week) : null,
