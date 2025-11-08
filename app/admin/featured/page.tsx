@@ -16,6 +16,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core"
 import {
   arrayMove,
@@ -250,13 +251,22 @@ export default function FeaturedEventsAdmin() {
     }
   }
 
+  const handleDragStart = (event: DragStartEvent) => {
+    console.log("[v0] Drag started:", event.active.id)
+  }
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
+    console.log("[v0] Drag ended - active:", active.id, "over:", over?.id)
+
     if (over && active.id !== over.id) {
+      console.log("[v0] Reordering items")
       setFeaturedEvents((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id)
         const newIndex = items.findIndex((item) => item.id === over.id)
+
+        console.log("[v0] Moving from index", oldIndex, "to", newIndex)
 
         const newOrder = arrayMove(items, oldIndex, newIndex)
 
@@ -265,6 +275,8 @@ export default function FeaturedEventsAdmin() {
 
         return newOrder
       })
+    } else {
+      console.log("[v0] No reorder needed")
     }
   }
 
@@ -380,7 +392,12 @@ export default function FeaturedEventsAdmin() {
                 No featured events. Add events from the list below.
               </div>
             ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
                 <SortableContext items={featuredEvents.map((e) => e.id)} strategy={verticalListSortingStrategy}>
                   <div className="space-y-3">
                     {featuredEvents.map((event) => (
