@@ -15,10 +15,11 @@ export const onRequestPost: PagesFunction<{
     }
 
     if (password === adminPassword) {
-      // Set HTTP-only cookie
+      const token = btoa(adminPassword)
+
       const headers = new Headers()
       headers.set("Content-Type", "application/json")
-      headers.set("Set-Cookie", "admin-auth=true; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400")
+      headers.set("Set-Cookie", `admin_auth=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`)
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Calendar, LogOut, Loader2 } from "lucide-react"
+import { Plus, Calendar, LogOut, Loader2, AlertCircle } from "lucide-react"
 import { EventForm } from "@/components/admin/event-form"
 import { EventList } from "@/components/admin/event-list"
 
@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [editingEvent, setEditingEvent] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
+  const [authError, setAuthError] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -23,14 +24,29 @@ export default function AdminDashboard() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch("/api/admin/auth/check")
+      const response = await fetch("/api/admin/auth/check", {
+        credentials: "include",
+        cache: "no-store",
+      })
+
       if (!response.ok) {
-        router.push("/admin/login")
+        setAuthError(true)
+        setTimeout(() => router.push("/admin/login"), 1000)
         return
       }
+
+      const data = await response.json()
+      if (!data.authenticated) {
+        setAuthError(true)
+        setTimeout(() => router.push("/admin/login"), 1000)
+        return
+      }
+
       setIsAuthenticated(true)
     } catch (error) {
-      router.push("/admin/login")
+      console.error("Auth check failed:", error)
+      setAuthError(true)
+      setTimeout(() => router.push("/admin/login"), 1000)
     } finally {
       setCheckingAuth(false)
     }
@@ -80,13 +96,30 @@ export default function AdminDashboard() {
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto" />
+          <p className="text-sm text-muted-foreground">Verifying authentication...</p>
+        </div>
       </div>
     )
   }
 
-  if (!isAuthenticated) {
-    return null
+  if (authError || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+              <AlertCircle className="w-6 h-6 text-destructive" />
+            </div>
+            <CardTitle className="text-center">Access Denied</CardTitle>
+            <CardDescription className="text-center">
+              You must be logged in to access this page. Redirecting to login...
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
   }
 
   return (
