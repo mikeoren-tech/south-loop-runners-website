@@ -38,25 +38,48 @@ function PaceInterestSection({ runId }: { runId: string }) {
   const [selectedPace, setSelectedPace] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { data: paceInterests = [], mutate } = useSWR<Array<{ pace: string; count: number }>>(
-    `/api/events/pace-interests/${runId}`,
-    fetcher,
-    {
-      refreshInterval: 5000,
-      revalidateOnFocus: true,
+  const {
+    data: paceInterests = [],
+    mutate,
+    error,
+  } = useSWR<Array<{ pace: string; count: number }>>(`/api/events/pace-interests/${runId}`, fetcher, {
+    refreshInterval: 5000,
+    revalidateOnFocus: true,
+    fallbackData: [],
+    shouldRetryOnError: false,
+    onError: (err) => {
+      console.error(`Failed to fetch pace interests for ${runId}:`, err)
     },
-  )
+  })
+
+  const isApiUnavailable = error && error.message?.includes("Unexpected token")
+
+  if (isApiUnavailable) {
+    return (
+      <div className="border-t pt-4 mt-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+          <Users className="h-4 w-4" />
+          <span>Show Your Interest</span>
+        </div>
+        <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+          <p>Pace interest tracking is currently being set up. Check back soon!</p>
+        </div>
+      </div>
+    )
+  }
+
+  const safePaceInterests = Array.isArray(paceInterests) ? paceInterests : []
 
   const paceCounts = PACE_GROUPS.reduce(
     (acc, pace) => {
-      const interest = paceInterests.find((i) => i.pace === pace)
+      const interest = safePaceInterests.find((i) => i.pace === pace)
       acc[pace] = interest?.count || 0
       return acc
     },
     {} as Record<string, number>,
   )
 
-  const totalInterested = paceInterests.reduce((sum, interest) => sum + interest.count, 0)
+  const totalInterested = safePaceInterests.reduce((sum, interest) => sum + interest.count, 0)
 
   const handleSubmit = async () => {
     if (!selectedPace || isSubmitting) return

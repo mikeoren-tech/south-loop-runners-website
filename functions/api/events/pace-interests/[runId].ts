@@ -8,13 +8,26 @@ export async function onRequestGet(context: { env: Env; params: { runId: string 
   try {
     const { runId } = context.params
 
+    if (!context.env.DB) {
+      console.error("[Cloudflare Function] DB binding not found")
+      return new Response(JSON.stringify([]), {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+      })
+    }
+
     const { results } = await context.env.DB.prepare(
       `SELECT pace, count FROM pace_interests WHERE event_id = ? ORDER BY pace`,
     )
       .bind(runId)
       .all()
 
-    return new Response(JSON.stringify(results || []), {
+    const paceInterests = Array.isArray(results) ? results : []
+
+    return new Response(JSON.stringify(paceInterests), {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -23,9 +36,13 @@ export async function onRequestGet(context: { env: Env; params: { runId: string 
     })
   } catch (error) {
     console.error("[Cloudflare Function] Error fetching pace interests:", error)
-    return new Response(JSON.stringify({ error: "Failed to fetch pace interests" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    return new Response(JSON.stringify([]), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+      },
     })
   }
 }
