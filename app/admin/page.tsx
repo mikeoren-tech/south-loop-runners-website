@@ -4,9 +4,10 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Calendar, LogOut, Loader2, AlertCircle } from "lucide-react"
+import { Plus, Calendar, LogOut, Loader2, AlertCircle, Star } from "lucide-react"
 import { EventForm } from "@/components/admin/event-form"
 import { EventList } from "@/components/admin/event-list"
+import Link from "next/link"
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState([])
@@ -137,7 +138,31 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 space-y-6">
+        <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                  <Star className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <CardTitle>Homepage Featured Events</CardTitle>
+                  <CardDescription className="text-amber-900/70">
+                    Configure which events appear prominently on the homepage
+                  </CardDescription>
+                </div>
+              </div>
+              <Button asChild className="bg-amber-600 hover:bg-amber-700">
+                <Link href="/admin/featured">
+                  <Star className="w-4 h-4 mr-2" />
+                  Manage Featured
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
