@@ -333,7 +333,7 @@ export function UpcomingRuns() {
                           size="sm"
                           className="bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg transition-all"
                         >
-                          <a href="#" target="_blank" rel="noopener noreferrer">
+                          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc2VRtitYsCVsue8rR0WJylw5ybjIZgzFZZrQhY2lDrA3IrvA/viewform" target="_blank" rel="noopener noreferrer">
                             Take Survey
                             <ArrowRight className="ml-2 h-3 w-3" />
                           </a>
@@ -407,7 +407,7 @@ export function UpcomingRuns() {
                 </div>
               </div>
 
-              <PaceInterestSection runId={event.id} hasSocial={event.has_post_run_social === true} />
+              <PaceInterestSection runId={event.id} hasSocial={!!event.has_post_run_social} />
             </CardContent>
           </Card>
         </article>
