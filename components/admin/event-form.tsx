@@ -22,6 +22,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
     description: "",
     type: "special-event",
     is_recurring: false,
+    has_post_run_social: false,
     date: "",
     time: "",
     day_of_week: "",
@@ -43,6 +44,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
         description: event.description || "",
         type: event.type || "special-event",
         is_recurring: Boolean(event.is_recurring),
+        has_post_run_social: Boolean(event.has_post_run_social),
         date: event.date || "",
         time: event.time || "",
         day_of_week: event.day_of_week?.toString() || "",
@@ -135,6 +137,15 @@ export function EventForm({ event, onClose }: EventFormProps) {
                 onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked as boolean })}
               />
               <Label htmlFor="recurring">Recurring Event</Label>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-8">
+              <Checkbox
+                id="post_run_social"
+                checked={formData.has_post_run_social}
+                onCheckedChange={(checked) => setFormData({ ...formData, has_post_run_social: checked as boolean })}
+              />
+              <Label htmlFor="post_run_social">Has Post-Run Social</Label>
             </div>
 
             {formData.is_recurring ? (

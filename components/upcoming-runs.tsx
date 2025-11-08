@@ -4,7 +4,18 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, AlertCircle } from "lucide-react"
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  FacebookIcon,
+  Activity,
+  Users,
+  ArrowRight,
+  AlertCircle,
+  CheckIcon as Checkbox,
+  Gavel as Label,
+} from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
@@ -37,6 +48,8 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 function PaceInterestSection({ runId }: { runId: string }) {
   const [selectedPace, setSelectedPace] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [attendingSocial, setAttendingSocial] = useState(false)
+  const [isSocialSubmitting, setIsSocialSubmitting] = useState(false)
 
   const {
     data: paceInterests = [],
@@ -52,21 +65,23 @@ function PaceInterestSection({ runId }: { runId: string }) {
     },
   })
 
-  const isApiUnavailable = error && error.message?.includes("Unexpected token")
+  const { data: eventData } = useSWR(`/api/events/all`, fetcher, {
+    fallbackData: [],
+  })
 
-  if (isApiUnavailable) {
-    return (
-      <div className="border-t pt-4 mt-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
-          <Users className="h-4 w-4" />
-          <span>Show Your Interest</span>
-        </div>
-        <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-          <p>Pace interest tracking is currently being set up. Check back soon!</p>
-        </div>
-      </div>
-    )
-  }
+  const currentEvent = Array.isArray(eventData) ? eventData.find((e: any) => e.id === runId) : null
+  const hasSocial = currentEvent?.has_post_run_social
+
+  const { data: socialData, mutate: mutateSocial } = useSWR(
+    hasSocial ? `/api/events/social-rsvp/${runId}` : null,
+    fetcher,
+    {
+      refreshInterval: 5000,
+      fallbackData: { socialCount: 0 },
+    },
+  )
+
+  const isApiUnavailable = error && error.message?.includes("Unexpected token")
 
   const safePaceInterests = Array.isArray(paceInterests) ? paceInterests : []
 
@@ -103,6 +118,30 @@ function PaceInterestSection({ runId }: { runId: string }) {
     }
   }
 
+  const handleSocialToggle = async (checked: boolean) => {
+    if (isSocialSubmitting) return
+
+    setIsSocialSubmitting(true)
+    setAttendingSocial(checked)
+
+    try {
+      const response = await fetch(`/api/events/social-rsvp/${runId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attending: checked }),
+      })
+
+      if (response.ok) {
+        await mutateSocial()
+      }
+    } catch (error) {
+      console.error("Failed to update social RSVP:", error)
+      setAttendingSocial(!checked)
+    } finally {
+      setIsSocialSubmitting(false)
+    }
+  }
+
   return (
     <div className="border-t pt-4 mt-4 space-y-3">
       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -128,6 +167,25 @@ function PaceInterestSection({ runId }: { runId: string }) {
           {isSubmitting ? "Adding..." : "Add"}
         </Button>
       </div>
+
+      {hasSocial && (
+        <div className="border-t pt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id={`social-${runId}`}
+                checked={attendingSocial}
+                onCheckedChange={handleSocialToggle}
+                disabled={isSocialSubmitting}
+              />
+              <Label htmlFor={`social-${runId}`} className="text-sm font-medium cursor-pointer">
+                Attending post-run social
+              </Label>
+            </div>
+            {socialData?.socialCount > 0 && <Badge variant="secondary">{socialData.socialCount} attending</Badge>}
+          </div>
+        </div>
+      )}
 
       {totalInterested > 0 && (
         <div className="space-y-2">
@@ -215,6 +273,7 @@ export function UpcomingRuns() {
         facebook_link: "https://www.facebook.com/groups/665701690539939",
         strava_link: "https://www.strava.com/clubs/943959",
         type: "weekly-run",
+        has_post_run_social: true,
       },
       {
         id: "saturday-anchor",
@@ -228,6 +287,7 @@ export function UpcomingRuns() {
         facebook_link: "https://www.facebook.com/groups/665701690539939",
         strava_link: "https://www.strava.com/clubs/943959",
         type: "weekly-run",
+        has_post_run_social: false,
       },
       {
         id: "sunday-social",
@@ -242,6 +302,7 @@ export function UpcomingRuns() {
         facebook_link: "https://fb.me/e/6SQ3Vaigo",
         strava_link: "https://www.strava.com/clubs/943959/group_events/3421718402079309428",
         type: "weekly-run",
+        has_post_run_social: true,
       },
     ],
   })

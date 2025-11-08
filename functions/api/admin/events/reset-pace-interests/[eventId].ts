@@ -29,6 +29,16 @@ export async function onRequestPost(context: { env: Env; params: { eventId: stri
       .bind(eventId)
       .run()
 
+    await context.env.DB.prepare(
+      `UPDATE events 
+       SET post_run_social_count = 0,
+           social_last_reset = CURRENT_TIMESTAMP,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+    )
+      .bind(eventId)
+      .run()
+
     console.log("[v0] Reset result:", resetResult)
 
     if (!resetResult.success) {
