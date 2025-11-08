@@ -60,18 +60,23 @@ export default function AdminDashboard() {
   }, [isAuthenticated])
 
   const loadEvents = async () => {
-    try {
-      const response = await fetch("/api/events/all")
-      if (response.ok) {
-        const data = await response.json()
-        setEvents(data)
+  try {
+    const response = await fetch("/api/events/all", {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache"
       }
-    } catch (error) {
-      console.error("Failed to load events:", error)
-    } finally {
-      setLoading(false)
+    })
+    if (response.ok) {
+      const data = await response.json()
+      setEvents(data)
     }
+  } catch (error) {
+    console.error("Failed to load events:", error)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleLogout = async () => {
     await fetch("/api/admin/auth/logout", { method: "POST" })
