@@ -40,7 +40,7 @@ VALUES
     'Finish line inside historic Soldier Field!',
     '[{"icon":"award","label":"PR-Friendly Course","color":"blue"},{"icon":"users","label":"Group Training","color":"purple"},{"icon":"medal","label":"Finisher Medals","color":"amber"}]',
     'from-blue-500 to-cyan-500',
-    '/chicago-lakefront-winter.jpg',
+    '/chicago-lakefront-running-soldier-field-skyline.jpg',
     0,
     1,
     4
@@ -62,7 +62,7 @@ VALUES
     'Experience ultra running in a beginner-friendly format!',
     '[{"icon":"clock","label":"Hourly Miles","color":"green"},{"icon":"brain","label":"Mental Challenge","color":"purple"},{"icon":"coffee","label":"Rest Periods","color":"amber"}]',
     'from-green-500 to-emerald-600',
-    '/grant-park-runners.jpg',
+    '/mccormick-place-chicago-auto-show-indoor-running.jpg',
     0,
     1,
     5
