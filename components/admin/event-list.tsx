@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Calendar, Clock, MapPin } from "lucide-react"
+import { Edit, Trash2, Calendar, Clock, MapPin, RotateCcw, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 
 interface Event {
@@ -26,6 +26,7 @@ interface EventListProps {
 
 export function EventList({ events, onEdit, onDelete }: EventListProps) {
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [resetting, setResetting] = useState<string | null>(null)
 
   const handleDelete = async (eventId: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return
@@ -45,6 +46,29 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
       alert("Failed to delete event")
     } finally {
       setDeleting(null)
+    }
+  }
+
+  const handleResetPaceInterests = async (eventId: string, eventTitle: string) => {
+    if (!confirm(`Reset all pace group counts for "${eventTitle}"? This will set all counts to 0.`)) return
+
+    setResetting(eventId)
+    try {
+      const response = await fetch(`/api/admin/events/reset-pace-interests/${eventId}`, {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message || "Pace group counts reset successfully!")
+      } else {
+        alert("Failed to reset pace group counts")
+      }
+    } catch (error) {
+      console.error("[v0] Error resetting pace interests:", error)
+      alert("Failed to reset pace group counts")
+    } finally {
+      setResetting(null)
     }
   }
 
@@ -112,6 +136,19 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
           </div>
 
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleResetPaceInterests(event.id, event.title)}
+              disabled={resetting === event.id}
+              title="Reset pace group counts"
+            >
+              {resetting === event.id ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RotateCcw className="w-4 h-4" />
+              )}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => onEdit(event)}>
               <Edit className="w-4 h-4" />
             </Button>
