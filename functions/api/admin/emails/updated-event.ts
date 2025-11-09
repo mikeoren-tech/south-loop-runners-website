@@ -75,5 +75,4 @@ export async function onRequestPost(context: any) {
       });
     }
 
-    console.log(`Email sent successfully! Email ID: ${data?.id}`);
     return new Response(JSON.stringify({
