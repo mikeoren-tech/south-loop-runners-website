@@ -469,16 +469,16 @@ export function CalendarView() {
           </ScrollReveal>
 
           <ScrollReveal delay={200}>
-            <Card className="border-slr-blue/20 shadow-lg">
+            <Card className="border-slr-blue/30 shadow-2xl backdrop-blur-md bg-white/60 dark:bg-slate-900/60">
               <CardContent className="p-6">
                 <Tabs value={view} onValueChange={(v) => setView(v as any)} className="w-full">
                   <div className="flex items-center justify-between mb-4">
-                    <TabsList className="bg-muted/50">
-                      <TabsTrigger value="month" className="gap-2">
+                    <TabsList className="bg-slr-blue-light/40 backdrop-blur-sm border border-slr-blue/30">
+                      <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue data-[state=active]:text-white">
                         <CalendarDays className="h-4 w-4" />
                         Month
                       </TabsTrigger>
-                      <TabsTrigger value="list" className="gap-2">
+                      <TabsTrigger value="list" className="gap-2 data-[state=active]:bg-slr-blue data-[state=active]:text-white">
                         <List className="h-4 w-4" />
                         List
                       </TabsTrigger>
@@ -486,11 +486,11 @@ export function CalendarView() {
 
                     {view === "month" && (
                       <div className="flex items-center gap-4">
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")} className="border-slr-blue/30">
+                        <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")} className="border-slr-blue/50 hover:bg-slr-blue/10 backdrop-blur-sm">
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <h3 className="font-semibold text-lg text-slr-blue-dark">{monthName}</h3>
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth("next")} className="border-slr-blue/30">
+                        <h3 className="font-bold text-lg text-slr-blue-dark">{monthName}</h3>
+                        <Button variant="outline" size="sm" onClick={() => navigateMonth("next")} className="border-slr-blue/50 hover:bg-slr-blue/10 backdrop-blur-sm">
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
@@ -533,35 +533,49 @@ export function CalendarView() {
                           <div
                             key={day}
                             className={cn(
-                              "min-h-[120px] border rounded-lg p-2 transition-all hover:border-slr-blue/50 hover:shadow-md bg-card",
-                              isToday && "border-slr-red bg-slr-red/5 ring-2 ring-slr-red/20",
-                              dayEvents.length > 0 && "border-slr-blue/30"
+                              "min-h-[120px] rounded-lg p-2.5 transition-all backdrop-blur-sm relative overflow-hidden group cursor-pointer",
+                              "bg-white/40 dark:bg-slate-900/40",
+                              "border-2",
+                              isToday
+                                ? "border-slr-red shadow-lg shadow-slr-red/20"
+                                : dayEvents.length > 0
+                                  ? "border-slr-blue hover:border-slr-blue-dark hover:shadow-lg hover:shadow-slr-blue/20"
+                                  : "border-slate-200/50 hover:border-slr-blue/30"
                             )}
                           >
-                            <div className={cn("text-sm font-semibold mb-2", isToday && "text-slr-red")}>{day}</div>
-                            <div className="space-y-1">
+                            <div className={cn(
+                              "text-sm font-bold mb-2",
+                              isToday ? "text-slr-red" : "text-slr-blue-dark"
+                            )}>
+                              {day}
+                            </div>
+                            <div className="space-y-1.5">
                               {dayEvents.slice(0, 3).map((event) => (
                                 <button
                                   key={event.id}
                                   onClick={() => setSelectedEvent(event)}
                                   className={cn(
-                                    "w-full text-[10px] sm:text-xs px-1.5 py-1 rounded truncate text-left hover:opacity-90 transition-all font-medium shadow-sm",
+                                    "w-full text-[10px] sm:text-xs px-2 py-1.5 rounded-md text-left transition-all font-medium",
+                                    "backdrop-blur-sm border",
                                     event.type === "weekly-run"
-                                      ? "bg-slr-blue text-white hover:bg-slr-blue-dark"
-                                      : "bg-slr-red text-white hover:bg-slr-red/90",
+                                      ? "bg-slr-blue/90 hover:bg-slr-blue text-white border-slr-blue-dark/30 hover:shadow-md"
+                                      : "bg-slr-red/90 hover:bg-slr-red text-white border-slr-red-dark/30 hover:shadow-md",
+                                    "hover:scale-[1.02] hover:-translate-y-0.5"
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
-                                  {event.type === "race" ? (
-                                    <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3 inline mr-0.5" />
-                                  ) : (
-                                    <Activity className="h-2.5 w-2.5 sm:h-3 sm:w-3 inline mr-0.5" />
-                                  )}
-                                  <span className="truncate">{event.title}</span>
+                                  <div className="flex items-start gap-1">
+                                    {event.type === "race" ? (
+                                      <Trophy className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                    ) : (
+                                      <Activity className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                    )}
+                                    <span className="line-clamp-2 leading-tight">{event.title}</span>
+                                  </div>
                                 </button>
                               ))}
                               {dayEvents.length > 3 && (
-                                <div className="text-[10px] text-slr-blue font-medium text-center py-0.5">
+                                <div className="text-[10px] text-slr-blue-dark font-semibold text-center py-1 bg-slr-blue-light/50 rounded backdrop-blur-sm">
                                   +{dayEvents.length - 3} more
                                 </div>
                               )}
