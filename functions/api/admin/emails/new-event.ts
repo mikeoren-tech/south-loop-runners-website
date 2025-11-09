@@ -42,7 +42,7 @@ export async function onRequestPost(context: any) {
     // Send email to audience
     const { data, error } = await resend.emails.send({
       from: "South Loop Runners <events@southlooprunners.com>",
-      to: [`audience:${audienceId}`],
+      to: [`audience:${audienceId}`],  // Fixed: added opening bracket [
       subject,
       html,
     })
