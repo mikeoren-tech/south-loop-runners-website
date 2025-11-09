@@ -20,10 +20,12 @@ import {
   List,
   Download,
   ExternalLink,
+  Star,
 } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import slrLogo from "@/assets/slr-logo.jpg"
 
 interface DatabaseEvent {
   id: string
@@ -377,20 +379,25 @@ export function CalendarView() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <a 
+            href="https://southlooprunners.com" 
+            className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity group"
+          >
+            <ChevronLeft className="h-5 w-5 text-foreground group-hover:-translate-x-1 transition-transform" />
+            <img src={slrLogo} alt="South Loop Runners" className="h-12" />
+          </a>
+        </div>
+      </header>
+      
+      <div className="container mx-auto px-4 py-20">
         <ScrollReveal className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-slr-red/10 flex items-center justify-center">
-              <svg className="w-6 h-6 text-slr-red" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            </div>
+            <Star className="h-10 w-10 fill-primary text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold text-slr-blue">Events Calendar</h1>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-            <span className="text-slr-red">★</span>{" "}
-            <span className="text-slr-blue">Events Calendar</span>
-          </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             View all upcoming weekly runs and races. Never miss an event!
           </p>
@@ -398,7 +405,7 @@ export function CalendarView() {
 
         <div className="max-w-7xl mx-auto space-y-6">
           <ScrollReveal delay={100}>
-            <Card className="border-slr-blue/20 bg-card/80 backdrop-blur-sm shadow-lg">
+            <Card className="border-slr-blue/20 shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2">
@@ -407,22 +414,16 @@ export function CalendarView() {
                       variant={filters.has("weekly-run") ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFilters(toggleFilter(filters, "weekly-run"))}
-                      className={cn(
-                        "gap-2",
-                        filters.has("weekly-run") && "bg-slr-red hover:bg-slr-red-dark text-white"
-                      )}
+                      className="gap-2"
                     >
                       <Activity className="h-4 w-4" />
                       Weekly Runs
                     </Button>
                     <Button
-                      variant={filters.has("race") ? "default" : "outline"}
+                      variant={filters.has("race") ? "destructive" : "outline"}
                       size="sm"
                       onClick={() => setFilters(toggleFilter(filters, "race"))}
-                      className={cn(
-                        "gap-2",
-                        filters.has("race") && "bg-slr-red hover:bg-slr-red-dark text-white"
-                      )}
+                      className="gap-2"
                     >
                       <Trophy className="h-4 w-4" />
                       Races
@@ -435,10 +436,7 @@ export function CalendarView() {
                         onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
                         variant={isNotificationExpanded ? "secondary" : "default"}
                         size="sm"
-                        className={cn(
-                          "gap-2",
-                          !isNotificationExpanded && "bg-slr-red hover:bg-slr-red-dark text-white"
-                        )}
+                        className="gap-2"
                       >
                         <Bell className="h-4 w-4" />
                         {isNotificationExpanded ? "Close" : "Get Notifications"}
@@ -461,17 +459,17 @@ export function CalendarView() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      className="flex-1"
+                      className="flex-1 border-slr-blue/30 focus:border-slr-blue"
                     />
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90">
                       {isSubmitting ? "Subscribing..." : "Subscribe"}
                     </Button>
                   </form>
                 </div>
 
                 {subscribed && (
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 p-3 rounded-lg mt-4 shadow-sm">
-                    <Activity className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-primary bg-slr-blue-light/50 p-3 rounded-lg mt-4">
+                    <Star className="h-4 w-4 fill-primary" />
                     <span className="text-sm font-medium">You're subscribed to event updates!</span>
                   </div>
                 )}
@@ -480,11 +478,11 @@ export function CalendarView() {
           </ScrollReveal>
 
           <ScrollReveal delay={200}>
-            <Card className="border-slr-blue/20 bg-card/80 backdrop-blur-sm shadow-lg">
+            <Card className="border-slr-blue/20 shadow-lg">
               <CardContent className="p-6">
                 <Tabs value={view} onValueChange={(v) => setView(v as any)} className="w-full">
                   <div className="flex items-center justify-between mb-4">
-                    <TabsList>
+                    <TabsList className="bg-muted/50">
                       <TabsTrigger value="month" className="gap-2">
                         <CalendarDays className="h-4 w-4" />
                         Month
@@ -497,11 +495,11 @@ export function CalendarView() {
 
                     {view === "month" && (
                       <div className="flex items-center gap-4">
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")}>
+                        <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")} className="border-slr-blue/30">
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <h3 className="font-semibold text-lg">{monthName}</h3>
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth("next")}>
+                        <h3 className="font-semibold text-lg text-slr-blue-dark">{monthName}</h3>
+                        <Button variant="outline" size="sm" onClick={() => navigateMonth("next")} className="border-slr-blue/30">
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
@@ -511,7 +509,7 @@ export function CalendarView() {
                   <TabsContent value="month" className="mt-0">
                     <div className="grid grid-cols-7 gap-2">
                       {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                        <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+                        <div key={day} className="text-center text-sm font-semibold text-slr-blue-dark py-2">
                           {day}
                         </div>
                       ))}
@@ -531,21 +529,21 @@ export function CalendarView() {
                           <div
                             key={day}
                             className={cn(
-                              "aspect-square border rounded-lg p-2 transition-all hover:shadow-md hover:border-slr-blue/30",
-                              isToday && "border-primary bg-slr-blue-light/30 shadow-sm",
+                              "aspect-square border rounded-lg p-2 transition-all hover:border-slr-blue/50 hover:shadow-md",
+                              isToday && "border-primary bg-slr-blue-light/30 ring-2 ring-primary/20",
                             )}
                           >
-                            <div className="text-sm font-medium mb-1">{day}</div>
+                            <div className={cn("text-sm font-medium mb-1", isToday && "text-primary font-bold")}>{day}</div>
                             <div className="space-y-1">
                               {dayEvents.map((event) => (
                                 <button
                                   key={event.id}
                                   onClick={() => setSelectedEvent(event)}
                                   className={cn(
-                                    "w-full text-xs p-1 rounded truncate text-left hover:shadow-sm transition-all",
+                                    "w-full text-xs p-1 rounded truncate text-left hover:opacity-80 transition-all hover:scale-105",
                                     event.type === "weekly-run"
-                                      ? "bg-slr-blue-light/50 text-slr-blue-dark hover:bg-slr-blue-light/80"
-                                      : "bg-primary/10 text-primary hover:bg-primary/20",
+                                      ? "bg-slr-blue/80 text-white"
+                                      : "bg-primary text-primary-foreground",
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
@@ -574,12 +572,12 @@ export function CalendarView() {
                       ) : (
                         filteredEvents.map((event) => (
                           <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
-                            <Card className="border-slr-blue/20 bg-card hover:shadow-xl hover:border-slr-blue/30 transition-all">
+                            <Card className="border-slr-blue/20 hover:border-slr-blue/50 hover:shadow-lg transition-all hover:-translate-y-1">
                               <CardContent className="p-4">
                                 <div className="flex items-start gap-4">
-                                  <div className="flex-shrink-0 w-16 text-center">
-                                    <div className="text-2xl font-bold">{event.date.getDate()}</div>
-                                    <div className="text-sm text-muted-foreground">
+                                  <div className="flex-shrink-0 w-16 text-center bg-slr-blue-light/50 rounded-lg p-2">
+                                    <div className="text-2xl font-bold text-primary">{event.date.getDate()}</div>
+                                    <div className="text-sm text-slr-blue-dark font-medium">
                                       {event.date.toLocaleDateString("en-US", { month: "short" })}
                                     </div>
                                   </div>
@@ -590,7 +588,7 @@ export function CalendarView() {
                                         <h4 className="font-semibold text-lg flex items-center gap-2">
                                           {event.title}
                                           {event.isRecurring && (
-                                            <Badge variant="outline" className="text-xs">
+                                            <Badge variant="outline" className="text-xs border-slr-blue text-slr-blue-dark">
                                               Recurring
                                             </Badge>
                                           )}
@@ -600,7 +598,7 @@ export function CalendarView() {
 
                                       <Badge
                                         variant={event.type === "race" ? "destructive" : "default"}
-                                        className="shrink-0 shadow-sm"
+                                        className="shrink-0"
                                       >
                                         {event.type === "race" ? (
                                           <>
@@ -618,11 +616,11 @@ export function CalendarView() {
 
                                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                                       <div className="flex items-center gap-1">
-                                        <Clock className="h-4 w-4" />
+                                        <Clock className="h-4 w-4 text-slr-blue-dark" />
                                         {event.time}
                                       </div>
                                       <div className="flex items-center gap-1">
-                                        <MapPin className="h-4 w-4" />
+                                        <MapPin className="h-4 w-4 text-slr-blue-dark" />
                                         {event.location}
                                       </div>
                                     </div>
@@ -643,13 +641,13 @@ export function CalendarView() {
       </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        <DialogContent className="sm:max-w-[500px] border-slr-blue/30 bg-card/80 backdrop-blur-sm shadow-xl">
+        <DialogContent className="sm:max-w-[500px] border-slr-blue/20">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               {selectedEvent?.type === "race" ? (
-                <Trophy className="h-6 w-6 text-red-600" />
+                <Trophy className="h-6 w-6 text-primary" />
               ) : (
-                <Activity className="h-6 w-6 text-blue-600" />
+                <Star className="h-6 w-6 fill-slr-blue text-slr-blue" />
               )}
               {selectedEvent?.title}
             </DialogTitle>
@@ -661,7 +659,7 @@ export function CalendarView() {
 
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                <CalendarDays className="h-4 w-4 text-slr-blue-dark" />
                 <span className="font-medium">
                   {selectedEvent?.date.toLocaleDateString("en-US", {
                     weekday: "long",
@@ -672,21 +670,21 @@ export function CalendarView() {
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="h-4 w-4 text-slr-blue-dark" />
                 <span>{selectedEvent?.time}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <MapPin className="h-4 w-4 text-slr-blue-dark" />
                 <span>{selectedEvent?.location}</span>
               </div>
             </div>
 
             {(selectedEvent?.facebookLink || selectedEvent?.stravaLink || selectedEvent?.registrationUrl) && (
               <div className="border-t pt-4 space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">RSVP & More Info</p>
+                <p className="text-sm font-medium text-slr-blue-dark">RSVP & More Info</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedEvent.facebookLink && (
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="border-slr-blue/30 hover:border-slr-blue">
                       <a href={selectedEvent.facebookLink} target="_blank" rel="noopener noreferrer" className="gap-2">
                         <ExternalLink className="h-4 w-4" />
                         Facebook
@@ -694,7 +692,7 @@ export function CalendarView() {
                     </Button>
                   )}
                   {selectedEvent.stravaLink && (
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="border-slr-blue/30 hover:border-slr-blue">
                       <a href={selectedEvent.stravaLink} target="_blank" rel="noopener noreferrer" className="gap-2">
                         <ExternalLink className="h-4 w-4" />
                         Strava
@@ -702,7 +700,7 @@ export function CalendarView() {
                     </Button>
                   )}
                   {selectedEvent.registrationUrl && (
-                    <Button variant="default" size="sm" asChild>
+                    <Button variant="default" size="sm" asChild className="bg-primary hover:bg-primary/90">
                       <a
                         href={selectedEvent.registrationUrl}
                         target="_blank"
@@ -719,12 +717,12 @@ export function CalendarView() {
             )}
 
             <div className="border-t pt-4 space-y-3">
-              <p className="text-sm font-medium text-muted-foreground">Add to your calendar</p>
+              <p className="text-sm font-medium text-slr-blue-dark">Add to your calendar</p>
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
                   onClick={() => selectedEvent && addSingleEventToGoogleCalendar(selectedEvent)}
-                  className="gap-2 w-full"
+                  className="gap-2 w-full border-slr-blue/30 hover:border-slr-blue"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Google Calendar
@@ -732,7 +730,7 @@ export function CalendarView() {
                 <Button
                   variant="outline"
                   onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)}
-                  className="gap-2 w-full"
+                  className="gap-2 w-full border-slr-blue/30 hover:border-slr-blue"
                 >
                   <Download className="h-4 w-4" />
                   Apple / Outlook
