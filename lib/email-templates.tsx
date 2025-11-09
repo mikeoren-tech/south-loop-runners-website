@@ -43,7 +43,15 @@ const formatEventDate = (event: Event): string => {
 }
 
 const formatGoogleDate = (date: Date): string => {
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+  // Format date in local timezone to avoid UTC conversion issues
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  
+  return `${year}${month}${day}T${hours}${minutes}${seconds}`
 }
 
 const getICalDay = (dayOfWeek: number): string => {
@@ -56,7 +64,7 @@ const generateGoogleCalendarUrl = (event: Event): string => {
     let startDate: Date
     
     if (event.is_recurring && event.day_of_week !== undefined) {
-      // For recurring events, find the next occurrence of the day
+      // For recurring events, find the next occurrence of the day in Chicago time
       const today = new Date()
       const targetDay = event.day_of_week
       const currentDay = today.getDay()
@@ -71,9 +79,13 @@ const generateGoogleCalendarUrl = (event: Event): string => {
     
     // If time is provided, try to parse it
     if (event.time) {
-      const [hours, minutes] = event.time.split(':').map(Number)
-      if (!isNaN(hours) && !isNaN(minutes)) {
-        startDate.setHours(hours, minutes, 0, 0)
+      const timeMatch = event.time.match(/(\d+):(\d+)/)
+      if (timeMatch) {
+        const hours = parseInt(timeMatch[1], 10)
+        const minutes = parseInt(timeMatch[2], 10)
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          startDate.setHours(hours, minutes, 0, 0)
+        }
       }
     }
     
@@ -85,7 +97,8 @@ const generateGoogleCalendarUrl = (event: Event): string => {
       text: event.title,
       dates: `${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`,
       details: event.description || '',
-      location: event.location || ''
+      location: event.location || '',
+      ctz: 'America/Chicago' // Explicitly set Chicago timezone
     })
     
     // Add recurrence rule for recurring events
@@ -333,13 +346,13 @@ const getEmailStyles = (): string => `
 const buildHeader = (title: string, subtitle: string): string => `
   <div class="header">
     <img 
-      src="http://southlooprunners.com/slr-logo.jpg" 
+      src="https://southlooprunners.com/slr-logo.jpg" 
       alt="South Loop Runners" 
       class="logo-image"
       width="220"
       height="auto"
       style="max-width: 220px; width: 100%; height: auto; margin: 0 auto 25px; display: block;"
-      onerror="this.style.display='none'"
+      onerror="this.outerHTML='<div style=\\'font-size: 20px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #e74c3c; margin: 0 auto 25px;\\'>SOUTH LOOP RUNNERS</div>'"
     >
     <h1>${title}</h1>
     <p class="header-subtitle">${subtitle}</p>
