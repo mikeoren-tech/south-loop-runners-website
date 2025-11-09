@@ -1,5 +1,8 @@
 import { CalendarView } from "@/components/calendar-view"
 import type { Metadata } from "next"
+import Link from "next/link"
+import Image from "next/image"
+import { ChevronLeft } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Events Calendar | South Loop Runners",
@@ -8,5 +11,26 @@ export const metadata: Metadata = {
 }
 
 export default function CalendarPage() {
-  return <CalendarView />
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center px-4">
+          <Link
+            href="/"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
+            <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+            <Image
+              src="/slr-logo.png"
+              alt="South Loop Runners"
+              width={60}
+              height={60}
+              className="object-contain"
+            />
+          </Link>
+        </div>
+      </header>
+      <CalendarView />
+    </div>
+  )
 }
