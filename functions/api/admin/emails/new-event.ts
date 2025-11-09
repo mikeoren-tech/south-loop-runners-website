@@ -45,8 +45,8 @@ export async function onRequestPost(context) {
     const emailList = contacts.map(contact => contact.email);
 
     const { data, error } = await resend.emails.send({
-      from: "South Loop Runners <updateds@@southlooprunners.com>",
-      to: "South Loop Runners <updates@@southlooprunners.com>",
+      from: "South Loop Runners <updateds@southlooprunners.com>",
+      to: "South Loop Runners <updates@southlooprunners.com>",
       bcc: emailList,
       subject,
       html,
