@@ -34,7 +34,8 @@ export async function onRequestPost(context: any) {
 
     const { subject, html } = getUpdatedEventEmailTemplate(event);
 
-    const resend = new Resend(resendApiKey);
+    // ⬇️ FIX 1: Use the correct variable name (RESEND_API_KEY)
+    const resend = new Resend(RESEND_API_KEY);
 
     const { data: audienceData, error: audienceError } = await resend.contacts.list({
       audienceId: RESEND_AUDIENCE_ID,
@@ -75,4 +76,17 @@ export async function onRequestPost(context: any) {
       });
     }
 
-    return new Response(JSON.stringify({
+    // ⬇️ FIX 2: Added all the missing code from here to the end
+    return new Response(JSON.stringify({ success: true, emailId: data?.id }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+    
+  } catch (error: any) {
+    console.error("[v0] Error in updated-event email:", error.message);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
