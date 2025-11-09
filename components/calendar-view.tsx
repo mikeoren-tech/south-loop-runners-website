@@ -555,22 +555,22 @@ export function CalendarView() {
                                   key={event.id}
                                   onClick={() => setSelectedEvent(event)}
                                   className={cn(
-                                    "w-full text-[10px] sm:text-xs px-2 py-1.5 rounded-md text-left transition-all font-medium",
-                                    "backdrop-blur-sm border",
+                                    "w-full text-xs px-2 py-1.5 rounded-md text-left transition-all font-semibold",
+                                    "backdrop-blur-sm border shadow-sm",
                                     event.type === "weekly-run"
-                                      ? "bg-slr-blue/90 hover:bg-slr-blue text-white border-slr-blue-dark/30 hover:shadow-md"
-                                      : "bg-slr-red/90 hover:bg-slr-red text-white border-slr-red-dark/30 hover:shadow-md",
+                                      ? "bg-slr-blue hover:bg-slr-blue-dark text-white border-slr-blue-dark/30 hover:shadow-md"
+                                      : "bg-slr-red hover:bg-slr-red-dark text-white border-slr-red-dark/30 hover:shadow-md",
                                     "hover:scale-[1.02] hover:-translate-y-0.5"
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
-                                  <div className="flex items-start gap-1">
+                                  <div className="flex items-start gap-1.5">
                                     {event.type === "race" ? (
-                                      <Trophy className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                      <Trophy className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                                     ) : (
-                                      <Activity className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                      <Activity className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                                     )}
-                                    <span className="line-clamp-2 leading-tight">{event.title}</span>
+                                    <span className="line-clamp-2 leading-snug">{event.title}</span>
                                   </div>
                                 </button>
                               ))}
