@@ -25,7 +25,6 @@ import {
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import slrLogo from "@/assets/slr-logo.jpg"
 
 interface DatabaseEvent {
   id: string
@@ -379,25 +378,12 @@ export function CalendarView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <a 
-            href="https://southlooprunners.com" 
-            className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity group"
-          >
-            <ChevronLeft className="h-5 w-5 text-foreground group-hover:-translate-x-1 transition-transform" />
-            <img src={slrLogo} alt="South Loop Runners" className="h-12" />
-          </a>
-        </div>
-      </header>
-      
-      <div className="container mx-auto px-4 py-20">
+    <div className="container mx-auto px-4 py-12">
         <ScrollReveal className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Star className="h-10 w-10 fill-primary text-primary" />
-            <h1 className="text-4xl md:text-5xl font-bold text-slr-blue">Events Calendar</h1>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+            <span className="text-slr-red">★</span>{" "}
+            <span className="text-slr-blue">Events Calendar</span>
+          </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             View all upcoming weekly runs and races. Never miss an event!
           </p>
@@ -638,7 +624,6 @@ export function CalendarView() {
             </Card>
           </ScrollReveal>
         </div>
-      </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
         <DialogContent className="sm:max-w-[500px] border-slr-blue/20">
