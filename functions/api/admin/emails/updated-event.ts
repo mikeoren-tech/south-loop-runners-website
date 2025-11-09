@@ -6,87 +6,60 @@ export async function onRequestPost(context: any) {
 
   if (!RESEND_API_KEY || !RESEND_AUDIENCE_ID) {
     console.error("Email service bindings (KEY or AUDIENCE_ID) are missing.");
-    return new Response(JSON.stringify({ error: "Email service not configured" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ error: "Email service not configured" }), { status: 500 });
   }
   if (!DB) {
     console.error("Database (DB) binding is missing.");
-    return new Response(JSON.stringify({ error: "Database not configured" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ error: "Database not configured" }), { status: 500 });
   }
 
   try {
     const { eventId } = await context.request.json();
-
     const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(eventId).first();
 
     if (!event) {
-      console.warn(`Event not found for ID: ${eventId}`);
-      return new Response(JSON.stringify({ error: "Event not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "Event not found" }), { status: 404 });
     }
 
     const { subject, html } = getUpdatedEventEmailTemplate(event);
+    const finalHtml = `${html}<br><p><a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a></p>`;
 
-    // ⬇️ FIX 1: Use the correct variable name (RESEND_API_KEY)
     const resend = new Resend(RESEND_API_KEY);
 
-    const { data: audienceData, error: audienceError } = await resend.contacts.list({
-      audienceId: RESEND_AUDIENCE_ID,
-    });
-
-    if (audienceError) {
-      console.error("Error fetching Resend audience:", audienceError);
-      return new Response(JSON.stringify({ error: "Failed to fetch audience" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const contacts = audienceData?.data;
-    if (!contacts || contacts.length === 0) {
-      console.log("No contacts in audience to email. Exiting gracefully.");
-      return new Response(JSON.stringify({ success: true, message: "No contacts in audience to email." }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const emailList = contacts.map(contact => contact.email);
-
-    const { data, error } = await resend.emails.send({
+    // STEP 1: Create the Broadcast
+    const { data: createData, error: createError } = await resend.broadcasts.create({
+      segmentId: RESEND_AUDIENCE_ID,
       from: "South Loop Runners <updates@updates.southlooprunners.com>",
-      to: "South Loop Runners <updates@updates.southlooprunners.com>",
-      bcc: emailList,
-      subject,
-      html,
+      subject: subject,
+      html: finalHtml,
     });
 
-    if (error) {
-      console.error("[v0] Error sending email:", error);
-      return new Response(JSON.stringify({ error: "Failed to send email" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+    if (createError) {
+      console.error("[v0] Error creating broadcast:", createError);
+      return new Response(JSON.stringify({ error: "Failed to create broadcast", resendError: createError }), { status: 500 });
     }
 
-    // ⬇️ FIX 2: Added all the missing code from here to the end
-    return new Response(JSON.stringify({ success: true, emailId: data?.id }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-    
+    const broadcastId = createData.id;
+
+    // STEP 2: Schedule to send immediately
+    const { data: sendData, error: sendError } = await resend.broadcasts.send(
+      broadcastId,
+      { scheduledAt: 'in 1 min' }
+    );
+
+    if (sendError) {
+      console.error("[v0] Error sending broadcast:", sendError);
+      return new Response(JSON.stringify({ error: "Failed to send broadcast", resendError: sendError }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      broadcastId: broadcastId,
+      status: "Sending now"
+    }), { status: 200 });
+
   } catch (error: any) {
-    console.error("[v0] Error in updated-event email:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("[v0] Unhandled error in updated-event function:", error.message);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }

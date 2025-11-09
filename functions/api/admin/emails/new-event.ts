@@ -1,60 +1,73 @@
 import { Resend } from "resend";
-// Make sure to get your email template function
-import { getNewEventEmailTemplate } from "@/lib/email-templates"; 
+import { getNewEventEmailTemplate } from "@/lib/email-templates";
 
 export async function onRequestPost(context: any) {
   const { DB, RESEND_API_KEY, RESEND_AUDIENCE_ID } = context.env;
 
-    // 1. Check bindings
-      if (!RESEND_API_KEY || !RESEND_AUDIENCE_ID) {
-          console.error("Email service bindings (KEY or AUDIENCE_ID) are missing.");
-              return new Response(JSON.stringify({ error: "Email service not configured" }), { status: 500 });
-                }
-                  if (!DB) {
-                      console.error("Database (DB) binding is missing.");
-                          return new Response(JSON.stringify({ error: "Database not configured" }), { status: 500 });
-                            }
+  if (!RESEND_API_KEY || !RESEND_AUDIENCE_ID) {
+    console.error("Email service bindings (KEY or AUDIENCE_ID) are missing.");
+    return new Response(JSON.stringify({ error: "Email service not configured" }), { status: 500 });
+  }
+  if (!DB) {
+    console.error("Database (DB) binding is missing.");
+    return new Response(JSON.stringify({ error: "Database not configured" }), { status: 500 });
+  }
 
-                              try {
-                                  // 2. Get event data (you still need this for the template)
-                                      const { eventId } = await context.request.json();
-                                          const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(eventId).first();
+  try {
+    const { eventId } = await context.request.json();
+    const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(eventId).first();
 
-                                              if (!event) {
-                                                    console.warn(`Event not found for ID: ${eventId}`);
-                                                          return new Response(JSON.stringify({ error: "Event not found" }), { status: 404 });
-                                                              }
+    if (!event) {
+      return new Response(JSON.stringify({ error: "Event not found" }), { status: 404 });
+    }
 
-                                                                  // 3. Get the template
-                                                                      const { subject, html } = getNewEventEmailTemplate(event);
+    const { subject, html } = getNewEventEmailTemplate(event);
+    const finalHtml = `${html}<br><p><a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a></p>`;
 
-                                                                          // 4. CRITICAL: Add the required unsubscribe link
-                                                                              // Resend *requires* this for broadcasts.
-                                                                                  const finalHtml = `${html}<br><p>To unsubscribe, <a href="{{{RESEND_UNSUBSCRIBE_URL}}}">click here</a>.</p>`;
+    const resend = new Resend(RESEND_API_KEY);
 
-                                                                                      // 5. Initialize Resend
-                                                                                          const resend = new Resend(RESEND_API_KEY);
+    // STEP 1: Create the Broadcast
+    const { data: createData, error: createError } = await resend.broadcasts.create({
+      segmentId: RESEND_AUDIENCE_ID,
+      from: "South Loop Runners <updates@updates.southlooprunners.com>",
+      subject: subject,
+      html: finalHtml,
+    });
 
-                                                                                              // 6. Make the SINGLE Broadcast API call
-                                                                                                  const { data, error } = await resend.broadcasts.create({
-                                                                                                        segmentId: RESEND_AUDIENCE_ID, // Use the ID from your env
-                                                                                                              from: "South Loop Runners <updates@updates.southlooprunners.com>", // Your verified domain
-                                                                                                                    subject: subject,
-                                                                                                                          html: finalHtml, // Use the template with the unsubscribe link
-                                                                                                                              });
+    if (createError) {
+      console.error("[v0] Error creating broadcast:", createError);
+      return new Response(JSON.stringify({ error: "Failed to create broadcast", resendError: createError }), { status: 500 });
+    }
 
-                                                                                                                                  if (error) {
-                                                                                                                                        console.error("[v0] Error creating broadcast:", error);
-                                                                                                                                              return new Response(JSON.stringify({ error: "Failed to create broadcast", resendError: error }), { status: 500 });
-                                                                                                                                                  }
+    const broadcastId = createData.id;
 
-                                                                                                                                                      // 7. Respond immediately
-                                                                                                                                                          return new Response(JSON.stringify({ success: true, broadcastId: data?.id, message: "Broadcast is sending." }), {
-                                                                                                                                                                status: 200, 
-                                                                                                                                                                    });
+    // STEP 2: Schedule for 9 AM Chicago Time
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const str = tomorrow.toLocaleString("en-US", { timeZone: "America/Chicago", timeZoneName: "short" });
+    const isCDT = str.includes("CDT"); // Check for Daylight Saving
+    const targetUTCHour = isCDT ? 14 : 15; // 9AM CDT is 14:00 UTC; 9AM CST is 15:00 UTC
 
-                                                                                                                                                                      } catch (error: any) {
-                                                                                                                                                                          console.error("[v0] Unhandled error in broadcast function:", error.message);
-                                                                                                                                                                              return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-                                                                                                                                                                                }
-                                                                                                                                                                                }
+    const scheduledDate = new Date(tomorrow);
+    scheduledDate.setUTCHours(targetUTCHour, 0, 0, 0);
+    
+    const { data: sendData, error: sendError } = await resend.broadcasts.send(
+      broadcastId,
+      { scheduledAt: scheduledDate.toISOString() }
+    );
+
+    if (sendError) {
+      console.error("[v0] Error sending broadcast:", sendError);
+      return new Response(JSON.stringify({ error: "Failed to schedule broadcast", resendError: sendError }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      broadcastId: broadcastId,
+      status: `Scheduled for ${scheduledDate.toISOString()}`
+    }), { status: 200 });
+
+  } catch (error: any) {
+    console.error("[v0] Unhandled error in new-event function:", error.message);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+}
