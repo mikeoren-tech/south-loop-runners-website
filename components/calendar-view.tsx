@@ -511,15 +511,15 @@ export function CalendarView() {
                         )}
                       </div>
                     ) : (
-                    <div className="grid grid-cols-7 gap-2">
+                    <div className="grid grid-cols-7 gap-2 sm:gap-3">
                       {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                        <div key={day} className="text-center text-sm font-semibold text-slr-blue-dark py-2">
+                        <div key={day} className="text-center text-xs sm:text-sm font-bold text-slr-blue-dark py-2 border-b-2 border-slr-blue/20">
                           {day}
                         </div>
                       ))}
 
                       {Array.from({ length: startingDayOfWeek }).map((_, i) => (
-                        <div key={`empty-${i}`} className="aspect-square" />
+                        <div key={`empty-${i}`} className="min-h-[120px]" />
                       ))}
 
                       {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -533,32 +533,38 @@ export function CalendarView() {
                           <div
                             key={day}
                             className={cn(
-                              "aspect-square border rounded-lg p-2 transition-all hover:border-slr-blue/50 hover:shadow-md",
-                              isToday && "border-primary bg-slr-blue-light/30 ring-2 ring-primary/20",
+                              "min-h-[120px] border rounded-lg p-2 transition-all hover:border-slr-blue/50 hover:shadow-md bg-card",
+                              isToday && "border-slr-red bg-slr-red/5 ring-2 ring-slr-red/20",
+                              dayEvents.length > 0 && "border-slr-blue/30"
                             )}
                           >
-                            <div className={cn("text-sm font-medium mb-1", isToday && "text-primary font-bold")}>{day}</div>
+                            <div className={cn("text-sm font-semibold mb-2", isToday && "text-slr-red")}>{day}</div>
                             <div className="space-y-1">
-                              {dayEvents.map((event) => (
+                              {dayEvents.slice(0, 3).map((event) => (
                                 <button
                                   key={event.id}
                                   onClick={() => setSelectedEvent(event)}
                                   className={cn(
-                                    "w-full text-xs p-1 rounded truncate text-left hover:opacity-80 transition-all hover:scale-105",
+                                    "w-full text-[10px] sm:text-xs px-1.5 py-1 rounded truncate text-left hover:opacity-90 transition-all font-medium shadow-sm",
                                     event.type === "weekly-run"
-                                      ? "bg-slr-blue/80 text-white"
-                                      : "bg-primary text-primary-foreground",
+                                      ? "bg-slr-blue text-white hover:bg-slr-blue-dark"
+                                      : "bg-slr-red text-white hover:bg-slr-red/90",
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
                                   {event.type === "race" ? (
-                                    <Trophy className="h-3 w-3 inline mr-1" />
+                                    <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3 inline mr-0.5" />
                                   ) : (
-                                    <Activity className="h-3 w-3 inline mr-1" />
+                                    <Activity className="h-2.5 w-2.5 sm:h-3 sm:w-3 inline mr-0.5" />
                                   )}
-                                  {event.title}
+                                  <span className="truncate">{event.title}</span>
                                 </button>
                               ))}
+                              {dayEvents.length > 3 && (
+                                <div className="text-[10px] text-slr-blue font-medium text-center py-0.5">
+                                  +{dayEvents.length - 3} more
+                                </div>
+                              )}
                             </div>
                           </div>
                         )
