@@ -265,10 +265,15 @@ export function CalendarView() {
         const response = await fetch("/api/events/all")
         if (response.ok) {
           const data = await response.json()
+          console.log("[Calendar] Fetched events:", data)
           setDbEvents(data)
+        } else {
+          console.error("[Calendar] Failed to fetch events, status:", response.status)
+          const errorText = await response.text()
+          console.error("[Calendar] Error response:", errorText)
         }
       } catch (error) {
-        console.error("[v0] Failed to fetch events:", error)
+        console.error("[Calendar] Failed to fetch events:", error)
       } finally {
         setIsLoading(false)
       }
@@ -493,6 +498,19 @@ export function CalendarView() {
                   </div>
 
                   <TabsContent value="month" className="mt-0">
+                    {isLoading ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        Loading events...
+                      </div>
+                    ) : filteredEvents.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <p className="text-lg font-medium mb-2">No events found</p>
+                        <p className="text-sm">Try adjusting your filters or check back later.</p>
+                        {dbEvents.length === 0 && (
+                          <p className="text-sm mt-2 text-amber-600">Database appears to be empty. Contact admin.</p>
+                        )}
+                      </div>
+                    ) : (
                     <div className="grid grid-cols-7 gap-2">
                       {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                         <div key={day} className="text-center text-sm font-semibold text-slr-blue-dark py-2">
@@ -546,14 +564,23 @@ export function CalendarView() {
                         )
                       })}
                     </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="list" className="mt-0">
+                    {isLoading ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        Loading events...
+                      </div>
+                    ) : (
                     <div className="space-y-4">
                       {filteredEvents.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                           <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
                           <p>No events match your filters</p>
+                          {dbEvents.length === 0 && (
+                            <p className="text-sm mt-2 text-amber-600">Database appears to be empty. Contact admin.</p>
+                          )}
                         </div>
                       ) : (
                         filteredEvents.map((event) => (
@@ -618,6 +645,7 @@ export function CalendarView() {
                         ))
                       )}
                     </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </CardContent>
