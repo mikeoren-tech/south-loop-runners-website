@@ -791,3 +791,30 @@ export function CalendarView() {
                 <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                     <p className="font-medium text-sm">Notes/Description</p>
                     <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedEvent.description}</p>
+                </div>
+            )}
+          </div>
+          
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+            {selectedEvent?.registrationUrl && (
+                <Button asChild variant="destructive" className="w-full sm:w-auto">
+                    <a href={selectedEvent.registrationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Register Now
+                    </a>
+                </Button>
+            )}
+            <Button onClick={() => selectedEvent && addToGoogleCalendar(selectedEvent)} variant="outline" className="w-full sm:w-auto text-slr-blue-dark hover:bg-slr-blue/10 border-slr-blue/50">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Google Calendar
+            </Button>
+            <Button onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)} variant="outline" className="w-full sm:w-auto text-slr-blue-dark hover:bg-slr-blue/10 border-slr-blue/50">
+                <Download className="h-4 w-4 mr-2" />
+                Download ICS
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
