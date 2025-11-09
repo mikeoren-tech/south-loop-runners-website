@@ -138,11 +138,11 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   /* South Loop Runners custom colors */
-  --color-slr-red: 356 77% 57%;
-  --color-slr-red-dark: 356 77% 45%;
-  --color-slr-blue: 184 39% 76%;
-  --color-slr-blue-dark: 184 39% 65%;
-  --color-slr-blue-light: 184 39% 88%;
+  --color-slr-red: var(--slr-red);
+  --color-slr-red-dark: var(--slr-red-dark);
+  --color-slr-blue: var(--slr-blue);
+  --color-slr-blue-dark: var(--slr-blue-dark);
+  --color-slr-blue-light: var(--slr-blue-light);
   /* computed shadow variables below - do not modify */
   --shadow-2xs: var(--shadow-x) var(--shadow-y)
     color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent);
