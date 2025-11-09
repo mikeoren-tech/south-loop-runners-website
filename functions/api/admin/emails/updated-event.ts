@@ -23,26 +23,41 @@ export async function onRequestPost(context: any) {
   try {
     const { eventId } = await context.request.json()
 
-    // Fetch event details
-    const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(eventId).first()
+    // 1. Fetch the list of contacts from your audience
+    const { data: audienceData, error: audienceError } = await resend.contacts.list({
+      audienceId: audienceId,
+    })
 
-    if (!event) {
-      return new Response(JSON.stringify({ error: "Event not found" }), {
-        status: 404,
+    if (audienceError) {
+      console.error("[v0] Error fetching Resend audience:", audienceError)
+      return new Response(JSON.stringify({ error: "Failed to fetch audience" }), {
+        status: 500,
         headers: { "Content-Type": "application/json" },
       })
     }
 
-    // Generate email template
-    const { subject, html } = getUpdatedEventEmailTemplate(event)
+    // The contacts are nested in a 'data' property
+    const contacts = audienceData?.data
 
-    // Initialize Resend
-    const resend = new Resend(resendApiKey)
+    if (!contacts || contacts.length === 0) {
+      // Nothing to do, but not an "error"
+      return new Response(JSON.stringify({ success: true, message: "No contacts in audience to email." }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+    
+    // 2. Get the list of email addresses
+    // WARNING: See note below. This assumes your list is < 50 recipients.
+    const emailList = contacts.map(contact => contact.email)
 
-    // Send email to audience
+    // 3. Send email using BCC to protect privacy
     const { data, error } = await resend.emails.send({
       from: "South Loop Runners <events@southlooprunners.com>",
-      to: [`audience:${audienceId}`],
+      // Send the "to" field to yourself or a main inbox
+      to: "events@southlooprunners.com", 
+      // Use BCC for the audience list
+      bcc: emailList, 
       subject,
       html,
     })

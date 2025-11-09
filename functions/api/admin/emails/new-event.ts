@@ -23,29 +23,30 @@ export async function onRequestPost(context: any) {
   try {
     const { eventId } = await context.request.json()
 
-    // Fetch event details
-    const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(eventId).first()
+    const { data: audienceData, error: audienceError } = await resend.contacts.list({
+      audienceId: RESEND_AUDIENCE_ID,
+    });
 
-    if (!event) {
-      return new Response(JSON.stringify({ error: "Event not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      })
+    if (audienceError) {
+      throw new Error(`Failed to fetch Resend audience: ${audienceError.message}`);
     }
 
-    // Generate email template
-    const { subject, html } = getNewEventEmailTemplate(event)
+    const contacts = audienceData?.data;
+    if (!contacts || contacts.length === 0) {
+      return new Response(JSON.stringify({ success: true, message: "No contacts to email." }), { status: 200 });
+    }
 
-    // Initialize Resend
-    const resend = new Resend(resendApiKey)
+    // 2. Get the actual email addresses
+    const emailList = contacts.map(contact => contact.email);
 
-    // Send email to audience
+    // 3. Send the email
     const { data, error } = await resend.emails.send({
       from: "South Loop Runners <events@southlooprunners.com>",
-      to: [`audience:${audienceId}`],  // Fixed: added opening bracket [
+      to: "events@southlooprunners.com", // Send to yourself
+      bcc: emailList, // Put your 2 subscribers (and future 1500) here
       subject,
       html,
-    })
+    });
 
     if (error) {
       console.error("[v0] Error sending email:", error)
