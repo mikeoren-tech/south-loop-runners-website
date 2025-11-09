@@ -26,7 +26,7 @@ export async function onRequestPost(context: any) {
     const { subject, html } = getCanceledEventEmailTemplate(event)
 
     // Initialize Resend
-    const resend = new Resend(resendApiKey)
+    const resend = new Resend(RESEND_API_KEY);
 
     const { data: audienceData, error: audienceError } = await resend.contacts.list({
       audienceId: RESEND_AUDIENCE_ID,
@@ -41,13 +41,15 @@ export async function onRequestPost(context: any) {
       return new Response(JSON.stringify({ success: true, message: "No contacts to email." }), { status: 200 });
     }
 
-    // Send email to audience
+    const emailList = contacts.map(contact => contact.email);
+
     const { data, error } = await resend.emails.send({
-      from: "South Loop Runners <events@southlooprunners.com>",
-      to: [`audience:${audienceId}`],
+      from: "South Loop Runners <updateds@updates.southlooprunners.com>",
+      to: "South Loop Runners <updates@updates.southlooprunners.com>",
+      bcc: emailList,
       subject,
       html,
-    })
+    });
 
     if (error) {
       console.error("[v0] Error sending email:", error)

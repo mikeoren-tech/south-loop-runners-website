@@ -9,8 +9,6 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: "Email service not configured" }), { status: 500 });
   }
 
-  console.log("New-event function invoked...");
-
   try {
     const { eventId } = await context.request.json();
     const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(eventId).first();
@@ -24,8 +22,6 @@ export async function onRequestPost(context) {
 
     const resend = new Resend(RESEND_API_KEY);
 
-    console.log(`Fetching contacts for audience ID: ${RESEND_AUDIENCE_ID}`);
-
     const { data: audienceData, error: audienceError } = await resend.contacts.list({
       audienceId: RESEND_AUDIENCE_ID,
     });
@@ -37,16 +33,14 @@ export async function onRequestPost(context) {
 
     const contacts = audienceData?.data;
     if (!contacts || contacts.length === 0) {
-      console.log("No contacts found in audience. Exiting gracefully.");
       return new Response(JSON.stringify({ success: true, message: "No contacts to email." }), { status: 200 });
     }
 
-    console.log(`Found ${contacts.length} contacts. Preparing to send...`);
     const emailList = contacts.map(contact => contact.email);
 
     const { data, error } = await resend.emails.send({
-      from: "South Loop Runners <updateds@southlooprunners.com>",
-      to: "South Loop Runners <updates@southlooprunners.com>",
+      from: "South Loop Runners <updateds@updates.southlooprunners.com>",
+      to: "South Loop Runners <updates@updates.southlooprunners.com>",
       bcc: emailList,
       subject,
       html,
@@ -57,7 +51,6 @@ export async function onRequestPost(context) {
       throw new Error("Failed to send email");
     }
 
-    console.log(`Email sent successfully! Email ID: ${data?.id}`);
     return new Response(JSON.stringify({ success: true, emailId: data?.id }), { status: 200 });
 
   } catch (error) {
