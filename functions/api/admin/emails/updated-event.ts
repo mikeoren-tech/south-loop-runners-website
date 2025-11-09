@@ -29,7 +29,7 @@ export async function onRequestPost(context: any) {
     })
 
     if (audienceError) {
-      console.error("[v0] Error fetching Resend audience:", audienceError)
+      console.error("Error fetching Resend audience:", audienceError)
       return new Response(JSON.stringify({ error: "Failed to fetch audience" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -48,13 +48,11 @@ export async function onRequestPost(context: any) {
     }
     
     // 2. Get the list of email addresses
-    // WARNING: See note below. This assumes your list is < 50 recipients.
     const emailList = contacts.map(contact => contact.email)
 
     // 3. Send email using BCC to protect privacy
     const { data, error } = await resend.emails.send({
       from: "South Loop Runners <events@southlooprunners.com>",
-      // Send the "to" field to yourself or a main inbox
       to: "events@southlooprunners.com", 
       // Use BCC for the audience list
       bcc: emailList, 

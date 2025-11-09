@@ -28,6 +28,19 @@ export async function onRequestPost(context: any) {
     // Initialize Resend
     const resend = new Resend(resendApiKey)
 
+    const { data: audienceData, error: audienceError } = await resend.contacts.list({
+      audienceId: RESEND_AUDIENCE_ID,
+    });
+
+    if (audienceError) {
+      throw new Error(`Failed to fetch Resend audience: ${audienceError.message}`);
+    }
+
+    const contacts = audienceData?.data;
+    if (!contacts || contacts.length === 0) {
+      return new Response(JSON.stringify({ success: true, message: "No contacts to email." }), { status: 200 });
+    }
+
     // Send email to audience
     const { data, error } = await resend.emails.send({
       from: "South Loop Runners <events@southlooprunners.com>",
