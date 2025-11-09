@@ -432,6 +432,7 @@ export function UpcomingRuns() {
     <section className="relative py-20 bg-[#f9fafb]" aria-labelledby="runs-heading">
       <div className="container mx-auto px-4">
         <ScrollReveal className="text-center mb-12">
+
           <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance">
             Weekly Runs
           </h2>
