@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog" // Added DialogFooter for completeness
 
 interface DatabaseEvent {
   id: string
@@ -74,6 +74,11 @@ function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks
     const eventDate = new Date(start)
     eventDate.setDate(start.getDate() + i * 7)
 
+    // Check if the generated event is not in the past
+    if (eventDate < new Date(new Date().setHours(0, 0, 0, 0))) {
+        continue;
+    }
+
     events.push({
       id: `${run.id}-${eventDate.toISOString()}`,
       title: run.title,
@@ -81,28 +86,43 @@ function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks
       time: run.time,
       location: run.location,
       type: run.type === "race" ? "race" : "weekly-run",
-      details: `${run.distance || ""} • ${run.pace || ""}`.trim(),
+      details: `${run.distance || ""} • ${run.pace || ""}`.trim().replace(/^ • | • $/g, ""),
       isRecurring: true,
       description: run.description,
       facebookLink: run.facebook_link || undefined,
       stravaLink: run.strava_link || undefined,
+      registrationUrl: run.registration_url || undefined, // Added registrationUrl here
     })
   }
 
   return events
 }
 
-function parseEventTime(timeStr: string) {
-  const [hours, minutes] = timeStr.split(":")
-  const period = timeStr.includes("PM") ? "PM" : "AM"
-  let hour = Number.parseInt(hours)
+function parseEventTime(timeStr: string): { hour: number; minutes: number } {
+  // Use a regex to capture hour, minutes (optional), and AM/PM part
+  const match = timeStr.match(/(\d+)(:(\d+))?(\s*(AM|PM))?/i)
+  if (!match) return { hour: 0, minutes: 0 }
+
+  let hour = Number.parseInt(match[1])
+  const minutes = Number.parseInt(match[3] || '0')
+  const period = match[5]?.toUpperCase()
+
   if (period === "PM" && hour !== 12) hour += 12
   if (period === "AM" && hour === 12) hour = 0
-  return { hour, minutes: Number.parseInt(minutes.replace(/[^\d]/g, "")) }
+  
+  return { hour, minutes }
 }
 
 function formatDateForCalendar(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
+  // Generates date string in the format YYYYMMDDTHHMMSSZ for ICS/Google Calendar
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
 function exportToICS(events: CalendarEvent[]) {
@@ -110,8 +130,13 @@ function exportToICS(events: CalendarEvent[]) {
     .map((event) => {
       const start = new Date(event.date)
       const { hour, minutes } = parseEventTime(event.time)
-      start.setHours(hour, minutes, 0)
-      const end = new Date(start.getTime() + 90 * 60 * 1000)
+      start.setHours(hour, minutes, 0, 0)
+      const end = new Date(start.getTime() + 90 * 60 * 1000) // Assumes 90-minute duration
+
+      // Escape special characters in SUMMARY and DESCRIPTION for ICS
+      const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n')
+      
+      const details = event.description || event.details
 
       return [
         "BEGIN:VEVENT",
@@ -119,9 +144,9 @@ function exportToICS(events: CalendarEvent[]) {
         `DTSTAMP:${formatDateForCalendar(new Date())}`,
         `DTSTART:${formatDateForCalendar(start)}`,
         `DTEND:${formatDateForCalendar(end)}`,
-        `SUMMARY:${event.title}`,
-        `LOCATION:${event.location}`,
-        `DESCRIPTION:${event.details}`,
+        `SUMMARY:${escapeICS(event.title)}`,
+        `LOCATION:${escapeICS(event.location)}`,
+        `DESCRIPTION:${escapeICS(details)}`,
         "END:VEVENT",
       ].join("\r\n")
     })
@@ -149,14 +174,14 @@ function exportToICS(events: CalendarEvent[]) {
 function addToGoogleCalendar(event: CalendarEvent) {
   const start = new Date(event.date)
   const { hour, minutes } = parseEventTime(event.time)
-  start.setHours(hour, minutes, 0)
+  start.setHours(hour, minutes, 0, 0)
   const end = new Date(start.getTime() + 90 * 60 * 1000)
 
   const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
   googleCalUrl.searchParams.set("action", "TEMPLATE")
   googleCalUrl.searchParams.set("text", event.title)
   googleCalUrl.searchParams.set("dates", `${formatDateForCalendar(start)}/${formatDateForCalendar(end)}`)
-  googleCalUrl.searchParams.set("details", event.details)
+  googleCalUrl.searchParams.set("details", event.description || event.details)
   googleCalUrl.searchParams.set("location", event.location)
 
   window.open(googleCalUrl.toString(), "_blank")
@@ -165,8 +190,12 @@ function addToGoogleCalendar(event: CalendarEvent) {
 function exportSingleEventToICS(event: CalendarEvent) {
   const start = new Date(event.date)
   const { hour, minutes } = parseEventTime(event.time)
-  start.setHours(hour, minutes, 0)
+  start.setHours(hour, minutes, 0, 0)
   const end = new Date(start.getTime() + 90 * 60 * 1000)
+
+  // Escape special characters in SUMMARY and DESCRIPTION for ICS
+  const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n')
+  const details = event.description || event.details
 
   const icsContent = [
     "BEGIN:VCALENDAR",
@@ -179,9 +208,9 @@ function exportSingleEventToICS(event: CalendarEvent) {
     `DTSTAMP:${formatDateForCalendar(new Date())}`,
     `DTSTART:${formatDateForCalendar(start)}`,
     `DTEND:${formatDateForCalendar(end)}`,
-    `SUMMARY:${event.title}`,
-    `LOCATION:${event.location}`,
-    `DESCRIPTION:${event.details}`,
+    `SUMMARY:${escapeICS(event.title)}`,
+    `LOCATION:${escapeICS(event.location)}`,
+    `DESCRIPTION:${escapeICS(details)}`,
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n")
@@ -207,13 +236,15 @@ function toggleFilter(filters: Set<string>, type: string): Set<string> {
 
 function getInitialView(): "month" | "list" {
   if (typeof window !== "undefined") {
+    // Return "list" for small screens (less than 768px wide), "month" otherwise
     return window.innerWidth < 768 ? "list" : "month"
   }
-  return "month"
+  return "month" // Default for SSR
 }
 
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
+  // Added responsive effect for view
   const [view, setView] = useState<"month" | "list">(getInitialView)
   const [filters, setFilters] = useState<Set<string>>(new Set(["weekly-run", "race"]))
   const [isNotificationExpanded, setIsNotificationExpanded] = useState(false)
@@ -223,6 +254,15 @@ export function CalendarView() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [dbEvents, setDbEvents] = useState<DatabaseEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  // Recalculate view on window resize
+  useEffect(() => {
+    function handleResize() {
+        setView(getInitialView());
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -250,15 +290,36 @@ export function CalendarView() {
     if (isLoading || dbEvents.length === 0) return []
 
     const events: CalendarEvent[] = []
+    // Get the start of today for filtering out past one-time events
+    const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 
     dbEvents.forEach((event) => {
       if (event.is_recurring && event.day_of_week !== null) {
+        // Generate occurrences for 12 weeks into the future
         const occurrences = generateWeeklyRunOccurrences(event, new Date(), 12)
         events.push(...occurrences)
       } else if (event.date) {
         const [year, month, day] = event.date.split("-").map(Number)
+        // Date constructor uses local time zone
         const localDate = new Date(year, month - 1, day)
+        
+        // Skip past one-time events
+        if (localDate < todayStart) {
+          return;
+        }
 
+        let details = event.distance || ""
+        if (event.distances) {
+          try {
+            const distancesArray = JSON.parse(event.distances);
+            if (Array.isArray(distancesArray) && distancesArray.length > 0) {
+              details = distancesArray.join(", ");
+            }
+          } catch (e) {
+            console.error("Failed to parse distances:", e);
+          }
+        }
+        
         events.push({
           id: event.id,
           title: event.title,
@@ -266,7 +327,7 @@ export function CalendarView() {
           time: event.time,
           location: event.location,
           type: event.type === "race" ? "race" : "weekly-run",
-          details: event.distances ? JSON.parse(event.distances).join(", ") : event.distance || "",
+          details: details,
           isRecurring: false,
           description: event.description,
           facebookLink: event.facebook_link || undefined,
@@ -276,53 +337,60 @@ export function CalendarView() {
       }
     })
 
+    // Sort all events by date
     return events.sort((a, b) => a.date.getTime() - b.date.getTime())
   }, [dbEvents, isLoading])
 
   const filteredEvents = useMemo(() => {
+    // Filter events by the selected types
     return allEvents.filter((event) => filters.has(event.type))
   }, [allEvents, filters])
+  
+  // Use useCallback to memoize the navigation functions
+  const navigateMonth = useCallback((direction: "prev" | "next") => {
+    setCurrentDate((prev) => {
+      const newDate = new Date(prev)
+      newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1))
+      return newDate
+    })
+  }, [])
 
   const monthEvents = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
 
     return filteredEvents.filter((event) => {
+      // Filter for events in the currently selected month, including recurring events that fall in this month
       return event.date.getFullYear() === year && event.date.getMonth() === month
     })
   }, [filteredEvents, currentDate])
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear()
-    const month = date.getMonth()
+  // Memoize month details calculation
+  const { daysInMonth, startingDayOfWeek, monthName } = useMemo(() => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
-    const daysInMonth = lastDay.getDate()
-    const startingDayOfWeek = firstDay.getDay()
+    const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
-    return { daysInMonth, startingDayOfWeek }
-  }
+    return { 
+        daysInMonth: lastDay.getDate(), 
+        startingDayOfWeek: firstDay.getDay(),
+        monthName
+    }
+  }, [currentDate])
 
-  const navigateMonth = (direction: "prev" | "next") => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev)
-      newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1))
-      return newDate
-    })
-  }
 
   const getEventsForDay = (day: number) => {
     return monthEvents.filter((event) => event.date.getDate() === day)
   }
-
-  const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate)
-  const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
   const handleNotificationSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
+      // API call to subscribe
       const response = await fetch("/api/subscribe-notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -388,15 +456,26 @@ export function CalendarView() {
 
                 <div className="flex items-center gap-2 ml-auto">
                   {!subscribed && (
-                    <Button
-                      onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
-                      variant={isNotificationExpanded ? "secondary" : "default"}
-                      size="sm"
-                      className="gap-2"
-                    >
-                      <Bell className="h-4 w-4" />
-                      {isNotificationExpanded ? "Close" : "Get Notifications"}
-                    </Button>
+                    <>
+                      <Button
+                        onClick={() => exportToICS(filteredEvents)}
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 text-slr-blue-dark hover:text-slr-blue"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download All
+                      </Button>
+                      <Button
+                        onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
+                        variant={isNotificationExpanded ? "secondary" : "default"}
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <Bell className="h-4 w-4" />
+                        {isNotificationExpanded ? "Close" : "Get Notifications"}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -424,8 +503,8 @@ export function CalendarView() {
               </div>
 
               {subscribed && (
-                <div className="flex items-center gap-2 text-primary bg-slr-blue-light/50 p-3 rounded-lg mt-4">
-                  <Star className="h-4 w-4 fill-primary" />
+                <div className="flex items-center gap-2 text-slr-blue-dark bg-slr-blue-light/50 p-3 rounded-lg mt-4">
+                  <Star className="h-4 w-4 fill-slr-blue" />
                   <span className="text-sm font-medium">You're subscribed to event updates!</span>
                 </div>
               )}
@@ -436,7 +515,7 @@ export function CalendarView() {
         <ScrollReveal delay={200}>
           <Card className="border-2 border-slr-blue/40 shadow-2xl backdrop-blur-lg bg-gradient-to-br from-white/70 via-white/50 to-white/40 dark:from-slate-900/70 dark:via-slate-900/50 dark:to-slate-900/40">
             <CardContent className="p-6">
-              <Tabs value={view} onValueChange={(v) => setView(v as any)} className="w-full">
+              <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")} className="w-full">
                 <div className="flex items-center justify-between mb-4">
                   <TabsList className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border-2 border-slr-blue/30 shadow-lg">
                     <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue data-[state=active]:text-white data-[state=active]:shadow-md">
@@ -500,9 +579,9 @@ export function CalendarView() {
                       {Array.from({ length: daysInMonth }).map((_, i) => {
                         const day = i + 1
                         const dayEvents = getEventsForDay(day)
+                        const currentDateObject = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                         const isToday =
-                          new Date().toDateString() ===
-                          new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString()
+                          new Date().toDateString() === currentDateObject.toDateString()
 
                         return (
                           <div
@@ -517,6 +596,7 @@ export function CalendarView() {
                                   ? "border-slr-red/60 hover:border-slr-red hover:shadow-xl hover:shadow-slr-red/25 hover:ring-2 hover:ring-slr-red/20"
                                   : "border-slr-blue/40 hover:border-slr-blue/60 hover:shadow-lg hover:shadow-slr-blue/15"
                             )}
+                            onClick={() => dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : dayEvents.length > 1 && setSelectedEvent(dayEvents[0])} // Click opens dialog if one event or falls back to first event if more
                           >
                             <div className={cn(
                               "text-sm font-bold mb-2 relative z-10",
@@ -528,7 +608,7 @@ export function CalendarView() {
                               {dayEvents.slice(0, 3).map((event) => (
                                 <button
                                   key={event.id}
-                                  onClick={() => setSelectedEvent(event)}
+                                  onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                                   className={cn(
                                     "w-full text-xs px-2 py-1.5 rounded-md text-left transition-all font-semibold",
                                     "backdrop-blur-sm border shadow-sm",
@@ -653,13 +733,61 @@ export function CalendarView() {
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               {selectedEvent?.type === "race" ? (
-                <Trophy className="h-6 w-6 text-primary" />
+                <Trophy className="h-6 w-6 text-slr-red fill-slr-red/20" />
               ) : (
                 <Star className="h-6 w-6 fill-slr-blue text-slr-blue" />
               )}
               {selectedEvent?.title}
             </DialogTitle>
-            <DialogDescription className="text-base">{selectedEvent?.details}</DialogDescription>
+            <DialogDescription className="text-base font-medium">
+                {selectedEvent?.details}
+            </DialogDescription>
+            <div className="flex flex-wrap gap-2 pt-2">
+              {selectedEvent?.type && (
+                <Badge variant={selectedEvent.type === "race" ? "destructive" : "default"}>
+                  {selectedEvent.type === "race" ? 'Race' : 'Weekly Run'}
+                </Badge>
+              )}
+              {selectedEvent?.isRecurring && (
+                <Badge variant="outline" className="border-slr-blue text-slr-blue-dark">Recurring</Badge>
+              )}
+            </div>
           </DialogHeader>
 
-          <div className="space-y
+          {/* This is the div that was incomplete. Adding the content and closing tags. */}
+          <div className="space-y-4 py-2">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-5 w-5 text-slr-blue-dark flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium">Date</p>
+                <p className="text-muted-foreground">
+                  {selectedEvent?.date.toLocaleDateString("en-US", {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-slr-blue-dark flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium">Time</p>
+                <p className="text-muted-foreground">{selectedEvent?.time}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-slr-blue-dark flex-shrink-0 mt-1" />
+              <div className="text-sm">
+                <p className="font-medium">Location</p>
+                <p className="text-muted-foreground">{selectedEvent?.location}</p>
+              </div>
+            </div>
+            
+            {selectedEvent?.description && (
+                <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <p className="font-medium text-sm">Notes/Description</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedEvent.description}</p>
