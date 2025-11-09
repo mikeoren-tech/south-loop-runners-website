@@ -333,7 +333,7 @@ const getEmailStyles = (): string => `
 const buildHeader = (title: string, subtitle: string): string => `
   <div class="header">
     <img 
-      src="/images/design-mode/slr-logo(1).jpg" 
+      src="/images/design-mode/slr-logo.jpg" 
       alt="South Loop Runners" 
       class="logo-image"
       width="220"

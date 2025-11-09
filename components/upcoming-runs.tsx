@@ -431,7 +431,7 @@ export function UpcomingRuns() {
   return (
     <section className="relative py-20 bg-[#f9fafb]" aria-labelledby="runs-heading">
       <div className="container mx-auto px-4">
-        <ScrollReveal className="text-center mb-12">
+        <div className="text-center mb-12">
 
           <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance">
             Weekly Runs
@@ -455,7 +455,7 @@ export function UpcomingRuns() {
               </Link>
             </Button>
           </div>
-        </ScrollReveal>
+          </div>
 
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
