@@ -660,4 +660,6 @@ export function CalendarView() {
               {selectedEvent?.title}
             </DialogTitle>
             <DialogDescription className="text-base">{selectedEvent?.details}</DialogDescription>
-          </Dialog
+          </DialogHeader>
+
+          <div className="space-y
