@@ -377,10 +377,10 @@ export function CalendarView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f9fafb] to-white py-20">
+    <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-20">
       <div className="container mx-auto px-4">
         <ScrollReveal className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Events Calendar</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Events Calendar</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             View all upcoming weekly runs and races. Never miss an event!
           </p>
@@ -388,7 +388,7 @@ export function CalendarView() {
 
         <div className="max-w-7xl mx-auto space-y-6">
           <ScrollReveal delay={100}>
-            <Card className="glass-strong border-0">
+            <Card className="border-slr-blue/20 bg-card/80 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2">
@@ -451,7 +451,7 @@ export function CalendarView() {
                 </div>
 
                 {subscribed && (
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 p-3 rounded-lg mt-4">
+                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 p-3 rounded-lg mt-4 shadow-sm">
                     <Activity className="h-4 w-4" />
                     <span className="text-sm font-medium">You're subscribed to event updates!</span>
                   </div>
@@ -461,7 +461,7 @@ export function CalendarView() {
           </ScrollReveal>
 
           <ScrollReveal delay={200}>
-            <Card className="glass-strong border-0">
+            <Card className="border-slr-blue/20 bg-card/80 backdrop-blur-sm shadow-lg">
               <CardContent className="p-6">
                 <Tabs value={view} onValueChange={(v) => setView(v as any)} className="w-full">
                   <div className="flex items-center justify-between mb-4">
@@ -512,8 +512,8 @@ export function CalendarView() {
                           <div
                             key={day}
                             className={cn(
-                              "aspect-square border rounded-lg p-2 transition-colors hover:bg-muted/50",
-                              isToday && "border-primary bg-primary/5",
+                              "aspect-square border rounded-lg p-2 transition-all hover:shadow-md hover:border-slr-blue/30",
+                              isToday && "border-primary bg-slr-blue-light/30 shadow-sm",
                             )}
                           >
                             <div className="text-sm font-medium mb-1">{day}</div>
@@ -523,10 +523,10 @@ export function CalendarView() {
                                   key={event.id}
                                   onClick={() => setSelectedEvent(event)}
                                   className={cn(
-                                    "w-full text-xs p-1 rounded truncate text-left hover:opacity-80 transition-opacity",
+                                    "w-full text-xs p-1 rounded truncate text-left hover:shadow-sm transition-all",
                                     event.type === "weekly-run"
-                                      ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                                      : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300",
+                                      ? "bg-slr-blue-light/50 text-slr-blue-dark hover:bg-slr-blue-light/80"
+                                      : "bg-primary/10 text-primary hover:bg-primary/20",
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
@@ -555,7 +555,7 @@ export function CalendarView() {
                       ) : (
                         filteredEvents.map((event) => (
                           <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
-                            <Card className="glass border-0 hover-lift transition-transform">
+                            <Card className="border-slr-blue/20 bg-card hover:shadow-xl hover:border-slr-blue/30 transition-all">
                               <CardContent className="p-4">
                                 <div className="flex items-start gap-4">
                                   <div className="flex-shrink-0 w-16 text-center">
@@ -581,7 +581,7 @@ export function CalendarView() {
 
                                       <Badge
                                         variant={event.type === "race" ? "destructive" : "default"}
-                                        className="shrink-0"
+                                        className="shrink-0 shadow-sm"
                                       >
                                         {event.type === "race" ? (
                                           <>
@@ -624,7 +624,7 @@ export function CalendarView() {
       </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        <DialogContent className="sm:max-w-[500px] glass-strong border-0">
+        <DialogContent className="sm:max-w-[500px] border-slr-blue/30 bg-card/80 backdrop-blur-sm shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               {selectedEvent?.type === "race" ? (

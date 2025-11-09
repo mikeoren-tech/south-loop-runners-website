@@ -37,6 +37,12 @@
   --sidebar-accent-foreground: #1e3a8a;
   --sidebar-border: #e5e7eb;
   --sidebar-ring: #b4def7;
+  /* South Loop Runners custom colors */
+  --slr-red: 356 77% 57%;
+  --slr-red-dark: 356 77% 45%;
+  --slr-blue: 184 39% 76%;
+  --slr-blue-dark: 184 39% 65%;
+  --slr-blue-light: 184 39% 88%;
   --shadow-x: 0px;
   --shadow-y: 1px;
   --shadow-blur: 2px;
@@ -78,6 +84,12 @@
   --sidebar-accent-foreground: #d9eef7;
   --sidebar-border: #404040;
   --sidebar-ring: #9dd3f0;
+  /* South Loop Runners custom colors - dark mode */
+  --slr-red: 356 77% 57%;
+  --slr-red-dark: 356 77% 65%;
+  --slr-blue: 184 39% 65%;
+  --slr-blue-dark: 184 39% 55%;
+  --slr-blue-light: 184 39% 75%;
   --shadow-x: 0px;
   --shadow-y: 1px;
   --shadow-blur: 2px;
@@ -125,6 +137,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* South Loop Runners custom colors */
+  --color-slr-red: 356 77% 57%;
+  --color-slr-red-dark: 356 77% 45%;
+  --color-slr-blue: 184 39% 76%;
+  --color-slr-blue-dark: 184 39% 65%;
+  --color-slr-blue-light: 184 39% 88%;
   /* computed shadow variables below - do not modify */
   --shadow-2xs: var(--shadow-x) var(--shadow-y)
     color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent);
