@@ -92,29 +92,33 @@ function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks
   return events
 }
 
+function parseEventTime(timeStr: string) {
+  const [hours, minutes] = timeStr.split(":")
+  const period = timeStr.includes("PM") ? "PM" : "AM"
+  let hour = Number.parseInt(hours)
+  if (period === "PM" && hour !== 12) hour += 12
+  if (period === "AM" && hour === 12) hour = 0
+  return { hour, minutes: Number.parseInt(minutes.replace(/[^\d]/g, "")) }
+}
+
+function formatDateForCalendar(date: Date): string {
+  return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
+}
+
 function exportToICS(events: CalendarEvent[]) {
   const icsEvents = events
     .map((event) => {
       const start = new Date(event.date)
-      const [hours, minutes] = event.time.split(":")
-      const period = event.time.includes("PM") ? "PM" : "AM"
-      let hour = Number.parseInt(hours)
-      if (period === "PM" && hour !== 12) hour += 12
-      if (period === "AM" && hour === 12) hour = 0
-
-      start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
+      const { hour, minutes } = parseEventTime(event.time)
+      start.setHours(hour, minutes, 0)
       const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-      const formatDate = (date: Date) => {
-        return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
-      }
 
       return [
         "BEGIN:VEVENT",
         `UID:${event.id}@southlooprunners.com`,
-        `DTSTAMP:${formatDate(new Date())}`,
-        `DTSTART:${formatDate(start)}`,
-        `DTEND:${formatDate(end)}`,
+        `DTSTAMP:${formatDateForCalendar(new Date())}`,
+        `DTSTART:${formatDateForCalendar(start)}`,
+        `DTEND:${formatDateForCalendar(end)}`,
         `SUMMARY:${event.title}`,
         `LOCATION:${event.location}`,
         `DESCRIPTION:${event.details}`,
@@ -142,53 +146,16 @@ function exportToICS(events: CalendarEvent[]) {
   document.body.removeChild(link)
 }
 
-function addToGoogleCalendar(events: CalendarEvent[]) {
-  const nextEvent = events.find((e) => e.date >= new Date())
-  if (!nextEvent) return
-
-  const start = new Date(nextEvent.date)
-  const [hours, minutes] = nextEvent.time.split(":")
-  const period = nextEvent.time.includes("PM") ? "PM" : "AM"
-  let hour = Number.parseInt(hours)
-  if (period === "PM" && hour !== 12) hour += 12
-  if (period === "AM" && hour === 12) hour = 0
-  start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
-
-  const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-  const formatGoogleDate = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
-  }
-
-  const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
-  googleCalUrl.searchParams.set("action", "TEMPLATE")
-  googleCalUrl.searchParams.set("text", nextEvent.title)
-  googleCalUrl.searchParams.set("dates", `${formatGoogleDate(start)}/${formatGoogleDate(end)}`)
-  googleCalUrl.searchParams.set("details", nextEvent.details)
-  googleCalUrl.searchParams.set("location", nextEvent.location)
-
-  window.open(googleCalUrl.toString(), "_blank")
-}
-
-function addSingleEventToGoogleCalendar(event: CalendarEvent) {
+function addToGoogleCalendar(event: CalendarEvent) {
   const start = new Date(event.date)
-  const [hours, minutes] = event.time.split(":")
-  const period = event.time.includes("PM") ? "PM" : "AM"
-  let hour = Number.parseInt(hours)
-  if (period === "PM" && hour !== 12) hour += 12
-  if (period === "AM" && hour === 12) hour = 0
-  start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
-
+  const { hour, minutes } = parseEventTime(event.time)
+  start.setHours(hour, minutes, 0)
   const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-  const formatGoogleDate = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
-  }
 
   const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
   googleCalUrl.searchParams.set("action", "TEMPLATE")
   googleCalUrl.searchParams.set("text", event.title)
-  googleCalUrl.searchParams.set("dates", `${formatGoogleDate(start)}/${formatGoogleDate(end)}`)
+  googleCalUrl.searchParams.set("dates", `${formatDateForCalendar(start)}/${formatDateForCalendar(end)}`)
   googleCalUrl.searchParams.set("details", event.details)
   googleCalUrl.searchParams.set("location", event.location)
 
@@ -197,18 +164,9 @@ function addSingleEventToGoogleCalendar(event: CalendarEvent) {
 
 function exportSingleEventToICS(event: CalendarEvent) {
   const start = new Date(event.date)
-  const [hours, minutes] = event.time.split(":")
-  const period = event.time.includes("PM") ? "PM" : "AM"
-  let hour = Number.parseInt(hours)
-  if (period === "PM" && hour !== 12) hour += 12
-  if (period === "AM" && hour === 12) hour = 0
-
-  start.setHours(hour, Number.parseInt(minutes.replace(/[^\d]/g, "")), 0)
+  const { hour, minutes } = parseEventTime(event.time)
+  start.setHours(hour, minutes, 0)
   const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-  const formatDate = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
-  }
 
   const icsContent = [
     "BEGIN:VCALENDAR",
@@ -218,9 +176,9 @@ function exportSingleEventToICS(event: CalendarEvent) {
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
     `UID:${event.id}@southlooprunners.com`,
-    `DTSTAMP:${formatDate(new Date())}`,
-    `DTSTART:${formatDate(start)}`,
-    `DTEND:${formatDate(end)}`,
+    `DTSTAMP:${formatDateForCalendar(new Date())}`,
+    `DTSTART:${formatDateForCalendar(start)}`,
+    `DTEND:${formatDateForCalendar(end)}`,
     `SUMMARY:${event.title}`,
     `LOCATION:${event.location}`,
     `DESCRIPTION:${event.details}`,
@@ -247,9 +205,16 @@ function toggleFilter(filters: Set<string>, type: string): Set<string> {
   return newFilters
 }
 
+function getInitialView(): "month" | "list" {
+  if (typeof window !== "undefined") {
+    return window.innerWidth < 768 ? "list" : "month"
+  }
+  return "month"
+}
+
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [view, setView] = useState<"month" | "list">("month")
+  const [view, setView] = useState<"month" | "list">(getInitialView)
   const [filters, setFilters] = useState<Set<string>>(new Set(["weekly-run", "race"]))
   const [isNotificationExpanded, setIsNotificationExpanded] = useState(false)
   const [email, setEmail] = useState("")
@@ -384,142 +349,152 @@ export function CalendarView() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-        <ScrollReveal className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-            <span className="text-slr-red">★</span>{" "}
-            <span className="text-slr-blue">Events Calendar</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            View all upcoming weekly runs and races. Never miss an event!
-          </p>
+      <ScrollReveal className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+          <span className="text-slr-red">★</span>{" "}
+          <span className="text-slr-blue">Events Calendar</span>
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          View all upcoming weekly runs and races. Never miss an event!
+        </p>
+      </ScrollReveal>
+
+      <div className="max-w-7xl mx-auto space-y-6">
+        <ScrollReveal delay={100}>
+          <Card className="border-slr-blue/20 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Button
+                    variant={filters.has("weekly-run") ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilters(toggleFilter(filters, "weekly-run"))}
+                    className="gap-2"
+                  >
+                    <Activity className="h-4 w-4" />
+                    Weekly Runs
+                  </Button>
+                  <Button
+                    variant={filters.has("race") ? "destructive" : "outline"}
+                    size="sm"
+                    onClick={() => setFilters(toggleFilter(filters, "race"))}
+                    className="gap-2"
+                  >
+                    <Trophy className="h-4 w-4" />
+                    Races
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-2 ml-auto">
+                  {!subscribed && (
+                    <Button
+                      onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
+                      variant={isNotificationExpanded ? "secondary" : "default"}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Bell className="h-4 w-4" />
+                      {isNotificationExpanded ? "Close" : "Get Notifications"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-300 ease-in-out",
+                  isNotificationExpanded ? "max-h-32 opacity-100 mt-4" : "max-h-0 opacity-0",
+                )}
+              >
+                <form onSubmit={handleNotificationSubmit} className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                    className="flex-1 border-slr-blue/30 focus:border-slr-blue"
+                  />
+                  <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90">
+                    {isSubmitting ? "Subscribing..." : "Subscribe"}
+                  </Button>
+                </form>
+              </div>
+
+              {subscribed && (
+                <div className="flex items-center gap-2 text-primary bg-slr-blue-light/50 p-3 rounded-lg mt-4">
+                  <Star className="h-4 w-4 fill-primary" />
+                  <span className="text-sm font-medium">You're subscribed to event updates!</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </ScrollReveal>
 
-        <div className="max-w-7xl mx-auto space-y-6">
-          <ScrollReveal delay={100}>
-            <Card className="border-slr-blue/20 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <Button
-                      variant={filters.has("weekly-run") ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setFilters(toggleFilter(filters, "weekly-run"))}
-                      className="gap-2"
-                    >
-                      <Activity className="h-4 w-4" />
-                      Weekly Runs
-                    </Button>
-                    <Button
-                      variant={filters.has("race") ? "destructive" : "outline"}
-                      size="sm"
-                      onClick={() => setFilters(toggleFilter(filters, "race"))}
-                      className="gap-2"
-                    >
-                      <Trophy className="h-4 w-4" />
-                      Races
-                    </Button>
-                  </div>
+        <ScrollReveal delay={200}>
+          <Card className="border-2 border-slr-blue/40 shadow-2xl backdrop-blur-lg bg-gradient-to-br from-white/70 via-white/50 to-white/40 dark:from-slate-900/70 dark:via-slate-900/50 dark:to-slate-900/40">
+            <CardContent className="p-6">
+              <Tabs value={view} onValueChange={(v) => setView(v as any)} className="w-full">
+                <div className="flex items-center justify-between mb-4">
+                  <TabsList className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border-2 border-slr-blue/30 shadow-lg">
+                    <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue data-[state=active]:text-white data-[state=active]:shadow-md">
+                      <CalendarDays className="h-4 w-4" />
+                      Month
+                    </TabsTrigger>
+                    <TabsTrigger value="list" className="gap-2 data-[state=active]:bg-slr-blue data-[state=active]:text-white data-[state=active]:shadow-md">
+                      <List className="h-4 w-4" />
+                      List
+                    </TabsTrigger>
+                  </TabsList>
 
-                  <div className="flex items-center gap-2 ml-auto">
-                    {!subscribed && (
-                      <Button
-                        onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
-                        variant={isNotificationExpanded ? "secondary" : "default"}
-                        size="sm"
-                        className="gap-2"
+                  {view === "month" && (
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => navigateMonth("prev")} 
+                        className="border-2 border-slr-blue/50 hover:bg-slr-blue/20 hover:border-slr-blue backdrop-blur-md bg-white/60 dark:bg-slate-900/60 shadow-md"
                       >
-                        <Bell className="h-4 w-4" />
-                        {isNotificationExpanded ? "Close" : "Get Notifications"}
+                        <ChevronLeft className="h-4 w-4" />
                       </Button>
-                    )}
-                  </div>
-                </div>
-
-                <div
-                  className={cn(
-                    "overflow-hidden transition-all duration-300 ease-in-out",
-                    isNotificationExpanded ? "max-h-32 opacity-100 mt-4" : "max-h-0 opacity-0",
+                      <h3 className="font-bold text-lg text-slr-blue-dark drop-shadow-sm">{monthName}</h3>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => navigateMonth("next")} 
+                        className="border-2 border-slr-blue/50 hover:bg-slr-blue/20 hover:border-slr-blue backdrop-blur-md bg-white/60 dark:bg-slate-900/60 shadow-md"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
-                >
-                  <form onSubmit={handleNotificationSubmit} className="flex gap-2">
-                    <Input
-                      type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      disabled={isSubmitting}
-                      className="flex-1 border-slr-blue/30 focus:border-slr-blue"
-                    />
-                    <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90">
-                      {isSubmitting ? "Subscribing..." : "Subscribe"}
-                    </Button>
-                  </form>
                 </div>
 
-                {subscribed && (
-                  <div className="flex items-center gap-2 text-primary bg-slr-blue-light/50 p-3 rounded-lg mt-4">
-                    <Star className="h-4 w-4 fill-primary" />
-                    <span className="text-sm font-medium">You're subscribed to event updates!</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </ScrollReveal>
-
-          <ScrollReveal delay={200}>
-            <Card className="border-slr-blue/30 shadow-2xl backdrop-blur-md bg-white/60 dark:bg-slate-900/60">
-              <CardContent className="p-6">
-                <Tabs value={view} onValueChange={(v) => setView(v as any)} className="w-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <TabsList className="bg-slr-blue-light/40 backdrop-blur-sm border border-slr-blue/30">
-                      <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue data-[state=active]:text-white">
-                        <CalendarDays className="h-4 w-4" />
-                        Month
-                      </TabsTrigger>
-                      <TabsTrigger value="list" className="gap-2 data-[state=active]:bg-slr-blue data-[state=active]:text-white">
-                        <List className="h-4 w-4" />
-                        List
-                      </TabsTrigger>
-                    </TabsList>
-
-                    {view === "month" && (
-                      <div className="flex items-center gap-4">
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")} className="border-slr-blue/50 hover:bg-slr-blue/10 backdrop-blur-sm">
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <h3 className="font-bold text-lg text-slr-blue-dark">{monthName}</h3>
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth("next")} className="border-slr-blue/50 hover:bg-slr-blue/10 backdrop-blur-sm">
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-
-                  <TabsContent value="month" className="mt-0">
-                    {isLoading ? (
-                      <div className="text-center py-12 text-muted-foreground">
-                        Loading events...
-                      </div>
-                    ) : filteredEvents.length === 0 ? (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <p className="text-lg font-medium mb-2">No events found</p>
-                        <p className="text-sm">Try adjusting your filters or check back later.</p>
-                        {dbEvents.length === 0 && (
-                          <p className="text-sm mt-2 text-amber-600">Database appears to be empty. Contact admin.</p>
-                        )}
-                      </div>
-                    ) : (
+                <TabsContent value="month" className="mt-0">
+                  {isLoading ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Loading events...
+                    </div>
+                  ) : filteredEvents.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <p className="text-lg font-medium mb-2">No events found</p>
+                      <p className="text-sm">Try adjusting your filters or check back later.</p>
+                      {dbEvents.length === 0 && (
+                        <p className="text-sm mt-2 text-amber-600">Database appears to be empty. Contact admin.</p>
+                      )}
+                    </div>
+                  ) : (
                     <div className="grid grid-cols-7 gap-2 sm:gap-3">
                       {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                        <div key={day} className="text-center text-xs sm:text-sm font-bold text-slr-blue-dark py-2 border-b-2 border-slr-blue/20">
+                        <div key={day} className="text-center text-xs sm:text-sm font-bold text-slr-blue py-3 border-b-2 border-slr-blue/30 bg-gradient-to-b from-slr-blue/5 to-transparent">
                           {day}
                         </div>
                       ))}
 
                       {Array.from({ length: startingDayOfWeek }).map((_, i) => (
-                        <div key={`empty-${i}`} className="min-h-[120px]" />
+                        <div key={`empty-${i}`} className="min-h-[120px] rounded-xl backdrop-blur-sm bg-gradient-to-br from-slate-100/40 to-slate-50/20 dark:from-slate-800/40 dark:to-slate-900/20 border border-slate-200/30 dark:border-slate-700/30" />
                       ))}
 
                       {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -533,19 +508,19 @@ export function CalendarView() {
                           <div
                             key={day}
                             className={cn(
-                              "min-h-[120px] rounded-lg p-2.5 transition-all backdrop-blur-sm relative overflow-hidden group cursor-pointer",
-                              "bg-white/40 dark:bg-slate-900/40",
-                              "border-2",
+                              "min-h-[120px] rounded-xl p-2.5 transition-all backdrop-blur-md relative overflow-hidden group cursor-pointer",
+                              "bg-gradient-to-br from-white/60 via-white/40 to-white/30 dark:from-slate-900/60 dark:via-slate-900/40 dark:to-slate-900/30",
+                              "border-2 shadow-sm",
                               isToday
-                                ? "border-slr-red shadow-lg shadow-slr-red/20"
+                                ? "border-slr-red shadow-lg shadow-slr-red/30 ring-2 ring-slr-red/20"
                                 : dayEvents.length > 0
-                                  ? "border-slr-blue hover:border-slr-blue-dark hover:shadow-lg hover:shadow-slr-blue/20"
-                                  : "border-slate-200/50 hover:border-slr-blue/30"
+                                  ? "border-slr-red/60 hover:border-slr-red hover:shadow-xl hover:shadow-slr-red/25 hover:ring-2 hover:ring-slr-red/20"
+                                  : "border-slr-blue/40 hover:border-slr-blue/60 hover:shadow-lg hover:shadow-slr-blue/15"
                             )}
                           >
                             <div className={cn(
-                              "text-sm font-bold mb-2",
-                              isToday ? "text-slr-red" : "text-slr-blue-dark"
+                              "text-sm font-bold mb-2 relative z-10",
+                              isToday ? "text-slr-red drop-shadow-sm" : dayEvents.length > 0 ? "text-slr-red" : "text-slr-blue"
                             )}>
                               {day}
                             </div>
@@ -575,7 +550,7 @@ export function CalendarView() {
                                 </button>
                               ))}
                               {dayEvents.length > 3 && (
-                                <div className="text-[10px] text-slr-blue-dark font-semibold text-center py-1 bg-slr-blue-light/50 rounded backdrop-blur-sm">
+                                <div className="text-[10px] text-slr-red font-bold text-center py-1.5 bg-gradient-to-r from-slr-red/20 via-slr-red/30 to-slr-red/20 rounded-md backdrop-blur-sm border border-slr-red/30 shadow-sm">
                                   +{dayEvents.length - 3} more
                                 </div>
                               )}
@@ -584,15 +559,15 @@ export function CalendarView() {
                         )
                       })}
                     </div>
-                    )}
-                  </TabsContent>
+                  )}
+                </TabsContent>
 
-                  <TabsContent value="list" className="mt-0">
-                    {isLoading ? (
-                      <div className="text-center py-12 text-muted-foreground">
-                        Loading events...
-                      </div>
-                    ) : (
+                <TabsContent value="list" className="mt-0">
+                  {isLoading ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Loading events...
+                    </div>
+                  ) : (
                     <div className="space-y-4">
                       {filteredEvents.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
@@ -665,13 +640,13 @@ export function CalendarView() {
                         ))
                       )}
                     </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </ScrollReveal>
-        </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </ScrollReveal>
+      </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
         <DialogContent className="sm:max-w-[500px] border-slr-blue/20">
@@ -688,91 +663,4 @@ export function CalendarView() {
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
-            {selectedEvent?.description && <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>}
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <CalendarDays className="h-4 w-4 text-slr-blue-dark" />
-                <span className="font-medium">
-                  {selectedEvent?.date.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-slr-blue-dark" />
-                <span>{selectedEvent?.time}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-slr-blue-dark" />
-                <span>{selectedEvent?.location}</span>
-              </div>
-            </div>
-
-            {(selectedEvent?.facebookLink || selectedEvent?.stravaLink || selectedEvent?.registrationUrl) && (
-              <div className="border-t pt-4 space-y-3">
-                <p className="text-sm font-medium text-slr-blue-dark">RSVP & More Info</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedEvent.facebookLink && (
-                    <Button variant="outline" size="sm" asChild className="border-slr-blue/30 hover:border-slr-blue">
-                      <a href={selectedEvent.facebookLink} target="_blank" rel="noopener noreferrer" className="gap-2">
-                        <ExternalLink className="h-4 w-4" />
-                        Facebook
-                      </a>
-                    </Button>
-                  )}
-                  {selectedEvent.stravaLink && (
-                    <Button variant="outline" size="sm" asChild className="border-slr-blue/30 hover:border-slr-blue">
-                      <a href={selectedEvent.stravaLink} target="_blank" rel="noopener noreferrer" className="gap-2">
-                        <ExternalLink className="h-4 w-4" />
-                        Strava
-                      </a>
-                    </Button>
-                  )}
-                  {selectedEvent.registrationUrl && (
-                    <Button variant="default" size="sm" asChild className="bg-primary hover:bg-primary/90">
-                      <a
-                        href={selectedEvent.registrationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="gap-2"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Register
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="border-t pt-4 space-y-3">
-              <p className="text-sm font-medium text-slr-blue-dark">Add to your calendar</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => selectedEvent && addSingleEventToGoogleCalendar(selectedEvent)}
-                  className="gap-2 w-full border-slr-blue/30 hover:border-slr-blue"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Google Calendar
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)}
-                  className="gap-2 w-full border-slr-blue/30 hover:border-slr-blue"
-                >
-                  <Download className="h-4 w-4" />
-                  Apple / Outlook
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
+            {selectedEvent?.description && <p className="text-sm text-
