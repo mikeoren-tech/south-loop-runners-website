@@ -129,7 +129,7 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
                 event.date && (
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    {formatDate(event.date), "MMM d, yyyy")}
+                    {format(formatDate(event.date), "MMM d, yyyy")}
                   </div>
                 )
               )}
