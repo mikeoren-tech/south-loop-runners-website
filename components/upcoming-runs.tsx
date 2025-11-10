@@ -149,7 +149,6 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
           <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
             {isSubmitting ? "Adding..." : "Add"}
           </Button>
-        </div>
 
         {hasSocial && (
           <div className="flex items-center gap-2 pl-1">
