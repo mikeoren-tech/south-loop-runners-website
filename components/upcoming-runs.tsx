@@ -169,7 +169,6 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
             </Label>
           </div>
         )}
-      </div>
 
       {totalInterested > 0 && (
         <div className="space-y-2">
