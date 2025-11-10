@@ -26,7 +26,7 @@ import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
-// --- Interface Definitions ---
+// --- Interface Definitions (Required for type safety) ---
 interface DatabaseEvent {
   id: string
   title: string
@@ -71,7 +71,7 @@ const Tooltip = ({ children, content }: { children: React.ReactNode, content: st
     <div title={content}>{children}</div>
 );
 
-// --- Utility Functions (CRITICAL for SSR/Client execution) ---
+// --- Utility Functions (Complete) ---
 
 function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks: number): CalendarEvent[] {
   const events: CalendarEvent[] = []
@@ -137,17 +137,15 @@ function formatDateForCalendar(date: Date): string {
 function exportToICS(events: CalendarEvent[]) {
   const icsEvents = events
     .map((event) => {
-      const start = new Date(event.date)
-      const { hour, minutes } = parseEventTime(event.time)
-      start.setHours(hour, minutes, 0, 0)
-      const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-      const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n')
-      const details = event.description || event.details
+      const start = new Date(event.date);
+      const { hour, minutes } = parseEventTime(event.time);
+      start.setHours(hour, minutes, 0, 0);
+      const end = new Date(start.getTime() + 90 * 60 * 1000);
+      const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n');
+      const details = event.description || event.details;
 
       return [
-        "BEGIN:VEVENT",
-        `UID:${event.id}@southlooprunners.com`,
+        "BEGIN:VEVENT", `UID:${event.id}@southlooprunners.com`,
         `DTSTAMP:${formatDateForCalendar(new Date())}`,
         `DTSTART:${formatDateForCalendar(start)}`,
         `DTEND:${formatDateForCalendar(end)}`,
@@ -155,79 +153,69 @@ function exportToICS(events: CalendarEvent[]) {
         `LOCATION:${escapeICS(event.location)}`,
         `DESCRIPTION:${escapeICS(details)}`,
         "END:VEVENT",
-      ].join("\r\n")
+      ].join("\r\n");
     })
-    .join("\r\n")
+    .join("\r\n");
 
   const icsContent = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
+    "BEGIN:VCALENDAR", "VERSION:2.0",
     "PRODID:-//South Loop Runners//Events Calendar//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    icsEvents,
-    "END:VCALENDAR",
-  ].join("\r\n")
+    "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+    icsEvents, "END:VCALENDAR",
+  ].join("\r\n");
 
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
-  const link = document.createElement("a")
-  link.href = URL.createObjectURL(blob)
-  link.download = "south-loop-runners-events.ics"
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "south-loop-runners-events.ics";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function addToGoogleCalendar(event: CalendarEvent) {
-  const start = new Date(event.date)
-  const { hour, minutes } = parseEventTime(event.time)
-  start.setHours(hour, minutes, 0, 0)
-  const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-  const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
-  googleCalUrl.searchParams.set("action", "TEMPLATE")
-  googleCalUrl.searchParams.set("text", event.title)
-  googleCalUrl.searchParams.set("dates", `${formatDateForCalendar(start)}/${formatDateForCalendar(end)}`)
-  googleCalUrl.searchParams.set("details", event.description || event.details)
-  googleCalUrl.searchParams.set("location", event.location)
-
-  window.open(googleCalUrl.toString(), "_blank")
+  const start = new Date(event.date);
+  const { hour, minutes } = parseEventTime(event.time);
+  start.setHours(hour, minutes, 0, 0);
+  const end = new Date(start.getTime() + 90 * 60 * 1000);
+  const googleCalUrl = new URL("https://calendar.google.com/calendar/render");
+  googleCalUrl.searchParams.set("action", "TEMPLATE");
+  googleCalUrl.searchParams.set("text", event.title);
+  googleCalUrl.searchParams.set("dates", `${formatDateForCalendar(start)}/${formatDateForCalendar(end)}`);
+  googleCalUrl.searchParams.set("details", event.description || event.details);
+  googleCalUrl.searchParams.set("location", event.location);
+  window.open(googleCalUrl.toString(), "_blank");
 }
 
 function exportSingleEventToICS(event: CalendarEvent) {
-  const start = new Date(event.date)
-  const { hour, minutes } = parseEventTime(event.time)
-  start.setHours(hour, minutes, 0, 0)
-  const end = new Date(start.getTime() + 90 * 60 * 1000)
-
-  const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n')
-  const details = event.description || event.details
+  const start = new Date(event.date);
+  const { hour, minutes } = parseEventTime(event.time);
+  start.setHours(hour, minutes, 0, 0);
+  const end = new Date(start.getTime() + 90 * 60 * 1000);
+  const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n');
+  const details = event.description || event.details;
 
   const icsContent = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
+    "BEGIN:VCALENDAR", "VERSION:2.0",
     "PRODID:-//South Loop Runners//Events Calendar//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:${event.id}@southlooprunners.com`,
+    "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+    "BEGIN:VEVENT", `UID:${event.id}@southlooprunners.com`,
     `DTSTAMP:${formatDateForCalendar(new Date())}`,
     `DTSTART:${formatDateForCalendar(start)}`,
     `DTEND:${formatDateForCalendar(end)}`,
     `SUMMARY:${escapeICS(event.title)}`,
     `LOCATION:${escapeICS(event.location)}`,
     `DESCRIPTION:${escapeICS(details)}`,
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n")
+    "END:VEVENT", "END:VCALENDAR",
+  ].join("\r\n");
 
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
-  const link = document.createElement("a")
-  link.href = URL.createObjectURL(blob)
-  link.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}.ics`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function toggleFilter(filters: Set<string>, type: string): Set<string> {
@@ -244,10 +232,10 @@ function getInitialView(): "month" | "list" {
   if (typeof window !== "undefined") {
     return window.innerWidth < 768 ? "list" : "month"
   }
-  return "month" // Default for SSR
+  return "month"
 }
 
-// --- CalendarDayCell Component (Used by CalendarView) ---
+// --- CalendarDayCell Component ---
 interface CalendarDayCellProps {
   day: number
   date: Date
@@ -260,13 +248,14 @@ interface CalendarDayCellProps {
 function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelectedEvent }: CalendarDayCellProps) {
   const hasRun = dailySummary?.isRun
   const hasRace = dailySummary?.isRace
+  const hasEvents = dayEvents.length > 0;
   
   let ringClass = "border-white/30 hover:border-white/60";
   let numberColor = "text-white/80";
   let gradientWrapperStyle = undefined;
   let innerBgClass = 'bg-white/10 backdrop-blur-md';
 
-  if (dayEvents.length === 0 && !isToday) {
+  if (!hasEvents && !isToday) {
     ringClass = "border-white/20 hover:border-white/40";
     innerBgClass = 'bg-white/5 backdrop-blur-sm';
   }
@@ -291,8 +280,6 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
     numberColor = "text-slr-blue";
   }
   
-  const hasEvents = dayEvents.length > 0;
-
   return (
     <div
       className={cn(
@@ -307,7 +294,6 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
             'h-full w-full rounded-xl p-1',
             innerBgClass,
         )}>
-            {/* Day Number is ALWAYS rendered here */}
             <div className={cn(
                 "text-sm font-bold mb-2 relative z-10",
                 numberColor
@@ -315,7 +301,6 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
                 {day}
             </div>
             
-            {/* Event Buttons (Only rendered if events exist) */}
             <div className="space-y-1.5">
                 {dayEvents.slice(0, 3).map((event) => (
                 <Tooltip key={event.id} content={`${event.title} - ${event.time}`}>
@@ -497,7 +482,6 @@ export function CalendarView() {
     }
   }, [currentDate])
 
-  // FIX: This function must be defined inside the component scope as it uses monthEvents (via closure)
   const getEventsForDay = (day: number) => {
     return monthEvents.filter((event) => event.date.getDate() === day)
   }
@@ -546,10 +530,9 @@ export function CalendarView() {
 
       <div className="max-w-7xl mx-auto space-y-6">
         <ScrollReveal delay={100}>
-          <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-md shadow-2xl transition-shadow p-0">
+          <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-md shadow-2xl transition-shadow p-0"> 
             <CardContent className="p-6">
               
-              {/* FIX: Notification CTA Visibility and Layout */}
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
                 {/* Filters Group (Left side) */}
                 <div className="flex flex-wrap items-center gap-2">
@@ -574,29 +557,27 @@ export function CalendarView() {
                   </Button>
                 </div>
 
-                {/* CTA/Download Group (Right side) - Forced to wrap/fill parent if needed */}
+                {/* CTA/Download Group (Right side) */}
                 <div className="flex items-center gap-2 flex-wrap w-full md:w-auto md:justify-end"> 
+                  <Button
+                    onClick={() => exportToICS(filteredEvents)}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-white hover:bg-white/20"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download All
+                  </Button>
                   {!subscribed && (
-                    <>
-                      <Button
-                        onClick={() => exportToICS(filteredEvents)}
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2 text-white hover:bg-white/20"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download All
-                      </Button>
-                      <Button
-                        onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
-                        variant={isNotificationExpanded ? "outline" : "default"}
-                        size="sm"
-                        className="gap-2 bg-white/20 hover:bg-white/30 text-white"
-                      >
-                        <Bell className="h-4 w-4" />
-                        {isNotificationExpanded ? "Close" : "Get Notifications"}
-                      </Button>
-                    </>
+                    <Button
+                      onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
+                      variant={isNotificationExpanded ? "outline" : "default"}
+                      size="sm"
+                      className="gap-2 bg-white/20 hover:bg-white/30 text-white"
+                    >
+                      <Bell className="h-4 w-4" />
+                      {isNotificationExpanded ? "Close" : "Get Notifications"}
+                    </Button>
                   )}
                 </div>
               </div>
@@ -640,7 +621,6 @@ export function CalendarView() {
             <CardContent className="p-6">
               <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")} className="w-full">
                 
-                {/* FIX: Month Name and Controls Visibility */}
                 <div className="flex items-center justify-between mb-4">
                   <TabsList className="bg-white/20 backdrop-blur-sm border border-white/40 shadow-xl rounded-xl">
                     <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
@@ -663,7 +643,6 @@ export function CalendarView() {
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
-                      {/* Month Name and Year Display */}
                       <h3 className="font-bold text-lg text-white drop-shadow-sm">{monthName}</h3>
                       <Button 
                         variant="outline" 
@@ -678,7 +657,7 @@ export function CalendarView() {
                 </div>
 
                 <TabsContent value="month" className="mt-0">
-                  {/* ... Loading/Empty State checks ... */}
+                  {/* Assuming loading/empty state checks are rendered correctly here */}
                   
                   <div className="grid grid-cols-7 gap-2 sm:gap-3">
                     {/* Day labels (Sun, Mon, etc.) */}
@@ -714,91 +693,58 @@ export function CalendarView() {
                       )
                     })}
                      {/* Renders trailing empty cells after the last day */}
-                     {/* Use a maximum of 6 rows (42 cells total) */}
                      {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
                        <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
                      ))}
                   </div>
                 </TabsContent>
 
-                {/* List View Tab Content */}
                 <TabsContent value="list" className="mt-0">
                   {isLoading ? (
-                    <div className="text-center py-12 text-white/70">
-                      Loading events...
-                    </div>
+                    <div className="text-center py-12 text-white/70">Loading events...</div>
+                  ) : filteredEvents.length === 0 ? (
+                    <div className="text-center py-12 text-white/70">No events found.</div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredEvents.length === 0 ? (
-                        <div className="text-center py-12 text-white/70">
-                          <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <p>No events match your filters</p>
-                          {dbEvents.length === 0 && (
-                            <p className="text-sm mt-2 text-yellow-300">Database appears to be empty. Contact admin.</p>
-                          )}
-                        </div>
-                      ) : (
-                        filteredEvents.map((event) => (
-                          <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
-                            <Card className="rounded-xl border-white/30 bg-white/10 hover:bg-white/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-4">
-                                  <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-white">
-                                    <div className="text-2xl font-bold">{event.date.getDate()}</div>
-                                    <div className="text-sm font-medium">
-                                      {event.date.toLocaleDateString("en-US", { month: "short" })}
-                                    </div>
-                                  </div>
-
-                                  <div className="flex-1 space-y-2">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="min-w-0">
-                                        <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-white">
-                                          {event.title}
-                                          {event.isRecurring && (
-                                            <Badge variant="outline" className="text-xs border-white/50 text-white bg-white/10">
-                                              Recurring
-                                            </Badge>
-                                          )}
-                                        </h4>
-                                        <p className="text-sm text-white/80">{event.details}</p>
-                                      </div>
-
-                                      <Badge
-                                        variant={event.type === "race" ? "destructive" : "default"}
-                                        className={cn("text-xs shrink-0 text-white", event.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
-                                      >
-                                        {event.type === "race" ? (
-                                          <>
-                                            <Trophy className="h-3 w-3 mr-1" />
-                                            Race
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Activity className="h-3 w-3 mr-1" />
-                                            Run
-                                          </>
-                                        )}
-                                      </Badge>
-                                    </div>
-
-                                    <div className="flex flex-wrap gap-4 text-sm text-white/70">
-                                      <div className="flex items-center gap-1">
-                                        <Clock className="h-4 w-4 text-white" />
-                                        {event.time}
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <MapPin className="h-4 w-4 text-white" />
-                                        {event.location}
-                                      </div>
-                                    </div>
+                      {filteredEvents.map((event) => (
+                        <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
+                          <Card className="rounded-xl border-white/30 bg-white/10 hover:bg-white/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-white">
+                                  <div className="text-2xl font-bold">{event.date.getDate()}</div>
+                                  <div className="text-sm font-medium">
+                                    {event.date.toLocaleDateString("en-US", { month: "short" })}
                                   </div>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          </button>
-                        ))
-                      )}
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-white">
+                                        {event.title}
+                                        {event.isRecurring && (
+                                          <Badge variant="outline" className="text-xs border-white/50 text-white bg-white/10">Recurring</Badge>
+                                        )}
+                                      </h4>
+                                      <p className="text-sm text-white/80">{event.details}</p>
+                                    </div>
+                                    <Badge
+                                      variant={event.type === "race" ? "destructive" : "default"}
+                                      className={cn("text-xs shrink-0 text-white", event.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
+                                    >
+                                      {event.type === "race" ? (<><Trophy className="h-3 w-3 mr-1" />Race</>) : (<><Activity className="h-3 w-3 mr-1" />Run</>)}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex flex-wrap gap-4 text-sm text-white/70">
+                                    <div className="flex items-center gap-1"><Clock className="h-4 w-4 text-white" />{event.time}</div>
+                                    <div className="flex items-center gap-1"><MapPin className="h-4 w-4 text-white" />{event.location}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </button>
+                      ))}
                     </div>
                   )}
                 </TabsContent>
@@ -809,6 +755,7 @@ export function CalendarView() {
       </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
+        {/* COMPLETED DIALOG CONTENT */}
         <DialogContent className="sm:max-w-[500px] rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl text-white">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
