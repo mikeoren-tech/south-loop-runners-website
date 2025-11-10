@@ -21,14 +21,14 @@ export function CalendarCTA() {
                   </div>
 
                   <div className="space-y-3">
-                    <h2 className="text-3xl md:text-4xl font-bold text-balance text-white">Never Miss an Event</h2>
-                    <p className="text-lg text-white/80 max-w-2xl mx-auto text-balance">
+                    <h2 className="text-3xl md:text-4xl font-bold text-balance text-black">Never Miss an Event</h2>
+                    <p className="text-lg text-black/80 max-w-2xl mx-auto text-balance">
                       View all upcoming runs and races in one place. Get notifications when new events are added and
                       export to your personal calendar.
                     </p>
                   </div>
 
-                  <div className="grid sm:grid-cols-3 gap-4 pt-4 text-white">
+                  <div className="grid sm:grid-cols-3 gap-4 pt-4 text-black">
                     {/* Feature 1: Month & List Views (Run color for icon) */}
                     <div className="flex flex-col items-center gap-2 p-4">
                       <div className="w-12 h-12 bg-slr-blue/10 rounded-full flex items-center justify-center">
@@ -44,7 +44,7 @@ export function CalendarCTA() {
                         <Bell className="h-6 w-6 text-slr-red" />
                       </div>
                       <h3 className="font-semibold text-sm">Event Notifications</h3>
-                      <p className="text-xs text-white/70 text-center">Get notified about new events</p>
+                      <p className="text-xs text-black/70 text-center">Get notified about new events</p>
                     </div>
 
                     {/* Feature 3: Calendar Export */}
@@ -62,7 +62,7 @@ export function CalendarCTA() {
                     asChild
                     size="lg"
                     // C1: Use slr-blue for primary CTA
-                    className="bg-slr-blue hover:bg-slr-blue/90 text-white shadow-lg hover:shadow-xl transition-all mt-6"
+                    className="bg-slr-blue hover:bg-slr-blue/90 text-black shadow-lg hover:shadow-xl transition-all mt-6"
                   >
                     <Link href="/calendar" className="flex items-center">
                       View Events Calendar
