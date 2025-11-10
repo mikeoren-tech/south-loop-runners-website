@@ -542,7 +542,7 @@ export function CalendarView() {
                     variant={filters.has("race") ? "destructive" : "secondary"}
                     size="sm"
                     onClick={() => setFilters(toggleFilter(filters, "race"))}
-                    className="gap-2 bg-slr-red/80 hover:bg-slr-red text-foreground shadow-lg"
+                    className="gap-2 bg-slr-red/80 hover:bg-slr-red text-white shadow-lg"
                   >
                     <Trophy className="h-4 w-4" />
                     Races
