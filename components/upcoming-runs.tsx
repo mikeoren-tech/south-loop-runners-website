@@ -133,24 +133,24 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
         <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex gap-2 pl-1">
-          <Select value={selectedPace} onValueChange={setSelectedPace}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Select your pace" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              {PACE_GROUPS.map((pace) => (
-                <SelectItem key={pace} value={pace}>
-                  {pace}
-                </SelectItem>
-              ))}
-            </SelectContent>
+      <<div className="flex gap-2 pl-1">
+
+          <Select value={selectedPace} onValueChange={setSelectedPace} className="flex-1"> 
+            <SelectTrigger className="w-full"> 
+              <SelectValue placeholder="Select your pace" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {PACE_GROUPS.map((pace) => (
+                <SelectItem key={pace} value={pace}>
+                  {pace}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-          <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
-            {isSubmitting ? "Adding..." : "Add"}
-          </Button>
-        </div>
+          <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
+            {isSubmitting ? "Adding..." : "Add"}
+          </Button>
+        </div>
 
         {hasSocial && (
           <div className="flex items-center gap-2 pl-1">
