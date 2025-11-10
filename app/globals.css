@@ -8,8 +8,9 @@
   --tw-color-white: 255 255 255; /* RGB for white */
   --tw-color-black: 0 0 0; /* RGB for black */
 
-  --background: oklch(0.3 0 0);
-  /*--foreground: oklch(0.145 0 0);*/
+  --background: oklch(1 0 0);
+  --calbg: oklch(0.25 0 0);
+  --foreground: oklch(0.145 0 0);
   --card: #ffffff;
   --card-foreground: #333333;
   --popover: #ffffff;
