@@ -85,21 +85,21 @@
 
 @theme inline {
   /* ... (color mappings remain the same) ... */
-  /* 💡 Ensure white/black are passed through to Tailwind's color processing system via config */
   --color-slr-red: var(--slr-red);
   --color-slr-red-dark: var(--slr-red-dark);
   --color-slr-blue: var(--slr-blue);
   --color-slr-blue-dark: var(--slr-blue-dark);
   --color-slr-blue-light: var(--slr-blue-light);
+  /* ... (rest of the theme mappings) ... */
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    /* FIX: Replace unknown utility classes with known Tailwind classes for compilation */
+    @apply border-gray-200 outline-blue-400/50; 
   }
   body {
-    /* Set a visually contrasting background for glassmorphism demo purposes */
-    /* This color is not defined in your component but helps test visibility */
+    /* Use a visually contrasting background for glassmorphism demo purposes */
     @apply bg-gray-100 text-foreground; 
   }
 
