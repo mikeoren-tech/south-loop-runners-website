@@ -1,7 +1,6 @@
 import { Calendar, Bell, Download, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ScrollReveal } from "@/components/scroll-reveal"
 import Link from "next/link"
 
 export function CalendarCTA() {
@@ -9,7 +8,7 @@ export function CalendarCTA() {
     <section className="relative py-20 bg-gradient-to-b from-white to-[#f9fafb]">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          <ScrollReveal>
+          <div>
             <Card className="glass-strong border-0 shadow-2xl overflow-hidden">
               <div className="bg-gradient-to-br from-primary/10 via-destructive/5 to-primary/5 p-8 md:p-12">
                 <div className="text-center space-y-6">
@@ -64,7 +63,7 @@ export function CalendarCTA() {
                 </div>
               </div>
             </Card>
-          </ScrollReveal>
+          </div>
         </div>
       </div>
     </section>
