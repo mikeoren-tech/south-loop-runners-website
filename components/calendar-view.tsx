@@ -67,12 +67,11 @@ interface DailySummary {
   isRace: boolean
 }
 
-// Placeholder for a proper Tooltip component (using simple div with title attribute)
 const Tooltip = ({ children, content }: { children: React.ReactNode, content: string }) => (
     <div title={content}>{children}</div>
 );
 
-// --- Utility Functions (MUST be present in the file) ---
+// --- Utility Functions (CRITICAL for SSR/Client execution) ---
 
 function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks: number): CalendarEvent[] {
   const events: CalendarEvent[] = []
@@ -262,7 +261,6 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
   const hasRun = dailySummary?.isRun
   const hasRace = dailySummary?.isRace
   
-  // --- Dynamic Color Logic for the Cell ---
   let ringClass = "border-white/30 hover:border-white/60";
   let numberColor = "text-white/80";
   let gradientWrapperStyle = undefined;
@@ -292,17 +290,17 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
     ringClass = "border-4 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg";
     numberColor = "text-slr-blue";
   }
-  // --- End Dynamic Color Logic ---
-
+  
+  const hasEvents = dayEvents.length > 0;
 
   return (
     <div
       className={cn(
         "min-h-[120px] rounded-2xl p-2.5 transition-all relative overflow-hidden group cursor-pointer",
         ringClass,
-        dayEvents.length > 0 ? "bg-white/10 hover:bg-white/20" : "bg-white/5 hover:bg-white/10",
+        hasEvents ? "bg-white/10 hover:bg-white/20" : "bg-white/5 hover:bg-white/10",
       )}
-      onClick={() => dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : dayEvents.length > 1 && setSelectedEvent(dayEvents[0])}
+      onClick={() => hasEvents && (dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : setSelectedEvent(dayEvents[0]))}
       style={gradientWrapperStyle}
     >
         <div className={cn(
@@ -355,9 +353,10 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
 
 
 // --- Main CalendarView Component ---
+
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [view, setView] = useState<"month" | "list">(getInitialView) // FIX: getInitialView is now in scope
+  const [view, setView] = useState<"month" | "list">(getInitialView)
   const [filters, setFilters] = useState<Set<string>>(new Set(["weekly-run", "race"]))
   const [isNotificationExpanded, setIsNotificationExpanded] = useState(false)
   const [email, setEmail] = useState("")
@@ -367,7 +366,6 @@ export function CalendarView() {
   const [dbEvents, setDbEvents] = useState<DatabaseEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // NOTE: Assuming all other omitted functions (fetchEvents, allEvents, etc.) are included here
 
   useEffect(() => {
     function handleResize() {
@@ -498,6 +496,11 @@ export function CalendarView() {
         monthName
     }
   }, [currentDate])
+
+  // FIX: This function must be defined inside the component scope as it uses monthEvents (via closure)
+  const getEventsForDay = (day: number) => {
+    return monthEvents.filter((event) => event.date.getDate() === day)
+  }
 
   const handleNotificationSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -711,20 +714,189 @@ export function CalendarView() {
                       )
                     })}
                      {/* Renders trailing empty cells after the last day */}
-                     {Array.from({ length: (42 - daysInMonth - startingDayOfWeek) % 7 }).map((_, i) => (
+                     {/* Use a maximum of 6 rows (42 cells total) */}
+                     {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
                        <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
                      ))}
                   </div>
                 </TabsContent>
 
-                {/* List View Tab Content (omitted for brevity) */}
+                {/* List View Tab Content */}
+                <TabsContent value="list" className="mt-0">
+                  {isLoading ? (
+                    <div className="text-center py-12 text-white/70">
+                      Loading events...
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredEvents.length === 0 ? (
+                        <div className="text-center py-12 text-white/70">
+                          <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No events match your filters</p>
+                          {dbEvents.length === 0 && (
+                            <p className="text-sm mt-2 text-yellow-300">Database appears to be empty. Contact admin.</p>
+                          )}
+                        </div>
+                      ) : (
+                        filteredEvents.map((event) => (
+                          <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
+                            <Card className="rounded-xl border-white/30 bg-white/10 hover:bg-white/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
+                              <CardContent className="p-4">
+                                <div className="flex items-start gap-4">
+                                  <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-white">
+                                    <div className="text-2xl font-bold">{event.date.getDate()}</div>
+                                    <div className="text-sm font-medium">
+                                      {event.date.toLocaleDateString("en-US", { month: "short" })}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex-1 space-y-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="min-w-0">
+                                        <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-white">
+                                          {event.title}
+                                          {event.isRecurring && (
+                                            <Badge variant="outline" className="text-xs border-white/50 text-white bg-white/10">
+                                              Recurring
+                                            </Badge>
+                                          )}
+                                        </h4>
+                                        <p className="text-sm text-white/80">{event.details}</p>
+                                      </div>
+
+                                      <Badge
+                                        variant={event.type === "race" ? "destructive" : "default"}
+                                        className={cn("text-xs shrink-0 text-white", event.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
+                                      >
+                                        {event.type === "race" ? (
+                                          <>
+                                            <Trophy className="h-3 w-3 mr-1" />
+                                            Race
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Activity className="h-3 w-3 mr-1" />
+                                            Run
+                                          </>
+                                        )}
+                                      </Badge>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-4 text-sm text-white/70">
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="h-4 w-4 text-white" />
+                                        {event.time}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <MapPin className="h-4 w-4 text-white" />
+                                        {event.location}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
         </ScrollReveal>
       </div>
 
-      {/* Dialog (omitted for brevity) */}
+      <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
+        <DialogContent className="sm:max-w-[500px] rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              {selectedEvent?.type === "race" ? (
+                <Trophy className="h-6 w-6 text-slr-red fill-slr-red/20" />
+              ) : (
+                <Star className="h-6 w-6 fill-slr-blue text-slr-blue" />
+              )}
+              {selectedEvent?.title}
+            </DialogTitle>
+            <DialogDescription className="text-base font-medium text-white/80">
+                {selectedEvent?.details}
+            </DialogDescription>
+            <div className="flex flex-wrap gap-2 pt-2">
+              {selectedEvent?.type && (
+                <Badge 
+                  variant={selectedEvent.type === "race" ? "destructive" : "default"}
+                  className={cn("text-white", selectedEvent.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
+                >
+                  {selectedEvent.type === "race" ? 'Race' : 'Weekly Run'}
+                </Badge>
+              )}
+              {selectedEvent?.isRecurring && (
+                <Badge variant="outline" className="border-white/50 text-white bg-white/10">Recurring</Badge>
+              )}
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-white" />
+              <div className="text-sm">
+                <p className="font-medium">Date</p>
+                <p className="text-white/80">
+                  {selectedEvent?.date.toLocaleDateString("en-US", {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-white" />
+              <div className="text-sm">
+                <p className="font-medium">Time</p>
+                <p className="text-white/80">{selectedEvent?.time}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-slr-blue-dark flex-shrink-0 mt-1 text-white" />
+              <div className="text-sm">
+                <p className="font-medium">Location</p>
+                <p className="text-white/80">{selectedEvent?.location}</p>
+              </div>
+            </div>
+            
+            {selectedEvent?.description && (
+                <div className="space-y-2 pt-2 border-t border-white/30">
+                    <p className="font-medium text-sm">Notes/Description</p>
+                    <p className="text-sm text-white/80 whitespace-pre-line">{selectedEvent.description}</p>
+                </div>
+            )}
+          </div>
+          
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-4 border-t border-white/30">
+            {selectedEvent?.registrationUrl && (
+                <Button asChild variant="destructive" className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-white">
+                    <a href={selectedEvent.registrationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Register Now
+                    </a>
+                </Button>
+            )}
+            <Button onClick={() => selectedEvent && addToGoogleCalendar(selectedEvent)} variant="outline" className="w-full sm:w-auto text-white hover:bg-white/20 border-white/50 bg-white/10">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Google Calendar
+            </Button>
+            <Button onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)} variant="outline" className="w-full sm:w-auto text-white hover:bg-white/20 border-white/50 bg-white/10">
+                <Download className="h-4 w-4 mr-2" />
+                Download ICS
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
