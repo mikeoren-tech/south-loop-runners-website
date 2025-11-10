@@ -37,6 +37,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --slr-blue: oklch(0.51 0.15 260); /* Medium Blue */
+  --slr-red: oklch(0.55 0.25 30);   /* Strong Red */
+  --slr-blue-dark: oklch(0.35 0.15 260);
+  --slr-blue-light: oklch(0.85 0.05 260); 
+
+  --radius: 0.625rem;
 }
 
 .dark {
@@ -72,6 +78,10 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  --slr-blue: oklch(0.65 0.15 260); /* Brighter Blue for Dark Mode */
+  --slr-red: oklch(0.68 0.25 30);   /* Brighter Red for Dark Mode */
+  --slr-blue-dark: oklch(0.51 0.15 260);
+  --slr-blue-light: oklch(0.25 0.05 260);
 }
 
 @theme inline {
