@@ -130,7 +130,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="weekly-run">Weekly Run</SelectItem>
                   <SelectItem value="special-event">Special Event</SelectItem>
                   <SelectItem value="race">Race</SelectItem>
@@ -166,7 +166,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   <SelectTrigger>
                     <SelectValue placeholder="Select day" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="0">Sunday</SelectItem>
                     <SelectItem value="1">Monday</SelectItem>
                     <SelectItem value="2">Tuesday</SelectItem>
