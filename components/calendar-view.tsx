@@ -700,7 +700,7 @@ export function CalendarView() {
                     <div className="space-y-4">
                       {filteredEvents.map((event) => (
                         <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
-                          <Card className="rounded-xl border-foreground/30 bg-foreground/10 hover:bg-foreground/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
+                          <Card className="rounded-xl border-foreground/30 bg-background/10 hover:bg-foreground/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
                             <CardContent className="p-4">
                               <div className="flex items-start gap-4">
                                 <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-foreground">
