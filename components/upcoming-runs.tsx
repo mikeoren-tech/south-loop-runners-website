@@ -134,12 +134,12 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
       </div>
 
       <div className="space-y-2">
-        <div className="flex gap-2">
+        <div className="flex">
           <Select value={selectedPace} onValueChange={setSelectedPace}>
             <SelectTrigger className="flex-1">
               <SelectValue placeholder="Select your pace" />
             </SelectTrigger>
-            <SelectContent className="glass dark:bg-black/80">
+            <SelectContent className="glass dark:bg-black/60">
               {PACE_GROUPS.map((pace) => (
                 <SelectItem key={pace} value={pace}>
                   {pace}
@@ -147,7 +147,7 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm">
+          <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
             {isSubmitting ? "Adding..." : "Add"}
           </Button>
         </div>
