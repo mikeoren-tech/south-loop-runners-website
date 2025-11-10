@@ -262,7 +262,7 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
   }
 
   if (isToday) {
-    ringClass = "border-4 border-slr-red ring-4 ring-slr-red/30 shadow-xl shadow-slr-red/30";
+    ringClass = "border-2 border-background ring-2 ring-slr-red/30 shadow-xl shadow-slr-red/30";
     numberColor = "text-slr-red font-extrabold";
   } else if (hasRun && hasRace) {
     gradientWrapperStyle = { 
@@ -274,10 +274,10 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
     numberColor = "text-white drop-shadow-sm";
     innerBgClass = 'bg-white/10 backdrop-blur-md'; 
   } else if (hasRace) {
-    ringClass = "border-4 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg";
+    ringClass = "border-2 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg";
     numberColor = "text-slr-red";
   } else if (hasRun) {
-    ringClass = "border-4 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg";
+    ringClass = "border-2 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg";
     numberColor = "text-slr-blue";
   }
   
