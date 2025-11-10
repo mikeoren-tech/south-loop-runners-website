@@ -63,7 +63,6 @@ interface CalendarEvent {
 }
 
 // --- Utility Functions (Kept the same) ---
-
 function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks: number): CalendarEvent[] {
   const events: CalendarEvent[] = []
   const start = new Date(startDate)
@@ -124,8 +123,6 @@ function formatDateForCalendar(date: Date): string {
 
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
-
-// ICS functions remain the same...
 
 function exportToICS(events: CalendarEvent[]) {
   const icsEvents = events
@@ -241,6 +238,118 @@ function getInitialView(): "month" | "list" {
   return "month"
 }
 
+// --- NEWLY EXTRACTED COMPONENT (see above) ---
+interface DailySummary {
+  isRun: boolean
+  isRace: boolean
+}
+
+interface CalendarDayCellProps {
+  day: number
+  date: Date
+  dayEvents: CalendarEvent[]
+  dailySummary: DailySummary | undefined
+  isToday: boolean
+  setSelectedEvent: (event: CalendarEvent) => void
+}
+
+function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelectedEvent }: CalendarDayCellProps) {
+  const hasRun = dailySummary?.isRun
+  const hasRace = dailySummary?.isRace
+  
+  // --- Dynamic Color Logic for the Cell ---
+  let ringClass = "border-white/30 hover:border-white/60";
+  let numberColor = "text-white/80";
+  let gradientWrapperStyle = undefined;
+  let innerBgClass = 'bg-white/10 backdrop-blur-md';
+
+  if (isToday) {
+    ringClass = "border-4 border-slr-red ring-4 ring-slr-red/30 shadow-xl shadow-slr-red/30";
+    numberColor = "text-slr-red font-extrabold";
+  } else if (hasRun && hasRace) {
+    // Apply gradient wrapper style for the multi-event border effect
+    // We use a CSS style here because Tailwind doesn't easily support gradient borders without plugins
+    gradientWrapperStyle = { 
+        background: 'linear-gradient(135deg, var(--slr-blue) 0%, var(--slr-red) 100%)', 
+        padding: '1px', 
+        borderRadius: '14px' 
+    };
+    ringClass = "border-none shadow-xl transition-all duration-300 p-[2px]";
+    numberColor = "text-white drop-shadow-sm";
+    innerBgClass = 'bg-white/10 backdrop-blur-md'; // Inner block to show glass background
+  } else if (hasRace) {
+    ringClass = "border-4 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg";
+    numberColor = "text-slr-red";
+  } else if (hasRun) {
+    ringClass = "border-4 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg";
+    numberColor = "text-slr-blue";
+  }
+  // --- End Dynamic Color Logic ---
+
+  // Placeholder for a proper Tooltip component (assuming import from "@/components/ui/tooltip")
+  const Tooltip = ({ children, content }: { children: React.ReactNode, content: string }) => (
+      <div title={content}>{children}</div>
+  );
+
+  return (
+    <div
+      className={cn(
+        "min-h-[120px] rounded-2xl p-2.5 transition-all backdrop-blur-md relative overflow-hidden group cursor-pointer",
+        "bg-white/10 hover:bg-white/20",
+        ringClass,
+      )}
+      onClick={() => dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : dayEvents.length > 1 && setSelectedEvent(dayEvents[0])}
+      style={gradientWrapperStyle}
+    >
+        <div className={cn(
+            'h-full w-full rounded-xl p-1',
+            innerBgClass,
+            // If it's a gradient day, we need the background on the inner div
+            hasRun && hasRace && 'bg-white/10 backdrop-blur-md'
+        )}>
+            <div className={cn(
+                "text-sm font-bold mb-2 relative z-10",
+                numberColor
+            )}>
+                {day}
+            </div>
+            <div className="space-y-1.5">
+                {dayEvents.slice(0, 3).map((event) => (
+                <Tooltip key={event.id} content={`${event.title} - ${event.time}`}>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
+                        className={cn(
+                        "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 text-white shadow-md", 
+                        "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/30",
+                        event.type === "weekly-run"
+                            ? "bg-slr-blue/70 hover:bg-slr-blue"
+                            : "bg-slr-red/70 hover:bg-slr-red"
+                        )}
+                    >
+                        <div className="flex items-center h-full gap-1.5">
+                            {event.type === "race" ? (
+                                <Trophy className="h-3 w-3 flex-shrink-0" />
+                            ) : (
+                                <Activity className="h-3 w-3 flex-shrink-0" />
+                            )}
+                            <span className="line-clamp-2 leading-tight">{event.title}</span>
+                        </div>
+                    </button>
+                </Tooltip>
+                ))}
+                {dayEvents.length > 3 && (
+                <div className="text-[10px] text-white/80 font-bold text-center py-1.5 bg-black/20 rounded-md backdrop-blur-sm border border-white/30 shadow-sm">
+                    +{dayEvents.length - 3} more
+                </div>
+                )}
+            </div>
+        </div>
+    </div>
+  )
+}
+// --------------------------------------------------------------------------
+
+
 // --- Main Component ---
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -354,7 +463,7 @@ export function CalendarView() {
     })
   }, [filteredEvents, currentDate])
 
-  // --- NEW: Calculate event colors for calendar cells ---
+  // Calculate event colors for calendar cells
   const dailyEventSummary = useMemo(() => {
     const summary = new Map<number, { isRun: boolean, isRace: boolean }>();
     monthEvents.forEach(event => {
@@ -370,7 +479,6 @@ export function CalendarView() {
     });
     return summary;
   }, [monthEvents]);
-  // --- END NEW ---
 
   const { daysInMonth, startingDayOfWeek, monthName } = useMemo(() => {
     const year = currentDate.getFullYear()
@@ -434,7 +542,6 @@ export function CalendarView() {
 
       <div className="max-w-7xl mx-auto space-y-6">
         <ScrollReveal delay={100}>
-          {/* FIX 1: Glassmorphism Card (Filter/Notifications) */}
           <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-md shadow-2xl transition-shadow p-0">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -519,12 +626,10 @@ export function CalendarView() {
         </ScrollReveal>
 
         <ScrollReveal delay={200}>
-          {/* FIX 1: Glassmorphism Card (Calendar Container) */}
           <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl">
             <CardContent className="p-6">
               <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")} className="w-full">
                 <div className="flex items-center justify-between mb-4">
-                  {/* FIX 1: Tabs list styling */}
                   <TabsList className="bg-white/20 backdrop-blur-sm border border-white/40 shadow-xl rounded-xl">
                     <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
                       <CalendarDays className="h-4 w-4" />
@@ -581,7 +686,7 @@ export function CalendarView() {
                       ))}
 
                       {Array.from({ length: startingDayOfWeek }).map((_, i) => (
-                        <div key={`empty-${i}`} className="min-h-[120px] rounded-xl bg-white/5 border border-white/20" />
+                        <div key={`empty-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
                       ))}
 
                       {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -590,89 +695,17 @@ export function CalendarView() {
                         const currentDateObject = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                         const isToday =
                           new Date().toDateString() === currentDateObject.toDateString()
-                        
-                        // --- NEW: Dynamic Color Logic ---
-                        const summary = dailyEventSummary.get(day);
-                        const hasRun = summary?.isRun;
-                        const hasRace = summary?.isRace;
-
-                        let ringClass = "border-white/30 hover:border-white/60";
-                        let numberColor = "text-white/80";
-
-                        if (isToday) {
-                          ringClass = "border-4 border-slr-red ring-4 ring-slr-red/30 shadow-xl shadow-slr-red/30";
-                          numberColor = "text-slr-red font-extrabold";
-                        } else if (hasRun && hasRace) {
-                           // Gradient border for run and race
-                          ringClass = "border-4 border-transparent ring-4 ring-offset-0 ring-offset-white/0 shadow-xl transition-all duration-300"
-                          // Use a CSS variable or direct style for gradient border
-                          ringClass += " bg-gradient-to-br from-slr-blue/80 to-slr-red/80 p-[2px] rounded-2xl border-none"; 
-                          numberColor = "text-white drop-shadow-sm";
-                        } else if (hasRace) {
-                          ringClass = "border-4 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg";
-                          numberColor = "text-slr-red";
-                        } else if (hasRun) {
-                          ringClass = "border-4 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg";
-                          numberColor = "text-slr-blue";
-                        }
-                        // --- END NEW ---
 
                         return (
-                          <div
+                          <CalendarDayCell
                             key={day}
-                            className={cn(
-                              "min-h-[120px] rounded-2xl p-2.5 transition-all backdrop-blur-md relative overflow-hidden group cursor-pointer",
-                              "bg-white/10 hover:bg-white/20",
-                              ringClass,
-                              hasRun && hasRace && 'p-[2px] border-none' // Adjust padding for gradient effect
-                            )}
-                            onClick={() => dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : dayEvents.length > 1 && setSelectedEvent(dayEvents[0])}
-                            // Inner content wrapper for gradient days
-                            style={hasRun && hasRace ? { background: 'linear-gradient(135deg, var(--slr-blue) 0%, var(--slr-red) 100%)', padding: '1px', borderRadius: '14px' } : undefined}
-                          >
-                             {/* Inner glass block to maintain structure within the gradient border */}
-                             <div className={cn(
-                                'h-full w-full rounded-xl p-1',
-                                hasRun && hasRace && 'bg-white/10 backdrop-blur-md' // Inner content background
-                             )}>
-                                <div className={cn(
-                                    "text-sm font-bold mb-2 relative z-10",
-                                    numberColor
-                                )}>
-                                    {day}
-                                </div>
-                                <div className="space-y-1.5">
-                                    {dayEvents.slice(0, 3).map((event) => (
-                                    <button
-                                        key={event.id}
-                                        onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
-                                        className={cn(
-                                        "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 text-white shadow-md", 
-                                        "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/30",
-                                        event.type === "weekly-run"
-                                            ? "bg-slr-blue/70 hover:bg-slr-blue"
-                                            : "bg-slr-red/70 hover:bg-slr-red"
-                                        )}
-                                        title={`${event.title} - ${event.time}`}
-                                    >
-                                        <div className="flex items-center h-full gap-1.5">
-                                        {event.type === "race" ? (
-                                            <Trophy className="h-3 w-3 flex-shrink-0" />
-                                        ) : (
-                                            <Activity className="h-3 w-3 flex-shrink-0" />
-                                        )}
-                                        <span className="line-clamp-2 leading-tight">{event.title}</span>
-                                        </div>
-                                    </button>
-                                    ))}
-                                    {dayEvents.length > 3 && (
-                                    <div className="text-[10px] text-white/80 font-bold text-center py-1.5 bg-black/20 rounded-md backdrop-blur-sm border border-white/30 shadow-sm">
-                                        +{dayEvents.length - 3} more
-                                    </div>
-                                    )}
-                                </div>
-                             </div>
-                          </div>
+                            day={day}
+                            date={currentDateObject}
+                            dayEvents={dayEvents}
+                            dailySummary={dailyEventSummary.get(day)}
+                            isToday={isToday}
+                            setSelectedEvent={setSelectedEvent}
+                          />
                         )
                       })}
                     </div>
@@ -697,7 +730,6 @@ export function CalendarView() {
                       ) : (
                         filteredEvents.map((event) => (
                           <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
-                            {/* FIX 1: Glassmorphism Card (List Item) */}
                             <Card className="rounded-xl border-white/30 bg-white/10 hover:bg-white/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
                               <CardContent className="p-4">
                                 <div className="flex items-start gap-4">
@@ -768,7 +800,6 @@ export function CalendarView() {
       </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        {/* FIX 1: Glassmorphism Dialog */}
         <DialogContent className="sm:max-w-[500px] rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl text-white">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
