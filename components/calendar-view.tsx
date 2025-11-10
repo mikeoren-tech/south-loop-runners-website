@@ -610,7 +610,7 @@ export function CalendarView() {
                                   key={event.id}
                                   onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                                   className={cn(
-                                    "w-full **text-[10px]** px-2 **py-1** rounded-md text-left transition-all font-semibold **h-7**", // FIX 1: Smaller font, padding, and fixed height
+                                    "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7", // FIX 1: Smaller font, padding, and fixed height
                                     "backdrop-blur-sm border shadow-sm",
                                     event.type === "weekly-run"
                                       ? "bg-slr-blue hover:bg-slr-blue-dark text-white border-slr-blue-dark/30 hover:shadow-md"
@@ -619,13 +619,13 @@ export function CalendarView() {
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
-                                  <div className="flex items-center **h-full** gap-1.5"> {/* FIX 1: Centering content */}
+                                  <div className="flex items-center h-full gap-1.5"> {/* FIX 1: Centering content */}
                                     {event.type === "race" ? (
-                                      <Trophy className="h-3 w-3 flex-shrink-0" /> {/* FIX 1: Smaller icon */}
+                                      <Trophy className="h-3 w-3 flex-shrink-0" /> // FIX: Removed comment from JSX expression
                                     ) : (
-                                      <Activity className="h-3 w-3 flex-shrink-0" /> {/* FIX 1: Smaller icon */}
+                                      <Activity className="h-3 w-3 flex-shrink-0" /> // FIX: Removed comment from JSX expression
                                     )}
-                                    <span className="line-clamp-2 **leading-tight**">{event.title}</span> {/* FIX 1: Tighter line-height */}
+                                    <span className="line-clamp-2 leading-tight">{event.title}</span> {/* FIX 1: Tighter line-height */}
                                   </div>
                                 </button>
                               ))}
