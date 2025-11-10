@@ -22,7 +22,6 @@ import {
   ExternalLink,
   Star,
 } from "lucide-react"
-import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
@@ -537,7 +536,7 @@ export function CalendarView() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <ScrollReveal className="text-center mb-12">
+      <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
           <span className="text-slr-red">★</span>{" "}
           <span className="text-slr-blue">Events Calendar</span>
@@ -545,10 +544,10 @@ export function CalendarView() {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           View all upcoming weekly runs and races. Never miss an event!
         </p>
-      </ScrollReveal>
+      </div>
 
       <div className="max-w-7xl mx-auto space-y-6">
-        <ScrollReveal delay={100}>
+        <div>
           <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-md shadow-2xl transition-shadow p-0">
             <CardContent className="p-6">
               {/* FIX 2: Restored Visibility of CTA buttons and fixed layout wrapping */}
@@ -632,9 +631,9 @@ export function CalendarView() {
               )}
             </CardContent>
           </Card>
-        </ScrollReveal>
+        </div>
 
-        <ScrollReveal delay={200}>
+        <div>
           <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl">
             <CardContent className="p-6">
               <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")} className="w-full">
@@ -809,7 +808,7 @@ export function CalendarView() {
               </Tabs>
             </CardContent>
           </Card>
-        </ScrollReveal>
+        </div>
       </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
