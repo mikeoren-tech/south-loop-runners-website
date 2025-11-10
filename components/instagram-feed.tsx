@@ -46,7 +46,7 @@ export function InstagramFeed() {
   }, [])
 
   return (
-    <section className="relative py-20 bg-white" aria-labelledby="instagram-heading">
+    <section className="relative py-20 bg-[rgba(249,250,251,0.5)]" aria-labelledby="instagram-heading">
       <div className="relative z-10">
         <div className="container mx-auto px-4">
           <ScrollReveal className="text-center mb-12">
