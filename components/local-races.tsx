@@ -264,10 +264,20 @@ function RaceCard({ race, index }: { race: any; index: number }) {
   const racingCount = attendees.filter((a) => a.type === "racing").length
   const cheeringCount = attendees.filter((a) => a.type === "cheering").length
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "America/Chicago" })
-  }
+  function getFormattedEventDate(dateStringFromDB) {
+  const chicagoOffset = '-06:00'; 
+  const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`; 
+
+  const date = new Date(correctedDateString); 
+  
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "America/Chicago" // The correct formatting option
+  });
+}
 
   const iconMap: Record<string, any> = {
     Flag: Flag,
