@@ -299,8 +299,18 @@ export function UpcomingRuns() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return null
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Chicago" })
+    const chicagoOffset = '-06:00'; 
+    const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`; 
+
+    const date = new Date(correctedDateString); 
+  
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "America/Chicago" 
+    });
   }
 
   const renderEventCard = (event: any, index: number, delay: number, className: string) => {
