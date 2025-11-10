@@ -43,16 +43,33 @@ const formatEventDate = (event: Event): string => {
 }
 
 const formatGoogleDate = (date: Date): string => {
-  // Format date in local timezone to avoid UTC conversion issues
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
+  // Use Intl.DateTimeFormat to get components based on the target timezone (Chicago)
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23', // Ensure 24-hour format for T-string compatibility
+    timeZone: 'America/Chicago', // Crucially locks the output to Chicago time
+  });
+
+  // Format the date and extract the parts
+  const parts = formatter.formatToParts(date);
   
-  return `${year}${month}${day}T${hours}${minutes}${seconds}`
-}
+  // Helper to find and pad components
+  const getPart = (type: string) => parts.find(p => p.type === type)?.value.padStart(2, '0');
+  
+  const year = getPart('year');
+  const month = getPart('month');
+  const day = getPart('day');
+  const hours = getPart('hour');
+  const minutes = getPart('minute');
+  const seconds = getPart('second') || '00'; // Default to '00' if not included
+
+  return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+};
 
 const getICalDay = (dayOfWeek: number): string => {
   const iCalDays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']
@@ -346,7 +363,7 @@ const getEmailStyles = (): string => `
 const buildHeader = (title: string, subtitle: string): string => `
   <div class="header">
     <img 
-      src="https://southlooprunners.com/slr-logo.jpg" 
+      src="https://southlooprunners.com/slr-logo.png" 
       alt="South Loop Runners" 
       class="logo-image"
       width="220"
