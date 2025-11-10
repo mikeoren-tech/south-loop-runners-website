@@ -619,11 +619,11 @@ export function CalendarView() {
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
-                                  <div className="flex items-center h-full gap-1.5"> {/* FIX 1: Centering content */}
+                                  <div className="flex items-center h-full gap-1.5">
                                     {event.type === "race" ? (
-                                      <Trophy className="h-3 w-3 flex-shrink-0" /> // FIX: Removed comment from JSX expression
+                                      <Trophy className="h-3 w-3 flex-shrink-0" />
                                     ) : (
-                                      <Activity className="h-3 w-3 flex-shrink-0" /> // FIX: Removed comment from JSX expression
+                                      <Activity className="h-3 w-3 flex-shrink-0" />
                                     )}
                                     <span className="line-clamp-2 leading-tight">{event.title}</span> {/* FIX 1: Tighter line-height */}
                                   </div>
@@ -671,9 +671,9 @@ export function CalendarView() {
                                   </div>
 
                                   <div className="flex-1 space-y-2">
-                                    <div className="flex items-start justify-between **gap-2**"> {/* FIX 2: Reduced gap */}
-                                      <div **className="min-w-0"**> {/* FIX 2: Allows title div to shrink */}
-                                        <h4 className="font-semibold text-lg flex items-start gap-2 **truncate**"> {/* FIX 2: Prevents title overflow */}
+                                    <div className="flex items-start justify-between gap-2"> {/* FIX 2: Reduced gap */}
+                                      <div className="min-w-0"> {/* FIX 2: Allows title div to shrink */}
+                                        <h4 className="font-semibold text-lg flex items-start gap-2 truncate"> {/* FIX 2: Prevents title overflow */}
                                           {event.title}
                                           {event.isRecurring && (
                                             <Badge variant="outline" className="text-xs border-slr-blue text-slr-blue-dark">
@@ -686,7 +686,7 @@ export function CalendarView() {
 
                                       <Badge
                                         variant={event.type === "race" ? "destructive" : "default"}
-                                        className="**text-xs** shrink-0" // FIX 2: Smaller font for badge
+                                        className="text-xs shrink-0" // FIX 2: Smaller font for badge
                                       >
                                         {event.type === "race" ? (
                                           <>
