@@ -300,7 +300,7 @@ export function UpcomingRuns() {
   const formatDate = (dateString: string) => {
     if (!dateString) return null
     const chicagoOffset = '-06:00'; 
-    const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`; 
+    const correctedDateString = `${dateString.split('T')[0]}T12:00:00${chicagoOffset}`; 
 
     const date = new Date(correctedDateString); 
   
