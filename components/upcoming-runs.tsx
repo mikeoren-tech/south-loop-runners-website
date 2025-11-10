@@ -136,17 +136,17 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
       <div className="space-y-2">
         <div className="flex gap-2">
           <Select value={selectedPace} onValueChange={setSelectedPace}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Select your pace" />
-            </SelectTrigger>
-            <SelectContent>
-              {PACE_GROUPS.map((pace) => (
-                <SelectItem key={pace} value={pace}>
-                  {pace}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Select your pace" />
+            </SelectTrigger>
+            <SelectContent className="bg-white/100 backdrop-filter-none"> {/* <--- ADD THIS CLASS */}
+              {PACE_GROUPS.map((pace) => (
+                <SelectItem key={pace} value={pace}>
+                  {pace}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm">
             {isSubmitting ? "Adding..." : "Add"}
           </Button>
