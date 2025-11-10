@@ -686,7 +686,7 @@ export function CalendarView() {
                     })}
                      {/* Renders trailing empty cells after the last day */}
                      {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
-                       <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5 border" />
+                       <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
                      ))}
                   </div>
                 </TabsContent>
