@@ -26,7 +26,7 @@ import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
-// --- Interface Definitions (Kept the same) ---
+// --- Interface Definitions ---
 interface DatabaseEvent {
   id: string
   title: string
@@ -62,7 +62,13 @@ interface CalendarEvent {
   registrationUrl?: string
 }
 
-// --- Utility Functions (Kept the same) ---
+interface DailySummary {
+  isRun: boolean
+  isRace: boolean
+}
+
+// --- Utility Functions (Omitted for brevity, assuming correct) ---
+
 function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks: number): CalendarEvent[] {
   const events: CalendarEvent[] = []
   const start = new Date(startDate)
@@ -190,7 +196,6 @@ function exportSingleEventToICS(event: CalendarEvent) {
   start.setHours(hour, minutes, 0, 0)
   const end = new Date(start.getTime() + 90 * 60 * 1000)
 
-  // Escape special characters in SUMMARY and DESCRIPTION for ICS
   const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n')
   const details = event.description || event.details
 
@@ -238,12 +243,7 @@ function getInitialView(): "month" | "list" {
   return "month"
 }
 
-// --- NEWLY EXTRACTED COMPONENT (see above) ---
-interface DailySummary {
-  isRun: boolean
-  isRace: boolean
-}
-
+// --- Extracted CalendarDayCell Component ---
 interface CalendarDayCellProps {
   day: number
   date: Date
@@ -263,12 +263,23 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
   let gradientWrapperStyle = undefined;
   let innerBgClass = 'bg-white/10 backdrop-blur-md';
 
+  // If there are no events on this day, apply the base style and return early to skip event rendering
+  if (dayEvents.length === 0) {
+    return (
+        <div 
+          className="min-h-[120px] rounded-2xl p-2.5 bg-white/5 border border-white/20 text-white/40"
+        >
+          <div className="text-sm font-bold mb-2 relative z-10">{day}</div>
+        </div>
+    );
+  }
+
   if (isToday) {
     ringClass = "border-4 border-slr-red ring-4 ring-slr-red/30 shadow-xl shadow-slr-red/30";
     numberColor = "text-slr-red font-extrabold";
   } else if (hasRun && hasRace) {
     // Apply gradient wrapper style for the multi-event border effect
-    // We use a CSS style here because Tailwind doesn't easily support gradient borders without plugins
+    // NOTE: Requires custom CSS variables --slr-blue and --slr-red to be defined!
     gradientWrapperStyle = { 
         background: 'linear-gradient(135deg, var(--slr-blue) 0%, var(--slr-red) 100%)', 
         padding: '1px', 
@@ -276,7 +287,7 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
     };
     ringClass = "border-none shadow-xl transition-all duration-300 p-[2px]";
     numberColor = "text-white drop-shadow-sm";
-    innerBgClass = 'bg-white/10 backdrop-blur-md'; // Inner block to show glass background
+    innerBgClass = 'bg-white/10 backdrop-blur-md'; 
   } else if (hasRace) {
     ringClass = "border-4 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg";
     numberColor = "text-slr-red";
@@ -304,8 +315,6 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
         <div className={cn(
             'h-full w-full rounded-xl p-1',
             innerBgClass,
-            // If it's a gradient day, we need the background on the inner div
-            hasRun && hasRace && 'bg-white/10 backdrop-blur-md'
         )}>
             <div className={cn(
                 "text-sm font-bold mb-2 relative z-10",
@@ -347,7 +356,6 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
     </div>
   )
 }
-// --------------------------------------------------------------------------
 
 
 // --- Main Component ---
@@ -463,7 +471,6 @@ export function CalendarView() {
     })
   }, [filteredEvents, currentDate])
 
-  // Calculate event colors for calendar cells
   const dailyEventSummary = useMemo(() => {
     const summary = new Map<number, { isRun: boolean, isRace: boolean }>();
     monthEvents.forEach(event => {
@@ -544,7 +551,8 @@ export function CalendarView() {
         <ScrollReveal delay={100}>
           <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-md shadow-2xl transition-shadow p-0">
             <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              {/* FIX 2: Restored Visibility of CTA buttons and fixed layout wrapping */}
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
                 <div className="flex flex-wrap items-center gap-2">
                   <Filter className="h-4 w-4 text-white" />
                   <Button
@@ -567,7 +575,8 @@ export function CalendarView() {
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-2 ml-auto">
+                {/* FIX 2: Ensure buttons align right on desktop and fit on mobile */}
+                <div className="flex items-center gap-2 w-full md:w-auto md:justify-end">
                   {!subscribed && (
                     <>
                       <Button
@@ -685,8 +694,9 @@ export function CalendarView() {
                         </div>
                       ))}
 
+                      {/* Renders leading empty cells before the 1st of the month */}
                       {Array.from({ length: startingDayOfWeek }).map((_, i) => (
-                        <div key={`empty-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
+                        <div key={`empty-leading-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
                       ))}
 
                       {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -708,6 +718,10 @@ export function CalendarView() {
                           />
                         )
                       })}
+                       {/* Renders trailing empty cells after the last day to fill the week */}
+                       {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
+                         <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
+                       ))}
                     </div>
                   )}
                 </TabsContent>
@@ -733,7 +747,6 @@ export function CalendarView() {
                             <Card className="rounded-xl border-white/30 bg-white/10 hover:bg-white/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
                               <CardContent className="p-4">
                                 <div className="flex items-start gap-4">
-                                  {/* Date block adjusted for glass look */}
                                   <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-white">
                                     <div className="text-2xl font-bold">{event.date.getDate()}</div>
                                     <div className="text-sm font-medium">
@@ -855,7 +868,7 @@ export function CalendarView() {
             <div className="flex items-start gap-3">
               <MapPin className="h-5 w-5 text-slr-blue-dark flex-shrink-0 mt-1 text-white" />
               <div className="text-sm">
-                <p className="font-medium">Location</p>
+                <p className className="font-medium">Location</p>
                 <p className="text-white/80">{selectedEvent?.location}</p>
               </div>
             </div>
