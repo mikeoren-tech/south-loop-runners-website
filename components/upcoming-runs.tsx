@@ -139,7 +139,7 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
             <SelectTrigger className="flex-1">
               <SelectValue placeholder="Select your pace" />
             </SelectTrigger>
-            <SelectContent className="bg-white/100 backdrop-filter-none"> {/* <--- ADD THIS CLASS */}
+            <SelectContent className="bg-white/100">
               {PACE_GROUPS.map((pace) => (
                 <SelectItem key={pace} value={pace}>
                   {pace}
