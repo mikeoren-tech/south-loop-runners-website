@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog" // Added DialogFooter for completeness
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
 interface DatabaseEvent {
   id: string
@@ -91,7 +91,7 @@ function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks
       description: run.description,
       facebookLink: run.facebook_link || undefined,
       stravaLink: run.strava_link || undefined,
-      registrationUrl: run.registration_url || undefined, // Added registrationUrl here
+      registrationUrl: run.registration_url || undefined,
     })
   }
 
@@ -610,7 +610,7 @@ export function CalendarView() {
                                   key={event.id}
                                   onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                                   className={cn(
-                                    "w-full text-xs px-2 py-1.5 rounded-md text-left transition-all font-semibold",
+                                    "w-full **text-[10px]** px-2 **py-1** rounded-md text-left transition-all font-semibold **h-7**", // FIX 1: Smaller font, padding, and fixed height
                                     "backdrop-blur-sm border shadow-sm",
                                     event.type === "weekly-run"
                                       ? "bg-slr-blue hover:bg-slr-blue-dark text-white border-slr-blue-dark/30 hover:shadow-md"
@@ -619,13 +619,13 @@ export function CalendarView() {
                                   )}
                                   title={`${event.title} - ${event.time}`}
                                 >
-                                  <div className="flex items-start gap-1.5">
+                                  <div className="flex items-center **h-full** gap-1.5"> {/* FIX 1: Centering content */}
                                     {event.type === "race" ? (
-                                      <Trophy className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                                      <Trophy className="h-3 w-3 flex-shrink-0" /> {/* FIX 1: Smaller icon */}
                                     ) : (
-                                      <Activity className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                                      <Activity className="h-3 w-3 flex-shrink-0" /> {/* FIX 1: Smaller icon */}
                                     )}
-                                    <span className="line-clamp-2 leading-snug">{event.title}</span>
+                                    <span className="line-clamp-2 **leading-tight**">{event.title}</span> {/* FIX 1: Tighter line-height */}
                                   </div>
                                 </button>
                               ))}
@@ -671,9 +671,9 @@ export function CalendarView() {
                                   </div>
 
                                   <div className="flex-1 space-y-2">
-                                    <div className="flex items-start justify-between gap-4">
-                                      <div>
-                                        <h4 className="font-semibold text-lg flex items-center gap-2">
+                                    <div className="flex items-start justify-between **gap-2**"> {/* FIX 2: Reduced gap */}
+                                      <div **className="min-w-0"**> {/* FIX 2: Allows title div to shrink */}
+                                        <h4 className="font-semibold text-lg flex items-start gap-2 **truncate**"> {/* FIX 2: Prevents title overflow */}
                                           {event.title}
                                           {event.isRecurring && (
                                             <Badge variant="outline" className="text-xs border-slr-blue text-slr-blue-dark">
@@ -686,7 +686,7 @@ export function CalendarView() {
 
                                       <Badge
                                         variant={event.type === "race" ? "destructive" : "default"}
-                                        className="shrink-0"
+                                        className="**text-xs** shrink-0" // FIX 2: Smaller font for badge
                                       >
                                         {event.type === "race" ? (
                                           <>
@@ -754,7 +754,6 @@ export function CalendarView() {
             </div>
           </DialogHeader>
 
-          {/* This is the div that was incomplete. Adding the content and closing tags. */}
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-3">
               <CalendarDays className="h-5 w-5 text-slr-blue-dark flex-shrink-0" />
