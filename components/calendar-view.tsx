@@ -661,7 +661,7 @@ export function CalendarView() {
 
                     {/* Renders leading empty cells before the 1st */}
                     {Array.from({ length: startingDayOfWeek }).map((_, i) => (
-                      <div key={`empty-leading-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5 border border-foreground/20" />
+                      <div key={`empty-leading-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
                     ))}
 
                     {/* Renders the cells for each day of the month using the fixed component */}
@@ -686,7 +686,7 @@ export function CalendarView() {
                     })}
                      {/* Renders trailing empty cells after the last day */}
                      {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
-                       <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5 border border-foreground/20" />
+                       <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5 border" />
                      ))}
                   </div>
                 </TabsContent>
