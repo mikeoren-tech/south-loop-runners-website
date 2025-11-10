@@ -255,6 +255,7 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
   let gradientWrapperStyle = undefined;
   let innerBgClass = 'bg-white/10 backdrop-blur-md';
 
+  // [No changes to the highlight logic needed for isToday vs event day]
   if (!hasEvents && !isToday) {
     ringClass = "border-white/20 hover:border-white/40";
     innerBgClass = 'bg-white/5 backdrop-blur-sm';
@@ -307,11 +308,11 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
                     <button
                         onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                         className={cn(
-                        "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 text-white shadow-md", 
+                        "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 shadow-md", // Removed explicit text-white
                         "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/30",
                         event.type === "weekly-run"
-                            ? "bg-slr-blue/70 hover:bg-slr-blue"
-                            : "bg-slr-red/70 hover:bg-slr-red"
+                            ? "bg-slr-blue/70 hover:bg-slr-blue **text-slr-blue-dark**" // FIX: Dark text for contrast on light blue
+                            : "bg-slr-red/70 hover:bg-slr-red **text-white**" // White text is fine on dark red
                         )}
                     >
                         <div className="flex items-center h-full gap-1.5">
