@@ -11,7 +11,7 @@ export function CalendarCTA() {
         <div className="max-w-4xl mx-auto">
           <div>
             {/* Card uses glassmorphic styles */}
-            <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl overflow-hidden">
+            <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl overflow-hidden">
               {/* Inner branded gradient container */}
               <div className="bg-gradient-to-br from-slr-blue/10 via-slr-red/5 to-slr-blue/5 p-8 md:p-12">
                 <div className="text-center space-y-6">
@@ -22,15 +22,15 @@ export function CalendarCTA() {
 
                   <div className="space-y-3">
                     {/* FIX: Ensure headline is dark/foreground color for legibility on light background */}
-                    <h2 className="text-3xl md:text-4xl font-bold text-balance text-background">Never Miss an Event</h2>
-                    <p className="text-lg text-background/80 max-w-2xl mx-auto text-balance">
+                    <h2 className="text-3xl md:text-4xl font-bold text-balance text-foreground">Never Miss an Event</h2>
+                    <p className="text-lg text-foreground/80 max-w-2xl mx-auto text-balance">
                       View all upcoming runs and races in one place. Get notifications when new events are added and
                       export to your personal calendar.
                     </p>
                   </div>
 
                   {/* Feature Grid */}
-                  <div className="grid sm:grid-cols-3 gap-4 pt-4 text-foreground">
+                  <div className="grid sm:grid-cols-3 gap-4 pt-4 text-background">
                     {/* Feature 1: Run & Race Views */}
                     <div className="flex flex-col items-center gap-2 p-4">
                       <div className="w-12 h-12 bg-slr-blue/10 rounded-full flex items-center justify-center">
@@ -38,7 +38,7 @@ export function CalendarCTA() {
                       </div>
                       <h3 className="font-semibold text-sm">Run & Race Views</h3>
                       {/* FIX: Use dark foreground color for legibility */}
-                      <p className="text-xs text-foreground/70 text-center">See events in calendar or list format</p>
+                      <p className="text-xs text-background/70 text-center">See events in calendar or list format</p>
                     </div>
 
                     {/* Feature 2: Event Notifications */}
@@ -48,7 +48,7 @@ export function CalendarCTA() {
                       </div>
                       <h3 className="font-semibold text-sm">Event Notifications</h3>
                       {/* FIX: Use dark foreground color for legibility */}
-                      <p className="text-xs text-foreground/70 text-center">Get notified about new events</p>
+                      <p className="text-xs text-background/70 text-center">Get notified about new events</p>
                     </div>
 
                     {/* Feature 3: Calendar Export */}
@@ -58,7 +58,7 @@ export function CalendarCTA() {
                       </div>
                       <h3 className="font-semibold text-sm">Calendar Export</h3>
                       {/* FIX: Use dark foreground color for legibility */}
-                      <p className="text-xs text-foreground/70 text-center">Add events to your calendar app</p>
+                      <p className="text-xs text-background/70 text-center">Add events to your calendar app</p>
                     </div>
                   </div>
 
