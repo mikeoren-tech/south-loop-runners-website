@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function CalendarPage() {
   return (
-    <div className="min-h-screen bg-background"> 
+    <div className="min-h-screen bg-calbg"> 
       <header 
         className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10"
       >
