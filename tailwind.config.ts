@@ -19,6 +19,7 @@ const config: Config = {
         // Standard Shadcn/Radix aliases (already defined in your CSS)
         'background': 'var(--background)',
         'foreground': 'var(--foreground)',
+        'bgcal': 'var(--bgcal)',
         'primary': 'var(--primary)',
         'secondary': 'var(--secondary)',
         'destructive': 'var(--destructive)',
