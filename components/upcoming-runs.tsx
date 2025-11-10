@@ -127,19 +127,19 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
 
   return (
     <div className="border-t pt-4 mt-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+      <div className="flex gap-2 text-sm font-medium text-muted-foreground">
         <Users className="h-4 w-4" />
         <span>Show Your Interest</span>
         <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
       </div>
 
       <div className="space-y-2">
-        <div className="flex">
+        <div className="flex gap-2">
           <Select value={selectedPace} onValueChange={setSelectedPace}>
             <SelectTrigger className="flex-1">
               <SelectValue placeholder="Select your pace" />
             </SelectTrigger>
-            <SelectContent className="glass dark:bg-black/60">
+            <SelectContent className="glass:bg-black/40">
               {PACE_GROUPS.map((pace) => (
                 <SelectItem key={pace} value={pace}>
                   {pace}
