@@ -133,10 +133,9 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
         <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex gap-2 pl-1">
+      <div className="flex gap-2">
           <Select value={selectedPace} onValueChange={setSelectedPace}>
-            <SelectTrigger className="flex-1">
+            <SelectTrigger className="flex-1">
               <SelectValue placeholder="Select your pace" />
             </SelectTrigger>
             <SelectContent className="bg-white">
@@ -146,7 +145,7 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select>
           <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
             {isSubmitting ? "Adding..." : "Add"}
           </Button>
