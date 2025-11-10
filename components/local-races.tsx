@@ -266,7 +266,7 @@ function RaceCard({ race, index }: { race: any; index: number }) {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "America/Chicago" })
   }
 
   const iconMap: Record<string, any> = {
@@ -660,7 +660,7 @@ export function LocalRaces() {
         id: "f3-lake",
         title: "F³ Lake Half Marathon & 5K",
         tagline: "Run the Lakefront, Finish at Soldier Field",
-        date: "2026-01-17",
+        date: "2026-01-31",
         time: "10:00 AM",
         location: "Soldier Field",
         depart_from: "South Loop",
@@ -686,7 +686,7 @@ export function LocalRaces() {
         id: "miles-per-hour",
         title: "Miles Per Hour Run",
         tagline: "Run Through the Chicago Auto Show",
-        date: "2026-02-14",
+        date: "2026-02-08",
         time: "8:00 AM",
         location: "McCormick Place",
         depart_from: "South Loop",
