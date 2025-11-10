@@ -265,17 +265,17 @@ function RaceCard({ race, index }: { race: any; index: number }) {
   const cheeringCount = attendees.filter((a) => a.type === "cheering").length
 
   function formatDate(dateStringFromDB) {
-  const chicagoOffset = '-06:00'; 
-  const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`; 
-
-  const date = new Date(correctedDateString); 
+    const chicagoOffset = '-06:00'; 
+    const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`; 
   
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "America/Chicago" // The correct formatting option
+    const date = new Date(correctedDateString); 
+    
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "America/Chicago" // The correct formatting option
   });
 }
 
