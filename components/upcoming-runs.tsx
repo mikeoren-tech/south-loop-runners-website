@@ -300,7 +300,7 @@ export function UpcomingRuns() {
   const formatDate = (dateString: string) => {
     if (!dateString) return null
     const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    return date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Chicago" })
   }
 
   const renderEventCard = (event: any, index: number, delay: number, className: string) => {
@@ -316,34 +316,6 @@ export function UpcomingRuns() {
               <CardDescription>{event.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {index === 0 && (
-                <div className="relative animate-pulse-glow">
-                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 rounded-2xl p-4 shadow-lg">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <h3 className="text-sm font-semibold text-amber-900">Help Us Decide: Date Change Survey</h3>
-                        <p className="text-sm text-amber-800">
-                          We're considering changing the day for Light Up the Lakefront. Share your preference!
-                        </p>
-                        <Button
-                          asChild
-                          size="sm"
-                          className="bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg transition-all"
-                        >
-                          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc2VRtitYsCVsue8rR0WJylw5ybjIZgzFZZrQhY2lDrA3IrvA/viewform" target="_blank" rel="noopener noreferrer">
-                            Take Survey
-                            <ArrowRight className="ml-2 h-3 w-3" />
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               <div className="grid gap-3">
                 {isWeeklyRun && (
                   <div className="flex items-center gap-2 text-sm">
