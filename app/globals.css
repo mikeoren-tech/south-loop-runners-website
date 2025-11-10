@@ -4,8 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #333333;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
   --card: #ffffff;
   --card-foreground: #333333;
   --popover: #ffffff;
@@ -38,11 +38,10 @@
   --sidebar-border: #e5e7eb;
   --sidebar-ring: #b4def7;
   /* South Loop Runners custom colors */
-  --slr-red: 356 77% 57%;
-  --slr-red-dark: 356 77% 45%;
-  --slr-blue: 184 39% 76%;
-  --slr-blue-dark: 184 39% 65%;
-  --slr-blue-light: 184 39% 88%;
+  --slr-blue: oklch(0.51 0.15 260); 
+  --slr-red: oklch(0.55 0.25 30);   
+  --slr-blue-dark: oklch(0.35 0.15 260);
+  --slr-blue-light: oklch(0.85 0.05 260);
   --shadow-x: 0px;
   --shadow-y: 1px;
   --shadow-blur: 2px;
@@ -85,11 +84,10 @@
   --sidebar-border: #404040;
   --sidebar-ring: #9dd3f0;
   /* South Loop Runners custom colors - dark mode */
-  --slr-red: 356 77% 57%;
-  --slr-red-dark: 356 77% 65%;
-  --slr-blue: 184 39% 65%;
-  --slr-blue-dark: 184 39% 55%;
-  --slr-blue-light: 184 39% 75%;
+  --slr-blue: oklch(0.65 0.15 260); /* Brighter Blue for Dark Mode */
+  --slr-red: oklch(0.68 0.25 30);   /* Brighter Red for Dark Mode */
+  --slr-blue-dark: oklch(0.51 0.15 260);
+  --slr-blue-light: oklch(0.25 0.05 260);
   --shadow-x: 0px;
   --shadow-y: 1px;
   --shadow-blur: 2px;
