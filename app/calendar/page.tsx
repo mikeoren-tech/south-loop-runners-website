@@ -12,14 +12,19 @@ export const metadata: Metadata = {
 
 export default function CalendarPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    // Set a transparent background on the body wrapper to match the theme (assuming page background is handled globally)
+    <div className="min-h-screen bg-transparent"> 
+      <header 
+        // FIX 1: Change solid background to glassmorphic transparent background
+        className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10"
+      >
         <div className="container flex h-16 items-center px-4">
           <Link
             href="/"
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+            {/* FIX 2: Apply brand color to the back arrow */}
+            <ChevronLeft className="h-5 w-5 text-slr-blue" />
             <Image
               src="/slr-logo.png"
               alt="South Loop Runners"
