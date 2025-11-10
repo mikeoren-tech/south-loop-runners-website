@@ -22,8 +22,8 @@ export function CalendarCTA() {
 
                   <div className="space-y-3">
                     {/* FIX: Ensure headline is dark/foreground color for legibility on light background */}
-                    <h2 className="text-3xl md:text-4xl font-bold text-balance text-foreground">Never Miss an Event</h2>
-                    <p className="text-lg text-foreground/80 max-w-2xl mx-auto text-balance">
+                    <h2 className="text-3xl md:text-4xl font-bold text-balance text-background">Never Miss an Event</h2>
+                    <p className="text-lg text-background/80 max-w-2xl mx-auto text-balance">
                       View all upcoming runs and races in one place. Get notifications when new events are added and
                       export to your personal calendar.
                     </p>
