@@ -264,7 +264,7 @@ function RaceCard({ race, index }: { race: any; index: number }) {
   const racingCount = attendees.filter((a) => a.type === "racing").length
   const cheeringCount = attendees.filter((a) => a.type === "cheering").length
 
-  function getFormattedEventDate(dateStringFromDB) {
+  function formatDate(dateStringFromDB) {
   const chicagoOffset = '-06:00'; 
   const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`; 
 
