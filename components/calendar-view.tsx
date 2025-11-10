@@ -303,7 +303,7 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
                         "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-foreground/30",
                         event.type === "weekly-run"
                             ? "bg-slr-blue/70 hover:bg-slr-blue **text-slr-blue-dark**" // FIX: Dark text for contrast on light blue
-                            : "bg-slr-red/70 hover:bg-slr-red **text-foreground**" // foreground text is fine on dark red
+                            : "bg-slr-red/70 hover:bg-slr-red **text-white**" // foreground text is fine on dark red
                         )}
                     >
                         <div className="flex items-center h-full gap-1.5">
@@ -818,7 +818,7 @@ export function CalendarView() {
           
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-4 border-t border-foreground/30">
             {selectedEvent?.registrationUrl && (
-                <Button asChild variant="destructive" className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-foreground">
+                <Button asChild variant="destructive" className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-white">
                     <a href={selectedEvent.registrationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                         <ExternalLink className="h-4 w-4" />
                         Register Now
