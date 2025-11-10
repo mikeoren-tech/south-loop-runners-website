@@ -250,29 +250,20 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
   const hasRace = dailySummary?.isRace
   const hasEvents = dayEvents.length > 0;
   
-  let ringClass = "border-white/30 hover:border-white/60";
-  let numberColor = "text-white/80";
+  let ringClass = "border-foreground/30 hover:border-foreground/60";
+  let numberColor = "text-foreground/80";
   let gradientWrapperStyle = undefined;
-  let innerBgClass = 'bg-white/10 backdrop-blur-md';
+  let innerBgClass = 'bg-foreground/10 backdrop-blur-md';
 
-  // [No changes to the highlight logic needed for isToday vs event day]
-  if (!hasEvents && !isToday) {
-    ringClass = "border-white/20 hover:border-white/40";
-    innerBgClass = 'bg-white/5 backdrop-blur-sm';
-  }
-
-  if (isToday) {
-    ringClass = "border-2 border-background ring-2 ring-slr-red/30 shadow-xl shadow-slr-red/30";
-    numberColor = "text-slr-red font-extrabold";
-  } else if (hasRun && hasRace) {
+  if (hasRun && hasRace) {
     gradientWrapperStyle = { 
         background: 'linear-gradient(135deg, var(--slr-blue) 0%, var(--slr-red) 100%)', 
         padding: '1px', 
         borderRadius: '14px' 
     };
     ringClass = "border-none shadow-xl transition-all duration-300 p-[2px]";
-    numberColor = "text-white drop-shadow-sm";
-    innerBgClass = 'bg-white/10 backdrop-blur-md'; 
+    numberColor = "text-foreground drop-shadow-sm";
+    innerBgClass = 'bg-foreground/10 backdrop-blur-md'; 
   } else if (hasRace) {
     ringClass = "border-2 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg";
     numberColor = "text-slr-red";
@@ -286,7 +277,7 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
       className={cn(
         "min-h-[120px] rounded-2xl p-2.5 transition-all relative overflow-hidden group cursor-pointer",
         ringClass,
-        hasEvents ? "bg-white/10 hover:bg-white/20" : "bg-white/5 hover:bg-white/10",
+        hasEvents ? "bg-foreground/10 hover:bg-foreground/20" : "bg-foreground/5 hover:bg-foreground/10",
       )}
       onClick={() => hasEvents && (dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : setSelectedEvent(dayEvents[0]))}
       style={gradientWrapperStyle}
@@ -308,11 +299,11 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
                     <button
                         onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                         className={cn(
-                        "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 shadow-md", // Removed explicit text-white
-                        "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/30",
+                        "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 shadow-md", // Removed explicit text-foreground
+                        "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-foreground/30",
                         event.type === "weekly-run"
                             ? "bg-slr-blue/70 hover:bg-slr-blue **text-slr-blue-dark**" // FIX: Dark text for contrast on light blue
-                            : "bg-slr-red/70 hover:bg-slr-red **text-white**" // White text is fine on dark red
+                            : "bg-slr-red/70 hover:bg-slr-red **text-foreground**" // foreground text is fine on dark red
                         )}
                     >
                         <div className="flex items-center h-full gap-1.5">
@@ -327,7 +318,7 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
                 </Tooltip>
                 ))}
                 {dayEvents.length > 3 && (
-                <div className="text-[10px] text-white/80 font-bold text-center py-1.5 bg-black/20 rounded-md backdrop-blur-sm border border-white/30 shadow-sm">
+                <div className="text-[10px] text-foreground/80 font-bold text-center py-1.5 bg-black/20 rounded-md backdrop-blur-sm border border-foreground/30 shadow-sm">
                     +{dayEvents.length - 3} more
                 </div>
                 )}
@@ -531,18 +522,18 @@ export function CalendarView() {
 
       <div className="max-w-7xl mx-auto space-y-6">
         <ScrollReveal delay={100}>
-          <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-md shadow-2xl transition-shadow p-0"> 
+          <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-md shadow-2xl transition-shadow p-0"> 
             <CardContent className="p-6">
               
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
                 {/* Filters Group (Left side) */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <Filter className="h-4 w-4 text-white" />
+                  <Filter className="h-4 w-4 text-foreground" />
                   <Button
                     variant={filters.has("weekly-run") ? "default" : "secondary"}
                     size="sm"
                     onClick={() => setFilters(toggleFilter(filters, "weekly-run"))}
-                    className="gap-2 bg-slr-blue/80 hover:bg-slr-blue text-white shadow-lg"
+                    className="gap-2 bg-slr-blue/80 hover:bg-slr-blue text-foreground shadow-lg"
                   >
                     <Activity className="h-4 w-4" />
                     Weekly Runs
@@ -551,7 +542,7 @@ export function CalendarView() {
                     variant={filters.has("race") ? "destructive" : "secondary"}
                     size="sm"
                     onClick={() => setFilters(toggleFilter(filters, "race"))}
-                    className="gap-2 bg-slr-red/80 hover:bg-slr-red text-white shadow-lg"
+                    className="gap-2 bg-slr-red/80 hover:bg-slr-red text-foreground shadow-lg"
                   >
                     <Trophy className="h-4 w-4" />
                     Races
@@ -564,7 +555,7 @@ export function CalendarView() {
                     onClick={() => exportToICS(filteredEvents)}
                     variant="ghost"
                     size="sm"
-                    className="gap-2 text-white hover:bg-white/20"
+                    className="gap-2 text-foreground hover:bg-foreground/20"
                   >
                     <Download className="h-4 w-4" />
                     Download All
@@ -574,7 +565,7 @@ export function CalendarView() {
                       onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
                       variant={isNotificationExpanded ? "outline" : "default"}
                       size="sm"
-                      className="gap-2 bg-white/20 hover:bg-white/30 text-white"
+                      className="gap-2 bg-foreground/20 hover:bg-foreground/30 text-foreground"
                     >
                       <Bell className="h-4 w-4" />
                       {isNotificationExpanded ? "Close" : "Get Notifications"}
@@ -598,9 +589,9 @@ export function CalendarView() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="flex-1 bg-white/30 border-white/50 text-white placeholder:text-white/70 focus:ring-2 focus:ring-slr-blue"
+                    className="flex-1 bg-foreground/30 border-foreground/50 text-foreground placeholder:text-foreground/70 focus:ring-2 focus:ring-slr-blue"
                   />
-                  <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-white">
+                  <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-foreground">
                     {isSubmitting ? "Subscribing..." : "Subscribe"}
                   </Button>
                 </form>
@@ -608,8 +599,8 @@ export function CalendarView() {
 
               {/* Subscription success message */}
               {subscribed && (
-                <div className="flex items-center gap-2 text-white bg-green-500/50 p-3 rounded-lg mt-4">
-                  <Star className="h-4 w-4 fill-white" />
+                <div className="flex items-center gap-2 text-foreground bg-green-500/50 p-3 rounded-lg mt-4">
+                  <Star className="h-4 w-4 fill-foreground" />
                   <span className="text-sm font-medium">You're subscribed to event updates!</span>
                 </div>
               )}
@@ -618,17 +609,17 @@ export function CalendarView() {
         </ScrollReveal>
 
         <ScrollReveal delay={200}>
-          <Card className="rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl">
+          <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl">
             <CardContent className="p-6">
               <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")} className="w-full">
                 
                 <div className="flex items-center justify-between mb-4">
-                  <TabsList className="bg-white/20 backdrop-blur-sm border border-white/40 shadow-xl rounded-xl">
-                    <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
+                  <TabsList className="bg-foreground/20 backdrop-blur-sm border border-foreground/40 shadow-xl rounded-xl">
+                    <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
                       <CalendarDays className="h-4 w-4" />
                       Month
                     </TabsTrigger>
-                    <TabsTrigger value="list" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
+                    <TabsTrigger value="list" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
                       <List className="h-4 w-4" />
                       List
                     </TabsTrigger>
@@ -640,16 +631,16 @@ export function CalendarView() {
                         variant="outline" 
                         size="sm" 
                         onClick={() => navigateMonth("prev")} 
-                        className="border-white/50 hover:bg-white/20 bg-white/10 text-white backdrop-blur-md shadow-md rounded-lg"
+                        className="border-foreground/50 hover:bg-foreground/20 bg-foreground/10 text-foreground backdrop-blur-md shadow-md rounded-lg"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
-                      <h3 className="font-bold text-lg text-white drop-shadow-sm">{monthName}</h3>
+                      <h3 className="font-bold text-lg text-foreground drop-shadow-sm">{monthName}</h3>
                       <Button 
                         variant="outline" 
                         size="sm" 
                         onClick={() => navigateMonth("next")} 
-                        className="border-white/50 hover:bg-white/20 bg-white/10 text-white backdrop-blur-md shadow-md rounded-lg"
+                        className="border-foreground/50 hover:bg-foreground/20 bg-foreground/10 text-foreground backdrop-blur-md shadow-md rounded-lg"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
@@ -663,14 +654,14 @@ export function CalendarView() {
                   <div className="grid grid-cols-7 gap-2 sm:gap-3">
                     {/* Day labels (Sun, Mon, etc.) */}
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                      <div key={day} className="text-center text-xs sm:text-sm font-bold text-white py-3 border-b border-white/50 bg-white/20 rounded-t-lg">
+                      <div key={day} className="text-center text-xs sm:text-sm font-bold text-foreground py-3 border-b border-foreground/50 bg-foreground/20 rounded-t-lg">
                         {day}
                       </div>
                     ))}
 
                     {/* Renders leading empty cells before the 1st */}
                     {Array.from({ length: startingDayOfWeek }).map((_, i) => (
-                      <div key={`empty-leading-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
+                      <div key={`empty-leading-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5 border border-foreground/20" />
                     ))}
 
                     {/* Renders the cells for each day of the month using the fixed component */}
@@ -695,24 +686,24 @@ export function CalendarView() {
                     })}
                      {/* Renders trailing empty cells after the last day */}
                      {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
-                       <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-white/5 border border-white/20" />
+                       <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5 border border-foreground/20" />
                      ))}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="list" className="mt-0">
                   {isLoading ? (
-                    <div className="text-center py-12 text-white/70">Loading events...</div>
+                    <div className="text-center py-12 text-foreground/70">Loading events...</div>
                   ) : filteredEvents.length === 0 ? (
-                    <div className="text-center py-12 text-white/70">No events found.</div>
+                    <div className="text-center py-12 text-foreground/70">No events found.</div>
                   ) : (
                     <div className="space-y-4">
                       {filteredEvents.map((event) => (
                         <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
-                          <Card className="rounded-xl border-white/30 bg-white/10 hover:bg-white/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
+                          <Card className="rounded-xl border-foreground/30 bg-foreground/10 hover:bg-foreground/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
                             <CardContent className="p-4">
                               <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-white">
+                                <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-foreground">
                                   <div className="text-2xl font-bold">{event.date.getDate()}</div>
                                   <div className="text-sm font-medium">
                                     {event.date.toLocaleDateString("en-US", { month: "short" })}
@@ -721,24 +712,24 @@ export function CalendarView() {
                                 <div className="flex-1 space-y-2">
                                   <div className="flex items-start justify-between gap-2">
                                     <div className="min-w-0">
-                                      <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-white">
+                                      <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-foreground">
                                         {event.title}
                                         {event.isRecurring && (
-                                          <Badge variant="outline" className="text-xs border-white/50 text-white bg-white/10">Recurring</Badge>
+                                          <Badge variant="outline" className="text-xs border-foreground/50 text-foreground bg-foreground/10">Recurring</Badge>
                                         )}
                                       </h4>
-                                      <p className="text-sm text-white/80">{event.details}</p>
+                                      <p className="text-sm text-foreground/80">{event.details}</p>
                                     </div>
                                     <Badge
                                       variant={event.type === "race" ? "destructive" : "default"}
-                                      className={cn("text-xs shrink-0 text-white", event.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
+                                      className={cn("text-xs shrink-0 text-foreground", event.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
                                     >
                                       {event.type === "race" ? (<><Trophy className="h-3 w-3 mr-1" />Race</>) : (<><Activity className="h-3 w-3 mr-1" />Run</>)}
                                     </Badge>
                                   </div>
-                                  <div className="flex flex-wrap gap-4 text-sm text-white/70">
-                                    <div className="flex items-center gap-1"><Clock className="h-4 w-4 text-white" />{event.time}</div>
-                                    <div className="flex items-center gap-1"><MapPin className="h-4 w-4 text-white" />{event.location}</div>
+                                  <div className="flex flex-wrap gap-4 text-sm text-foreground/70">
+                                    <div className="flex items-center gap-1"><Clock className="h-4 w-4 text-foreground" />{event.time}</div>
+                                    <div className="flex items-center gap-1"><MapPin className="h-4 w-4 text-foreground" />{event.location}</div>
                                   </div>
                                 </div>
                               </div>
@@ -757,7 +748,7 @@ export function CalendarView() {
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
         {/* COMPLETED DIALOG CONTENT */}
-        <DialogContent className="sm:max-w-[500px] rounded-2xl border-white/30 bg-white/10 backdrop-blur-xl shadow-2xl text-white">
+        <DialogContent className="sm:max-w-[500px] rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl text-foreground">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               {selectedEvent?.type === "race" ? (
@@ -767,30 +758,30 @@ export function CalendarView() {
               )}
               {selectedEvent?.title}
             </DialogTitle>
-            <DialogDescription className="text-base font-medium text-white/80">
+            <DialogDescription className="text-base font-medium text-foreground/80">
                 {selectedEvent?.details}
             </DialogDescription>
             <div className="flex flex-wrap gap-2 pt-2">
               {selectedEvent?.type && (
                 <Badge 
                   variant={selectedEvent.type === "race" ? "destructive" : "default"}
-                  className={cn("text-white", selectedEvent.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
+                  className={cn("text-foreground", selectedEvent.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
                 >
                   {selectedEvent.type === "race" ? 'Race' : 'Weekly Run'}
                 </Badge>
               )}
               {selectedEvent?.isRecurring && (
-                <Badge variant="outline" className="border-white/50 text-white bg-white/10">Recurring</Badge>
+                <Badge variant="outline" className="border-foreground/50 text-foreground bg-foreground/10">Recurring</Badge>
               )}
             </div>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-3">
-              <CalendarDays className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-white" />
+              <CalendarDays className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-foreground" />
               <div className="text-sm">
                 <p className="font-medium">Date</p>
-                <p className="text-white/80">
+                <p className="text-foreground/80">
                   {selectedEvent?.date.toLocaleDateString("en-US", {
                       weekday: 'long',
                       year: 'numeric',
@@ -802,43 +793,43 @@ export function CalendarView() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-white" />
+              <Clock className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-foreground" />
               <div className="text-sm">
                 <p className="font-medium">Time</p>
-                <p className="text-white/80">{selectedEvent?.time}</p>
+                <p className="text-foreground/80">{selectedEvent?.time}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-slr-blue-dark flex-shrink-0 mt-1 text-white" />
+              <MapPin className="h-5 w-5 text-slr-blue-dark flex-shrink-0 mt-1 text-foreground" />
               <div className="text-sm">
                 <p className="font-medium">Location</p>
-                <p className="text-white/80">{selectedEvent?.location}</p>
+                <p className="text-foreground/80">{selectedEvent?.location}</p>
               </div>
             </div>
             
             {selectedEvent?.description && (
-                <div className="space-y-2 pt-2 border-t border-white/30">
+                <div className="space-y-2 pt-2 border-t border-foreground/30">
                     <p className="font-medium text-sm">Notes/Description</p>
-                    <p className="text-sm text-white/80 whitespace-pre-line">{selectedEvent.description}</p>
+                    <p className="text-sm text-foreground/80 foregroundspace-pre-line">{selectedEvent.description}</p>
                 </div>
             )}
           </div>
           
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-4 border-t border-white/30">
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-4 border-t border-foreground/30">
             {selectedEvent?.registrationUrl && (
-                <Button asChild variant="destructive" className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-white">
+                <Button asChild variant="destructive" className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-foreground">
                     <a href={selectedEvent.registrationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                         <ExternalLink className="h-4 w-4" />
                         Register Now
                     </a>
                 </Button>
             )}
-            <Button onClick={() => selectedEvent && addToGoogleCalendar(selectedEvent)} variant="outline" className="w-full sm:w-auto text-white hover:bg-white/20 border-white/50 bg-white/10">
+            <Button onClick={() => selectedEvent && addToGoogleCalendar(selectedEvent)} variant="outline" className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10">
                 <CalendarDays className="h-4 w-4 mr-2" />
                 Google Calendar
             </Button>
-            <Button onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)} variant="outline" className="w-full sm:w-auto text-white hover:bg-white/20 border-white/50 bg-white/10">
+            <Button onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)} variant="outline" className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10">
                 <Download className="h-4 w-4 mr-2" />
                 Download ICS
             </Button>
