@@ -16,9 +16,12 @@ import {
   StarOff,
   ChevronUp,
   ChevronDown,
+  Trophy,
+  Activity,
 } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface Event {
   id: string
@@ -200,6 +203,8 @@ export default function FeaturedEventsAdmin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [authError, setAuthError] = useState(false)
+  const [showRaces, setShowRaces] = useState(true)
+  const [showRuns, setShowRuns] = useState(true)
   const router = useRouter()
 
   const moveUp = async (index: number) => {
@@ -343,6 +348,18 @@ export default function FeaturedEventsAdmin() {
     }
   }
 
+  const filteredFeaturedEvents = featuredEvents.filter((event) => {
+    const isRace = event.type === "race"
+    const isRun = event.is_recurring || event.type !== "race"
+    return (showRaces && isRace) || (showRuns && isRun)
+  })
+
+  const filteredAvailableEvents = availableEvents.filter((event) => {
+    const isRace = event.type === "race"
+    const isRun = event.is_recurring || event.type !== "race"
+    return (showRaces && isRace) || (showRuns && isRun)
+  })
+
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -399,8 +416,44 @@ export default function FeaturedEventsAdmin() {
 
       <main className="container mx-auto px-4 py-8 space-y-8">
         <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground mr-2">Show:</span>
+              <Button
+                variant={showRuns ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowRuns(!showRuns)}
+                className={cn(
+                  "gap-2 shadow-lg transition-all",
+                  showRuns
+                    ? "bg-slr-blue/80 hover:bg-slr-blue text-foreground"
+                    : "bg-foreground/5 hover:bg-foreground/10 text-foreground/50 border-foreground/30",
+                )}
+              >
+                <Activity className="h-4 w-4" />
+                Weekly Runs
+              </Button>
+              <Button
+                variant={showRaces ? "destructive" : "outline"}
+                size="sm"
+                onClick={() => setShowRaces(!showRaces)}
+                className={cn(
+                  "gap-2 shadow-lg transition-all",
+                  showRaces
+                    ? "bg-slr-red/80 hover:bg-slr-red text-white"
+                    : "bg-foreground/5 hover:bg-foreground/10 text-foreground/50 border-foreground/30",
+                )}
+              >
+                <Trophy className="h-4 w-4" />
+                Races
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader>
-            <CardTitle>Featured Events ({featuredEvents.length})</CardTitle>
+            <CardTitle>Featured Events ({filteredFeaturedEvents.length})</CardTitle>
             <CardDescription>
               Use the up and down arrows to reorder events. These events will appear prominently on the homepage in this
               order. Recommended: 3-5 featured events for optimal display.
@@ -411,23 +464,27 @@ export default function FeaturedEventsAdmin() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
               </div>
-            ) : featuredEvents.length === 0 ? (
+            ) : filteredFeaturedEvents.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No featured events. Add events from the list below.
+                No featured events match the current filter. {!showRuns && !showRaces && "Enable at least one filter."}
               </div>
             ) : (
               <div className="space-y-3">
-                {featuredEvents.map((event, index) => (
-                  <FeaturedEventItem
-                    key={event.id}
-                    event={event}
-                    index={index}
-                    total={featuredEvents.length}
-                    onMoveUp={() => moveUp(index)}
-                    onMoveDown={() => moveDown(index)}
-                    onRemove={() => handleToggleFeatured(event.id, false)}
-                  />
-                ))}
+                {filteredFeaturedEvents.map((event, index) => {
+                  // Find the actual index in the full array for proper move operations
+                  const actualIndex = featuredEvents.findIndex((e) => e.id === event.id)
+                  return (
+                    <FeaturedEventItem
+                      key={event.id}
+                      event={event}
+                      index={actualIndex}
+                      total={featuredEvents.length}
+                      onMoveUp={() => moveUp(actualIndex)}
+                      onMoveDown={() => moveDown(actualIndex)}
+                      onRemove={() => handleToggleFeatured(event.id, false)}
+                    />
+                  )
+                })}
               </div>
             )}
           </CardContent>
@@ -435,7 +492,7 @@ export default function FeaturedEventsAdmin() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Available Events ({availableEvents.length})</CardTitle>
+            <CardTitle>Available Events ({filteredAvailableEvents.length})</CardTitle>
             <CardDescription>Click "Feature" to add an event to the homepage.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -443,13 +500,13 @@ export default function FeaturedEventsAdmin() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
               </div>
-            ) : availableEvents.length === 0 ? (
+            ) : filteredAvailableEvents.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No available events. All events are featured or no events exist.
+                No available events match the current filter.
               </div>
             ) : (
               <div className="space-y-3">
-                {availableEvents.map((event) => (
+                {filteredAvailableEvents.map((event) => (
                   <AvailableEventItem key={event.id} event={event} onToggle={(id) => handleToggleFeatured(id, true)} />
                 ))}
               </div>
