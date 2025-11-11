@@ -420,7 +420,7 @@ export function UpcomingRuns() {
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
-            <Link href="/weather-guide" className="text-primary hover:underline font-medium">
+            <Link href="/weather-guide" className="text-primary hover:underline font-medium color:slr-blue">
               Check our weather running guide
             </Link>{" "}
             for tips on running in different conditions.
