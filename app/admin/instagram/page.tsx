@@ -22,11 +22,9 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
-  Image as ImageIcon,
 } from "lucide-react"
 import Link from "next/link"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import Image from "next/image"
 
 interface InstagramPost {
   id: number
@@ -47,8 +45,6 @@ export default function InstagramAdmin() {
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [authError, setAuthError] = useState(false)
   const [deleting, setDeleting] = useState<number | null>(null)
-  const [previewImages, setPreviewImages] = useState<{ [key: number]: string }>({})
-  const [loadingPreviews, setLoadingPreviews] = useState<{ [key: number]: boolean }>({})
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -109,36 +105,11 @@ export default function InstagramAdmin() {
       if (response.ok) {
         const data = await response.json()
         setPosts(data)
-        // Load previews for each post
-        data.forEach((post: InstagramPost) => {
-          loadInstagramPreview(post.id, post.URL)
-        })
       }
     } catch (error) {
       console.error("Failed to load Instagram posts:", error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadInstagramPreview = async (postId: number, url: string) => {
-    setLoadingPreviews((prev) => ({ ...prev, [postId]: true }))
-    try {
-      const response = await fetch("/api/instagram/preview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-        cache: "no-store",
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setPreviewImages((prev) => ({ ...prev, [postId]: data.imageUrl }))
-      }
-    } catch (error) {
-      console.error("Failed to load preview for post", postId, error)
-    } finally {
-      setLoadingPreviews((prev) => ({ ...prev, [postId]: false }))
     }
   }
 
@@ -286,10 +257,10 @@ export default function InstagramAdmin() {
   const PostItem = ({ post, index, list }: { post: InstagramPost; index: number; list: InstagramPost[] }) => (
     <div
       key={post.id}
-      className="flex items-stretch gap-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors overflow-hidden"
+      className="flex items-start gap-4 p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
     >
       {/* Left: Reorder Controls */}
-      <div className="flex flex-col gap-1 p-4 border-r bg-muted/30">
+      <div className="flex flex-col gap-1 pt-1 flex-shrink-0">
         <Button
           variant="ghost"
           size="sm"
@@ -312,60 +283,44 @@ export default function InstagramAdmin() {
         </Button>
       </div>
 
-      {/* Center: Preview Image */}
-      <div className="flex-shrink-0 w-32 h-32 bg-muted flex items-center justify-center relative">
-        {loadingPreviews[post.id] ? (
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        ) : previewImages[post.id] ? (
-          <Image
-            src={previewImages[post.id]}
-            alt="Instagram post preview"
-            width={128}
-            height={128}
-            className="w-full h-full object-cover"
-            unoptimized
-            priority={false}
-          />
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <ImageIcon className="w-6 h-6 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">No preview</p>
-          </div>
-        )}
+      {/* Center: Content */}
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="font-mono text-xs">
+            #{index + 1}
+          </Badge>
+        </div>
+
+        <div className="text-sm break-all">
+          <a href={post.URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            {post.URL}
+          </a>
+        </div>
+
+        {post.caption && <p className="text-sm text-muted-foreground line-clamp-2">{post.caption}</p>}
       </div>
 
-      {/* Right: Content and Controls */}
-      <div className="flex-1 flex flex-col justify-between p-4 min-w-0">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono text-xs">
-              #{index + 1}
-            </Badge>
-          </div>
-          {post.caption && <p className="text-sm text-muted-foreground line-clamp-2">{post.caption}</p>}
-        </div>
-
-        <div className="flex gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleToggleActive(post)}
-            title={post.is_active ? "Hide from homepage" : "Show on homepage"}
-          >
-            {post.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => handleEditPost(post)}>
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDelete(post.id)}
-            disabled={deleting === post.id}
-          >
-            {deleting === post.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-          </Button>
-        </div>
+      {/* Right: Action Controls */}
+      <div className="flex gap-2 flex-shrink-0">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleToggleActive(post)}
+          title={post.is_active ? "Hide from homepage" : "Show on homepage"}
+        >
+          {post.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => handleEditPost(post)}>
+          <Edit className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleDelete(post.id)}
+          disabled={deleting === post.id}
+        >
+          {deleting === post.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+        </Button>
       </div>
     </div>
   )
