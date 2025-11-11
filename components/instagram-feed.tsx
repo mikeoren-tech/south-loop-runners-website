@@ -10,7 +10,7 @@ const instagramPostUrls = [
   "https://www.instagram.com/p/DP9K4vRjQFC/", // Replace with actual post URL
   "https://www.instagram.com/p/DNlckmkRoOp", // Replace with actual post URL
   "https://www.instagram.com/p/DIpBIqBvI3K", // Replace with actual post URL
-  "https://www.instagram.com/p/DQX-bcQDSop/", // Replace with actual post URL
+  "https://www.instagram.com/p/DQj1zH0ka6Y/", // Replace with actual post URL
   "https://www.instagram.com/reel/C_A2lrwxRLx/", // Replace with actual post URL
   "https://www.instagram.com/p/DPy33Mvju6e/", // Replace with actual post URL
 ]
