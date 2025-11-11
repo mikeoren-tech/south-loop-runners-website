@@ -128,6 +128,7 @@ export default function InstagramAdmin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
+        cache: "no-store",
       })
 
       if (response.ok) {
@@ -285,76 +286,66 @@ export default function InstagramAdmin() {
   const PostItem = ({ post, index, list }: { post: InstagramPost; index: number; list: InstagramPost[] }) => (
     <div
       key={post.id}
-      className="flex items-start gap-4 p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
+      className="flex items-stretch gap-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors overflow-hidden"
     >
-      {/* Preview Image */}
-      <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
+      {/* Left: Reorder Controls */}
+      <div className="flex flex-col gap-1 p-4 border-r bg-muted/30">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => moveUp(list, index)}
+          disabled={index === 0}
+          className="h-8 w-8 p-0"
+          title="Move up"
+        >
+          <ChevronUp className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => moveDown(list, index)}
+          disabled={index === list.length - 1}
+          className="h-8 w-8 p-0"
+          title="Move down"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Center: Preview Image */}
+      <div className="flex-shrink-0 w-32 h-32 bg-muted flex items-center justify-center relative">
         {loadingPreviews[post.id] ? (
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         ) : previewImages[post.id] ? (
           <Image
             src={previewImages[post.id]}
-            alt="Instagram preview"
-            width={96}
-            height={96}
+            alt="Instagram post preview"
+            width={128}
+            height={128}
             className="w-full h-full object-cover"
             unoptimized
+            priority={false}
           />
         ) : (
-          <ImageIcon className="w-6 h-6 text-muted-foreground" />
+          <div className="flex flex-col items-center gap-2">
+            <ImageIcon className="w-6 h-6 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">No preview</p>
+          </div>
         )}
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex flex-col gap-1 pt-1">
-          <div className="flex items-center gap-2 flex-wrap">
+      {/* Right: Content and Controls */}
+      <div className="flex-1 flex flex-col justify-between p-4 min-w-0">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
             <Badge variant="outline" className="font-mono text-xs">
               #{index + 1}
             </Badge>
           </div>
-
-          <div className="text-sm break-all">
-            <a
-              href={post.URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              {post.URL}
-            </a>
-          </div>
-
           {post.caption && <p className="text-sm text-muted-foreground line-clamp-2">{post.caption}</p>}
         </div>
-      </div>
 
-      {/* Controls */}
-      <div className="flex flex-col gap-1 flex-shrink-0">
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => moveUp(list, index)}
-            disabled={index === 0}
-            className="h-8 w-8 p-0"
-            title="Move up"
-          >
-            <ChevronUp className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => moveDown(list, index)}
-            disabled={index === list.length - 1}
-            className="h-8 w-8 p-0"
-            title="Move down"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        </div>
-
-        <div className="flex gap-1">
+        <div className="flex gap-2 pt-2">
           <Button
             variant="outline"
             size="sm"
