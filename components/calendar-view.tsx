@@ -24,7 +24,14 @@ import {
 } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 // --- Interface Definitions (Required for type safety) ---
 interface DatabaseEvent {
@@ -67,9 +74,9 @@ interface DailySummary {
   isRace: boolean
 }
 
-const Tooltip = ({ children, content }: { children: React.ReactNode, content: string }) => (
-    <div title={content}>{children}</div>
-);
+const Tooltip = ({ children, content }: { children: React.ReactNode; content: string }) => (
+  <div title={content}>{children}</div>
+)
 
 // --- Utility Functions (Complete) ---
 
@@ -87,7 +94,7 @@ function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks
     eventDate.setDate(start.getDate() + i * 7)
 
     if (eventDate < new Date(new Date().setHours(0, 0, 0, 0))) {
-        continue;
+      continue
     }
 
     events.push({
@@ -114,22 +121,22 @@ function parseEventTime(timeStr: string): { hour: number; minutes: number } {
   if (!match) return { hour: 0, minutes: 0 }
 
   let hour = Number.parseInt(match[1])
-  const minutes = Number.parseInt(match[3] || '0')
+  const minutes = Number.parseInt(match[3] || "0")
   const period = match[5]?.toUpperCase()
 
   if (period === "PM" && hour !== 12) hour += 12
   if (period === "AM" && hour === 12) hour = 0
-  
+
   return { hour, minutes }
 }
 
 function formatDateForCalendar(date: Date): string {
   const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
 
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
@@ -137,15 +144,16 @@ function formatDateForCalendar(date: Date): string {
 function exportToICS(events: CalendarEvent[]) {
   const icsEvents = events
     .map((event) => {
-      const start = new Date(event.date);
-      const { hour, minutes } = parseEventTime(event.time);
-      start.setHours(hour, minutes, 0, 0);
-      const end = new Date(start.getTime() + 90 * 60 * 1000);
-      const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n');
-      const details = event.description || event.details;
+      const start = new Date(event.date)
+      const { hour, minutes } = parseEventTime(event.time)
+      start.setHours(hour, minutes, 0, 0)
+      const end = new Date(start.getTime() + 90 * 60 * 1000)
+      const escapeICS = (str: string) => str.replace(/([,;\\[\]])/g, "\\$1").replace(/\n/g, "\\n")
+      const details = event.description || event.details
 
       return [
-        "BEGIN:VEVENT", `UID:${event.id}@southlooprunners.com`,
+        "BEGIN:VEVENT",
+        `UID:${event.id}@southlooprunners.com`,
         `DTSTAMP:${formatDateForCalendar(new Date())}`,
         `DTSTART:${formatDateForCalendar(start)}`,
         `DTEND:${formatDateForCalendar(end)}`,
@@ -153,69 +161,76 @@ function exportToICS(events: CalendarEvent[]) {
         `LOCATION:${escapeICS(event.location)}`,
         `DESCRIPTION:${escapeICS(details)}`,
         "END:VEVENT",
-      ].join("\r\n");
+      ].join("\r\n")
     })
-    .join("\r\n");
+    .join("\r\n")
 
   const icsContent = [
-    "BEGIN:VCALENDAR", "VERSION:2.0",
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
     "PRODID:-//South Loop Runners//Events Calendar//EN",
-    "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
-    icsEvents, "END:VCALENDAR",
-  ].join("\r\n");
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    icsEvents,
+    "END:VCALENDAR",
+  ].join("\r\n")
 
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "south-loop-runners-events.ics";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(blob)
+  link.download = "south-loop-runners-events.ics"
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 function addToGoogleCalendar(event: CalendarEvent) {
-  const start = new Date(event.date);
-  const { hour, minutes } = parseEventTime(event.time);
-  start.setHours(hour, minutes, 0, 0);
-  const end = new Date(start.getTime() + 90 * 60 * 1000);
-  const googleCalUrl = new URL("https://calendar.google.com/calendar/render");
-  googleCalUrl.searchParams.set("action", "TEMPLATE");
-  googleCalUrl.searchParams.set("text", event.title);
-  googleCalUrl.searchParams.set("dates", `${formatDateForCalendar(start)}/${formatDateForCalendar(end)}`);
-  googleCalUrl.searchParams.set("details", event.description || event.details);
-  googleCalUrl.searchParams.set("location", event.location);
-  window.open(googleCalUrl.toString(), "_blank");
+  const start = new Date(event.date)
+  const { hour, minutes } = parseEventTime(event.time)
+  start.setHours(hour, minutes, 0, 0)
+  const end = new Date(start.getTime() + 90 * 60 * 1000)
+  const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
+  googleCalUrl.searchParams.set("action", "TEMPLATE")
+  googleCalUrl.searchParams.set("text", event.title)
+  googleCalUrl.searchParams.set("dates", `${formatDateForCalendar(start)}/${formatDateForCalendar(end)}`)
+  googleCalUrl.searchParams.set("details", event.description || event.details)
+  googleCalUrl.searchParams.set("location", event.location)
+  window.open(googleCalUrl.toString(), "_blank")
 }
 
 function exportSingleEventToICS(event: CalendarEvent) {
-  const start = new Date(event.date);
-  const { hour, minutes } = parseEventTime(event.time);
-  start.setHours(hour, minutes, 0, 0);
-  const end = new Date(start.getTime() + 90 * 60 * 1000);
-  const escapeICS = (str: string) => str.replace(/([,;\\\[\]])/g, '\\$1').replace(/\n/g, '\\n');
-  const details = event.description || event.details;
+  const start = new Date(event.date)
+  const { hour, minutes } = parseEventTime(event.time)
+  start.setHours(hour, minutes, 0, 0)
+  const end = new Date(start.getTime() + 90 * 60 * 1000)
+  const escapeICS = (str: string) => str.replace(/([,;\\[\]])/g, "\\$1").replace(/\n/g, "\\n")
+  const details = event.description || event.details
 
   const icsContent = [
-    "BEGIN:VCALENDAR", "VERSION:2.0",
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
     "PRODID:-//South Loop Runners//Events Calendar//EN",
-    "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
-    "BEGIN:VEVENT", `UID:${event.id}@southlooprunners.com`,
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${event.id}@southlooprunners.com`,
     `DTSTAMP:${formatDateForCalendar(new Date())}`,
     `DTSTART:${formatDateForCalendar(start)}`,
     `DTEND:${formatDateForCalendar(end)}`,
     `SUMMARY:${escapeICS(event.title)}`,
     `LOCATION:${escapeICS(event.location)}`,
     `DESCRIPTION:${escapeICS(details)}`,
-    "END:VEVENT", "END:VCALENDAR",
-  ].join("\r\n");
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n")
 
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}.ics`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(blob)
+  link.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}.ics`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 function toggleFilter(filters: Set<string>, type: string): Set<string> {
@@ -248,30 +263,30 @@ interface CalendarDayCellProps {
 function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelectedEvent }: CalendarDayCellProps) {
   const hasRun = dailySummary?.isRun
   const hasRace = dailySummary?.isRace
-  const hasEvents = dayEvents.length > 0;
-  
-  let ringClass = "border-foreground/30 hover:border-foreground/60";
-  let numberColor = "text-foreground/80";
-  let gradientWrapperStyle = undefined;
-  let innerBgClass = 'bg-foreground/10 backdrop-blur-md';
+  const hasEvents = dayEvents.length > 0
+
+  let ringClass = "border-foreground/30 hover:border-foreground/60"
+  let numberColor = "text-foreground/80"
+  let gradientWrapperStyle = undefined
+  let innerBgClass = "bg-foreground/10 backdrop-blur-md"
 
   if (hasRun && hasRace) {
-    gradientWrapperStyle = { 
-        background: 'linear-gradient(135deg, var(--slr-blue) 0%, var(--slr-red) 100%)', 
-        padding: '1px', 
-        borderRadius: '14px' 
-    };
-    ringClass = "border-none shadow-xl transition-all duration-300 p-[2px]";
-    numberColor = "text-foreground drop-shadow-sm";
-    innerBgClass = 'bg-foreground/10 backdrop-blur-md'; 
+    gradientWrapperStyle = {
+      background: "linear-gradient(135deg, var(--slr-blue) 0%, var(--slr-red) 100%)",
+      padding: "1px",
+      borderRadius: "14px",
+    }
+    ringClass = "border-none shadow-xl transition-all duration-300 p-[2px]"
+    numberColor = "text-foreground drop-shadow-sm"
+    innerBgClass = "bg-foreground/10 backdrop-blur-md"
   } else if (hasRace) {
-    ringClass = "border-2 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg";
-    numberColor = "text-slr-red";
+    ringClass = "border-2 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg"
+    numberColor = "text-slr-red"
   } else if (hasRun) {
-    ringClass = "border-2 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg";
-    numberColor = "text-slr-blue";
+    ringClass = "border-2 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg"
+    numberColor = "text-slr-blue"
   }
-  
+
   return (
     <div
       className={cn(
@@ -279,55 +294,51 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
         ringClass,
         hasEvents ? "bg-foreground/10 hover:bg-foreground/20" : "bg-foreground/5 hover:bg-foreground/10",
       )}
-      onClick={() => hasEvents && (dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : setSelectedEvent(dayEvents[0]))}
+      onClick={() =>
+        hasEvents && (dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : setSelectedEvent(dayEvents[0]))
+      }
       style={gradientWrapperStyle}
     >
-        <div className={cn(
-            'h-full w-full rounded-xl p-1',
-            innerBgClass,
-        )}>
-            <div className={cn(
-                "text-sm font-bold mb-2 relative z-10",
-                numberColor
-            )}>
-                {day}
-            </div>
-            
-            <div className="space-y-1.5">
-                {dayEvents.slice(0, 3).map((event) => (
-                <Tooltip key={event.id} content={`${event.title} - ${event.time}`}>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
-                        className={cn(
-                        "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 shadow-md", // Removed explicit text-foreground
-                        "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-foreground/30",
-                        event.type === "weekly-run"
-                            ? "bg-slr-blue/70 hover:bg-slr-blue **text-slr-blue-dark**" // FIX: Dark text for contrast on light blue
-                            : "bg-slr-red/70 hover:bg-slr-red **text-white**" // foreground text is fine on dark red
-                        )}
-                    >
-                        <div className="flex items-center h-full gap-1.5">
-                            {event.type === "race" ? (
-                                <Trophy className="h-3 w-3 flex-shrink-0" />
-                            ) : (
-                                <Activity className="h-3 w-3 flex-shrink-0" />
-                            )}
-                            <span className="line-clamp-2 leading-tight">{event.title}</span>
-                        </div>
-                    </button>
-                </Tooltip>
-                ))}
-                {dayEvents.length > 3 && (
-                <div className="text-[10px] text-foreground/80 font-bold text-center py-1.5 bg-black/20 rounded-md backdrop-blur-sm border border-foreground/30 shadow-sm">
-                    +{dayEvents.length - 3} more
-                </div>
+      <div className={cn("h-full w-full rounded-xl p-1", innerBgClass)}>
+        <div className={cn("text-sm font-bold mb-2 relative z-10", numberColor)}>{day}</div>
+
+        <div className="space-y-1.5">
+          {dayEvents.slice(0, 3).map((event) => (
+            <Tooltip key={event.id} content={`${event.title} - ${event.time}`}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedEvent(event)
+                }}
+                className={cn(
+                  "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 shadow-md",
+                  "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-foreground/30",
+                  event.type === "weekly-run"
+                    ? "bg-slr-blue/70 hover:bg-slr-blue text-slr-blue-dark"
+                    : "bg-slr-red/70 hover:bg-slr-red text-white",
                 )}
+              >
+                <div className="flex items-center h-full gap-1.5">
+                  {event.type === "race" ? (
+                    <Trophy className="h-3 w-3 flex-shrink-0" />
+                  ) : (
+                    <Activity className="h-3 w-3 flex-shrink-0" />
+                  )}
+                  <span className="line-clamp-2 leading-tight">{event.title}</span>
+                </div>
+              </button>
+            </Tooltip>
+          ))}
+          {dayEvents.length > 3 && (
+            <div className="text-[10px] text-foreground/80 font-bold text-center py-1.5 bg-black/20 rounded-md backdrop-blur-sm border border-foreground/30 shadow-sm">
+              +{dayEvents.length - 3} more
             </div>
+          )}
         </div>
+      </div>
     </div>
   )
 }
-
 
 // --- Main CalendarView Component ---
 
@@ -343,14 +354,13 @@ export function CalendarView() {
   const [dbEvents, setDbEvents] = useState<DatabaseEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-
   useEffect(() => {
     function handleResize() {
-        setView(getInitialView());
+      setView(getInitialView())
     }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   useEffect(() => {
     async function fetchEvents() {
@@ -372,12 +382,12 @@ export function CalendarView() {
     }
     fetchEvents()
   }, [])
-  
+
   const allEvents = useMemo(() => {
     if (isLoading || dbEvents.length === 0) return []
 
     const events: CalendarEvent[] = []
-    const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+    const todayStart = new Date(new Date().setHours(0, 0, 0, 0))
 
     dbEvents.forEach((event) => {
       if (event.is_recurring && event.day_of_week !== null) {
@@ -386,23 +396,23 @@ export function CalendarView() {
       } else if (event.date) {
         const [year, month, day] = event.date.split("-").map(Number)
         const localDate = new Date(year, month - 1, day)
-        
+
         if (localDate < todayStart) {
-          return;
+          return
         }
 
         let details = event.distance || ""
         if (event.distances) {
           try {
-            const distancesArray = JSON.parse(event.distances);
+            const distancesArray = JSON.parse(event.distances)
             if (Array.isArray(distancesArray) && distancesArray.length > 0) {
-              details = distancesArray.join(", ");
+              details = distancesArray.join(", ")
             }
           } catch (e) {
-            console.error("Failed to parse distances:", e);
+            console.error("Failed to parse distances:", e)
           }
         }
-        
+
         events.push({
           id: event.id,
           title: event.title,
@@ -426,7 +436,7 @@ export function CalendarView() {
   const filteredEvents = useMemo(() => {
     return allEvents.filter((event) => filters.has(event.type))
   }, [allEvents, filters])
-  
+
   const navigateMonth = useCallback((direction: "prev" | "next") => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev)
@@ -445,20 +455,20 @@ export function CalendarView() {
   }, [filteredEvents, currentDate])
 
   const dailyEventSummary = useMemo(() => {
-    const summary = new Map<number, { isRun: boolean, isRace: boolean }>();
-    monthEvents.forEach(event => {
-      const day = event.date.getDate();
-      const current = summary.get(day) || { isRun: false, isRace: false };
-      if (event.type === 'weekly-run') {
-        current.isRun = true;
+    const summary = new Map<number, { isRun: boolean; isRace: boolean }>()
+    monthEvents.forEach((event) => {
+      const day = event.date.getDate()
+      const current = summary.get(day) || { isRun: false, isRace: false }
+      if (event.type === "weekly-run") {
+        current.isRun = true
       }
-      if (event.type === 'race') {
-        current.isRace = true;
+      if (event.type === "race") {
+        current.isRace = true
       }
-      summary.set(day, current);
-    });
-    return summary;
-  }, [monthEvents]);
+      summary.set(day, current)
+    })
+    return summary
+  }, [monthEvents])
 
   const { daysInMonth, startingDayOfWeek, monthName } = useMemo(() => {
     const year = currentDate.getFullYear()
@@ -467,10 +477,10 @@ export function CalendarView() {
     const lastDay = new Date(year, month + 1, 0)
     const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
-    return { 
-        daysInMonth: lastDay.getDate(), 
-        startingDayOfWeek: firstDay.getDay(),
-        monthName
+    return {
+      daysInMonth: lastDay.getDate(),
+      startingDayOfWeek: firstDay.getDay(),
+      monthName,
     }
   }, [currentDate])
 
@@ -512,8 +522,7 @@ export function CalendarView() {
     <div className="container mx-auto px-4 py-12">
       <ScrollReveal className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-          <span className="text-slr-red">★</span>{" "}
-          <span className="text-slr-blue">Events Calendar</span>
+          <span className="text-slr-red">★</span> <span className="text-slr-blue">Events Calendar</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           View all upcoming weekly runs and races. Never miss an event!
@@ -522,27 +531,36 @@ export function CalendarView() {
 
       <div className="max-w-7xl mx-auto space-y-6">
         <ScrollReveal delay={100}>
-          <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-md shadow-2xl transition-shadow p-0"> 
+          <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-md shadow-2xl transition-shadow p-0">
             <CardContent className="p-6">
-              
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
                 {/* Filters Group (Left side) */}
                 <div className="flex flex-wrap items-center gap-2">
                   <Filter className="h-4 w-4 text-foreground" />
                   <Button
-                    variant={filters.has("weekly-run") ? "default" : "secondary"}
+                    variant={filters.has("weekly-run") ? "default" : "outline"}
                     size="sm"
                     onClick={() => setFilters(toggleFilter(filters, "weekly-run"))}
-                    className="gap-2 bg-slr-blue/80 hover:bg-slr-blue text-foreground shadow-lg"
+                    className={cn(
+                      "gap-2 shadow-lg transition-all",
+                      filters.has("weekly-run")
+                        ? "bg-slr-blue/80 hover:bg-slr-blue text-foreground"
+                        : "bg-foreground/5 hover:bg-foreground/10 text-foreground/50 border-foreground/30",
+                    )}
                   >
                     <Activity className="h-4 w-4" />
                     Weekly Runs
                   </Button>
                   <Button
-                    variant={filters.has("race") ? "destructive" : "secondary"}
+                    variant={filters.has("race") ? "destructive" : "outline"}
                     size="sm"
                     onClick={() => setFilters(toggleFilter(filters, "race"))}
-                    className="gap-2 bg-slr-red/80 hover:bg-slr-red text-white shadow-lg"
+                    className={cn(
+                      "gap-2 shadow-lg transition-all",
+                      filters.has("race")
+                        ? "bg-slr-red/80 hover:bg-slr-red text-white"
+                        : "bg-foreground/5 hover:bg-foreground/10 text-foreground/50 border-foreground/30",
+                    )}
                   >
                     <Trophy className="h-4 w-4" />
                     Races
@@ -550,7 +568,7 @@ export function CalendarView() {
                 </div>
 
                 {/* CTA/Download Group (Right side) */}
-                <div className="flex items-center gap-2 flex-wrap w-full md:w-auto md:justify-end"> 
+                <div className="flex items-center gap-2 flex-wrap w-full md:w-auto md:justify-end">
                   <Button
                     onClick={() => exportToICS(filteredEvents)}
                     variant="ghost"
@@ -591,7 +609,11 @@ export function CalendarView() {
                     disabled={isSubmitting}
                     className="flex-1 bg-foreground/30 border-foreground/50 text-foreground placeholder:text-foreground/70 focus:ring-2 focus:ring-slr-blue"
                   />
-                  <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-foreground">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-primary hover:bg-primary/90 text-foreground"
+                  >
                     {isSubmitting ? "Subscribing..." : "Subscribe"}
                   </Button>
                 </form>
@@ -612,14 +634,19 @@ export function CalendarView() {
           <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl">
             <CardContent className="p-6">
               <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")} className="w-full">
-                
                 <div className="flex items-center justify-between mb-4">
                   <TabsList className="bg-foreground/20 backdrop-blur-sm border border-foreground/40 shadow-xl rounded-xl">
-                    <TabsTrigger value="month" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
+                    <TabsTrigger
+                      value="month"
+                      className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg"
+                    >
                       <CalendarDays className="h-4 w-4" />
                       Month
                     </TabsTrigger>
-                    <TabsTrigger value="list" className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg">
+                    <TabsTrigger
+                      value="list"
+                      className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg"
+                    >
                       <List className="h-4 w-4" />
                       List
                     </TabsTrigger>
@@ -627,19 +654,19 @@ export function CalendarView() {
 
                   {view === "month" && (
                     <div className="flex items-center gap-4">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => navigateMonth("prev")} 
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateMonth("prev")}
                         className="border-foreground/50 hover:bg-foreground/20 bg-foreground/10 text-foreground backdrop-blur-md shadow-md rounded-lg"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <h3 className="font-bold text-lg text-foreground drop-shadow-sm">{monthName}</h3>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => navigateMonth("next")} 
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateMonth("next")}
                         className="border-foreground/50 hover:bg-foreground/20 bg-foreground/10 text-foreground backdrop-blur-md shadow-md rounded-lg"
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -650,11 +677,14 @@ export function CalendarView() {
 
                 <TabsContent value="month" className="mt-0">
                   {/* Assuming loading/empty state checks are rendered correctly here */}
-                  
+
                   <div className="grid grid-cols-7 gap-2 sm:gap-3">
                     {/* Day labels (Sun, Mon, etc.) */}
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                      <div key={day} className="text-center text-xs sm:text-sm font-bold text-foreground py-3 border-b border-foreground/50 bg-foreground/20 rounded-t-lg">
+                      <div
+                        key={day}
+                        className="text-center text-xs sm:text-sm font-bold text-foreground py-3 border-b border-foreground/50 bg-foreground/20 rounded-t-lg"
+                      >
                         {day}
                       </div>
                     ))}
@@ -668,9 +698,8 @@ export function CalendarView() {
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                       const day = i + 1
                       const dayEvents = getEventsForDay(day)
-                      const currentDateObject = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                      const isToday =
-                        new Date().toDateString() === currentDateObject.toDateString()
+                      const currentDateObject = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                      const isToday = new Date().toDateString() === currentDateObject.toDateString()
 
                       return (
                         <CalendarDayCell
@@ -684,10 +713,10 @@ export function CalendarView() {
                         />
                       )
                     })}
-                     {/* Renders trailing empty cells after the last day */}
-                     {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
-                       <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
-                     ))}
+                    {/* Renders trailing empty cells after the last day */}
+                    {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
+                      <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
+                    ))}
                   </div>
                 </TabsContent>
 
@@ -715,21 +744,46 @@ export function CalendarView() {
                                       <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-foreground">
                                         {event.title}
                                         {event.isRecurring && (
-                                          <Badge variant="outline" className="text-xs border-foreground/50 text-foreground bg-foreground/10">Recurring</Badge>
+                                          <Badge
+                                            variant="outline"
+                                            className="text-xs border-foreground/50 text-foreground bg-foreground/10"
+                                          >
+                                            Recurring
+                                          </Badge>
                                         )}
                                       </h4>
                                       <p className="text-sm text-foreground/80">{event.details}</p>
                                     </div>
                                     <Badge
                                       variant={event.type === "race" ? "destructive" : "default"}
-                                      className={cn("text-xs shrink-0 text-foreground", event.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
+                                      className={cn(
+                                        event.type === "race"
+                                          ? "bg-slr-red/80 text-white"
+                                          : "bg-slr-blue/80 text-foreground",
+                                      )}
                                     >
-                                      {event.type === "race" ? (<><Trophy className="h-3 w-3 mr-1" />Race</>) : (<><Activity className="h-3 w-3 mr-1" />Run</>)}
+                                      {event.type === "race" ? (
+                                        <>
+                                          <Trophy className="h-3 w-3 mr-1" />
+                                          Race
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Activity className="h-3 w-3 mr-1" />
+                                          Run
+                                        </>
+                                      )}
                                     </Badge>
                                   </div>
                                   <div className="flex flex-wrap gap-4 text-sm text-foreground/70">
-                                    <div className="flex items-center gap-1"><Clock className="h-4 w-4 text-foreground" />{event.time}</div>
-                                    <div className="flex items-center gap-1"><MapPin className="h-4 w-4 text-foreground" />{event.location}</div>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-4 w-4 text-foreground" />
+                                      {event.time}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <MapPin className="h-4 w-4 text-foreground" />
+                                      {event.location}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -747,7 +801,6 @@ export function CalendarView() {
       </div>
 
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        {/* COMPLETED DIALOG CONTENT */}
         <DialogContent className="sm:max-w-[500px] rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl text-foreground">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
@@ -759,19 +812,23 @@ export function CalendarView() {
               {selectedEvent?.title}
             </DialogTitle>
             <DialogDescription className="text-base font-medium text-foreground/80">
-                {selectedEvent?.details}
+              {selectedEvent?.details}
             </DialogDescription>
             <div className="flex flex-wrap gap-2 pt-2">
               {selectedEvent?.type && (
-                <Badge 
+                <Badge
                   variant={selectedEvent.type === "race" ? "destructive" : "default"}
-                  className={cn("text-foreground", selectedEvent.type === "race" ? "bg-slr-red/80" : "bg-slr-blue/80")}
+                  className={cn(
+                    selectedEvent.type === "race" ? "bg-slr-red/80 text-white" : "bg-slr-blue/80 text-foreground",
+                  )}
                 >
-                  {selectedEvent.type === "race" ? 'Race' : 'Weekly Run'}
+                  {selectedEvent.type === "race" ? "Race" : "Weekly Run"}
                 </Badge>
               )}
               {selectedEvent?.isRecurring && (
-                <Badge variant="outline" className="border-foreground/50 text-foreground bg-foreground/10">Recurring</Badge>
+                <Badge variant="outline" className="border-foreground/50 text-foreground bg-foreground/10">
+                  Recurring
+                </Badge>
               )}
             </div>
           </DialogHeader>
@@ -783,10 +840,10 @@ export function CalendarView() {
                 <p className="font-medium">Date</p>
                 <p className="text-foreground/80">
                   {selectedEvent?.date.toLocaleDateString("en-US", {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
                   })}
                 </p>
               </div>
@@ -807,31 +864,48 @@ export function CalendarView() {
                 <p className="text-foreground/80">{selectedEvent?.location}</p>
               </div>
             </div>
-            
+
             {selectedEvent?.description && (
-                <div className="space-y-2 pt-2 border-t border-foreground/30">
-                    <p className="font-medium text-sm">Notes/Description</p>
-                    <p className="text-sm text-foreground/80 foregroundspace-pre-line">{selectedEvent.description}</p>
-                </div>
+              <div className="space-y-2 pt-2 border-t border-foreground/30">
+                <p className="font-medium text-sm">Notes/Description</p>
+                <p className="text-sm text-foreground/80 foregroundspace-pre-line">{selectedEvent.description}</p>
+              </div>
             )}
           </div>
-          
+
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-4 border-t border-foreground/30">
             {selectedEvent?.registrationUrl && (
-                <Button asChild variant="destructive" className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-white">
-                    <a href={selectedEvent.registrationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4" />
-                        Register Now
-                    </a>
-                </Button>
+              <Button
+                asChild
+                variant="destructive"
+                className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-white"
+              >
+                <a
+                  href={selectedEvent.registrationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Register Now
+                </a>
+              </Button>
             )}
-            <Button onClick={() => selectedEvent && addToGoogleCalendar(selectedEvent)} variant="outline" className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10">
-                <CalendarDays className="h-4 w-4 mr-2" />
-                Google Calendar
+            <Button
+              onClick={() => selectedEvent && addToGoogleCalendar(selectedEvent)}
+              variant="outline"
+              className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10"
+            >
+              <CalendarDays className="h-4 w-4 mr-2" />
+              Google Calendar
             </Button>
-            <Button onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)} variant="outline" className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10">
-                <Download className="h-4 w-4 mr-2" />
-                Download ICS
+            <Button
+              onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)}
+              variant="outline"
+              className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download ICS
             </Button>
           </DialogFooter>
         </DialogContent>
