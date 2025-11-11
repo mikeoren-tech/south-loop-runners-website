@@ -469,24 +469,29 @@ export function CalendarView() {
     return summary
   }, [monthEvents])
 
-  const { daysInMonth, startingDayOfWeek, monthName, totalWeeks } = useMemo(() => {
+  const calendarDetails = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
+    const daysInMonth = lastDay.getDate()
+    const startingDayOfWeek = firstDay.getDay()
+
     // Calculate total weeks needed (including leading/trailing empty cells)
     const totalCells = daysInMonth + startingDayOfWeek
     const weeks = Math.ceil(totalCells / 7)
 
     return {
-      daysInMonth: lastDay.getDate(),
-      startingDayOfWeek: firstDay.getDay(),
+      daysInMonth,
+      startingDayOfWeek,
       monthName,
       totalWeeks: weeks,
     }
   }, [currentDate])
+
+  const { daysInMonth, startingDayOfWeek, monthName, totalWeeks } = calendarDetails
 
   const getEventsForDay = (day: number) => {
     return monthEvents.filter((event) => event.date.getDate() === day)
@@ -682,7 +687,13 @@ export function CalendarView() {
                 <TabsContent value="month" className="mt-0">
                   {/* Assuming loading/empty state checks are rendered correctly here */}
 
-                  <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(7, 1fr)", gridTemplateRows: `repeat(${totalWeeks}, minmax(120px, 1fr))` }}>
+                  <div
+                    className="grid gap-2 sm:gap-3"
+                    style={{
+                      gridTemplateColumns: "repeat(7, 1fr)",
+                      gridTemplateRows: `repeat(${totalWeeks}, minmax(120px, 1fr))`,
+                    }}
+                  >
                     {/* Day labels (Sun, Mon, etc.) */}
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                       <div
