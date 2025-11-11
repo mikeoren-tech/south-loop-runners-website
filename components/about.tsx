@@ -40,7 +40,17 @@ export function About() {
             {/* Added interactive terms with hover explanations */}
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
               South Loop Runners is more than just a running club—we're a community of passionate runners who love
-              exploring Chicago's beautiful lakefront and neighborhoods together.
+              exploring Chicago's beautiful lakefront and neighborhoods together.{" "}
+              <a 
+                href="https://discord.gg/sFtmQknX8" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[#5865F2] hover:underline font-medium inline-flex items-center gap-1"
+              >
+                Join our Discord
+                <MessageSquare className="h-4 w-4" />
+              </a>{" "}
+              to connect between runs!
             </p>
           </ScrollReveal>
 
