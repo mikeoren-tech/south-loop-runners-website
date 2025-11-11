@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Calendar, LogOut, Loader2, AlertCircle, Star } from "lucide-react"
+import { Plus, Calendar, LogOut, Loader2, AlertCircle, Star, Instagram } from "lucide-react"
 import { EventForm } from "@/components/admin/event-form"
 import { EventList } from "@/components/admin/event-list"
 import Link from "next/link"
@@ -60,23 +60,23 @@ export default function AdminDashboard() {
   }, [isAuthenticated])
 
   const loadEvents = async () => {
-  try {
-    const response = await fetch("/api/events/all", {
-      cache: "no-store",
-      headers: {
-        "Cache-Control": "no-cache"
+    try {
+      const response = await fetch("/api/events/all", {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setEvents(data)
       }
-    })
-    if (response.ok) {
-      const data = await response.json()
-      setEvents(data)
+    } catch (error) {
+      console.error("Failed to load events:", error)
+    } finally {
+      setLoading(false)
     }
-  } catch (error) {
-    console.error("Failed to load events:", error)
-  } finally {
-    setLoading(false)
   }
-}
 
   const handleLogout = async () => {
     await fetch("/api/admin/auth/logout", { method: "POST" })
@@ -162,6 +162,30 @@ export default function AdminDashboard() {
                 <Link href="/admin/featured">
                   <Star className="w-4 h-4 mr-2" />
                   Manage Featured
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-pink-50 to-purple-50 border-pink-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center">
+                  <Instagram className="w-6 h-6 text-pink-600" />
+                </div>
+                <div>
+                  <CardTitle>Instagram Feed</CardTitle>
+                  <CardDescription className="text-pink-900/70">
+                    Manage Instagram posts displayed on the homepage
+                  </CardDescription>
+                </div>
+              </div>
+              <Button asChild className="bg-pink-600 hover:bg-pink-700">
+                <Link href="/admin/instagram">
+                  <Instagram className="w-4 h-4 mr-2" />
+                  Manage Feed
                 </Link>
               </Button>
             </div>

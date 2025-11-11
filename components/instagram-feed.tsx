@@ -2,20 +2,43 @@
 
 import { Button } from "@/components/ui/button"
 import { Instagram } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WaveTransition } from "@/components/wave-transition"
 
-const instagramPostUrls = [
-  "https://www.instagram.com/p/DP9K4vRjQFC/", // Replace with actual post URL
-  "https://www.instagram.com/p/DNlckmkRoOp", // Replace with actual post URL
-  "https://www.instagram.com/p/DIpBIqBvI3K", // Replace with actual post URL
-  "https://www.instagram.com/p/DQj1zH0ka6Y/", // Replace with actual post URL
-  "https://www.instagram.com/reel/C_A2lrwxRLx/", // Replace with actual post URL
-  "https://www.instagram.com/p/DPy33Mvju6e/", // Replace with actual post URL
-]
+interface InstagramPost {
+  URL: string
+  caption?: string
+}
 
 export function InstagramFeed() {
+  const [instagramPostUrls, setInstagramPostUrls] = useState<InstagramPost[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const response = await fetch("/api/instagram/active", {
+          cache: "no-store",
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setInstagramPostUrls(data)
+        } else {
+          // Fallback to empty array if API fails
+          setInstagramPostUrls([])
+        }
+      } catch (error) {
+        console.error("Failed to load Instagram posts:", error)
+        setInstagramPostUrls([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPosts()
+  }, [])
+
   useEffect(() => {
     // Load Instagram's embed script
     const script = document.createElement("script")
@@ -43,7 +66,26 @@ export function InstagramFeed() {
         // Script may have already been removed
       }
     }
-  }, [])
+  }, [instagramPostUrls])
+
+  if (loading) {
+    return (
+      <section className="relative py-20 bg-[rgba(249,250,251,0.5)]" aria-labelledby="instagram-heading">
+        <div className="relative z-10">
+          <div className="container mx-auto px-4">
+            <div className="text-center">
+              <p className="text-muted-foreground">Loading Instagram feed...</p>
+            </div>
+          </div>
+        </div>
+        <WaveTransition fillColor="#ffffff" />
+      </section>
+    )
+  }
+
+  if (instagramPostUrls.length === 0) {
+    return null // Don't render section if no posts
+  }
 
   return (
     <section className="relative py-20 bg-[rgba(249,250,251,0.5)]" aria-labelledby="instagram-heading">
@@ -62,16 +104,16 @@ export function InstagramFeed() {
 
           <div className="max-w-7xl mx-auto mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {instagramPostUrls.map((url, index) => (
-                <ScrollReveal key={url} delay={index * 50}>
+              {instagramPostUrls.map((post, index) => (
+                <ScrollReveal key={post.URL} delay={index * 50}>
                   <div
                     className="glassmorphism rounded-3xl shadow-card hover:shadow-card-hover transition-all duration-300 hover-lift"
                     role="article"
-                    aria-label={`Instagram post ${index + 1}`}
+                    aria-label={post.caption || `Instagram post ${index + 1}`}
                   >
                     <blockquote
                       className="instagram-media"
-                      data-instgrm-permalink={url}
+                      data-instgrm-permalink={post.URL}
                       data-instgrm-version="14"
                       style={{
                         background: "transparent",
