@@ -3,6 +3,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollReveal } from "@/components/scroll-reveal"
+import Image from "next/image"
+import { ChevronLeft } from "lucide-react"
 
 const temperatureGuidance = [
   {
@@ -143,15 +145,24 @@ export default function WeatherGuidePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/">
-              <Button variant="ghost">← Back to Home</Button>
-            </Link>
-            <h1 className="text-2xl font-bold">Weather Running Guide</h1>
-            <div className="w-32" /> {/* Spacer for centering */}
-          </div>
+       <header 
+        className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10"
+      >
+        <div className="container flex h-16 items-center px-4">
+          <Link
+            href="/"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
+          <ChevronLeft className="h-5 w-5 text-slr-blue" />
+          <Image
+              src="/slr-logo.png"
+              alt="South Loop Runners"
+              width={60}
+              height={60}
+              className="object-contain"
+            />
+          </Link>
+          <h1 className="text-2xl font-bold">Weather Guide</h1>
         </div>
       </header>
 

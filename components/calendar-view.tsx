@@ -33,7 +33,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
-// --- Interface Definitions (Required for type safety) ---
+// ... existing interface definitions ...
 interface DatabaseEvent {
   id: string
   title: string
@@ -78,8 +78,7 @@ const Tooltip = ({ children, content }: { children: React.ReactNode; content: st
   <div title={content}>{children}</div>
 )
 
-// --- Utility Functions (Complete) ---
-
+// ... existing utility functions remain the same ...
 function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks: number): CalendarEvent[] {
   const events: CalendarEvent[] = []
   const start = new Date(startDate)
@@ -470,17 +469,22 @@ export function CalendarView() {
     return summary
   }, [monthEvents])
 
-  const { daysInMonth, startingDayOfWeek, monthName } = useMemo(() => {
+  const { daysInMonth, startingDayOfWeek, monthName, totalWeeks } = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
+    // Calculate total weeks needed (including leading/trailing empty cells)
+    const totalCells = daysInMonth + startingDayOfWeek
+    const weeks = Math.ceil(totalCells / 7)
+
     return {
       daysInMonth: lastDay.getDate(),
       startingDayOfWeek: firstDay.getDay(),
       monthName,
+      totalWeeks: weeks,
     }
   }, [currentDate])
 
@@ -678,7 +682,7 @@ export function CalendarView() {
                 <TabsContent value="month" className="mt-0">
                   {/* Assuming loading/empty state checks are rendered correctly here */}
 
-                  <div className="grid grid-cols-7 gap-2 sm:gap-3">
+                  <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(7, 1fr)", gridTemplateRows: `repeat(${totalWeeks}, minmax(120px, 1fr))` }}>
                     {/* Day labels (Sun, Mon, etc.) */}
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                       <div
@@ -713,10 +717,11 @@ export function CalendarView() {
                         />
                       )
                     })}
-                    {/* Renders trailing empty cells after the last day */}
-                    {Array.from({ length: 42 - daysInMonth - startingDayOfWeek }).map((_, i) => (
-                      <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
-                    ))}
+                    {/* Only render trailing empty cells if needed to complete the grid */}
+                    {totalWeeks * 7 > daysInMonth + startingDayOfWeek &&
+                      Array.from({ length: totalWeeks * 7 - daysInMonth - startingDayOfWeek }).map((_, i) => (
+                        <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
+                      ))}
                   </div>
                 </TabsContent>
 
