@@ -1,627 +1,931 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import type React from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, AlertCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Clock,
+  MapPin,
+  Trophy,
+  Activity,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  CalendarDays,
+  List,
+  Download,
+  ExternalLink,
+  Star,
+} from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
-import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
-import Link from "next/link"
-import Image from "next/image"
-import useSWR from "swr"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { WaveTransition } from "@/components/wave-transition"
+import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
-const PACE_GROUPS = [
-  "Under 7:00 min/mile",
-  "7:00 - 7:59 min/mile",
-  "8:00 - 8:59 min/mile",
-  "9:00 - 9:59 min/mile",
-  "10:00 - 10:59 min/mile",
-  "11:00 - 11:59 min/mile",
-  "12:00 - 12:59 min/mile",
-  "13:00 - 13:59 min/mile",
-  "14:00 - 14:59 min/mile",
-  "15:00+ min/mile",
-]
-
-interface PaceInterest {
-  pace: string
-  timestamp: number
+// ... existing interface definitions ...
+interface DatabaseEvent {
+  id: string
+  title: string
+  description: string
+  date: string | null
+  time: string
+  location: string
+  distance: string | null
+  pace: string | null
+  type: string
+  is_recurring: number
+  day_of_week: number | null
+  display_order: number | null
+  facebook_link: string | null
+  strava_link: string | null
+  distances: string | null
+  registration_url: string | null
+  highlights: string | null
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+interface CalendarEvent {
+  id: string
+  title: string
+  date: Date
+  time: string
+  location: string
+  type: "weekly-run" | "race"
+  details: string
+  isRecurring: boolean
+  description?: string
+  facebookLink?: string
+  stravaLink?: string
+  registrationUrl?: string
+}
 
-function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: boolean }) {
-  const [selectedPace, setSelectedPace] = useState<string>("")
+interface DailySummary {
+  isRun: boolean
+  isRace: boolean
+}
+
+const Tooltip = ({ children, content }: { children: React.ReactNode; content: string }) => (
+  <div title={content}>{children}</div>
+)
+
+// ... existing utility functions remain the same ...
+function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks: number): CalendarEvent[] {
+  const events: CalendarEvent[] = []
+  const start = new Date(startDate)
+
+  if (run.day_of_week === null) return []
+
+  const daysUntilRun = (run.day_of_week - start.getDay() + 7) % 7
+  start.setDate(start.getDate() + daysUntilRun)
+
+  for (let i = 0; i < weeks; i++) {
+    const eventDate = new Date(start)
+    eventDate.setDate(start.getDate() + i * 7)
+
+    if (eventDate < new Date(new Date().setHours(0, 0, 0, 0))) {
+      continue
+    }
+
+    events.push({
+      id: `${run.id}-${eventDate.toISOString()}`,
+      title: run.title,
+      date: eventDate,
+      time: run.time,
+      location: run.location,
+      type: run.type === "race" ? "race" : "weekly-run",
+      details: `${run.distance || ""} • ${run.pace || ""}`.trim().replace(/^ • | • $/g, ""),
+      isRecurring: true,
+      description: run.description,
+      facebookLink: run.facebook_link || undefined,
+      stravaLink: run.strava_link || undefined,
+      registrationUrl: run.registration_url || undefined,
+    })
+  }
+
+  return events
+}
+
+function parseEventTime(timeStr: string): { hour: number; minutes: number } {
+  const match = timeStr.match(/(\d+)(:(\d+))?(\s*(AM|PM))?/i)
+  if (!match) return { hour: 0, minutes: 0 }
+
+  let hour = Number.parseInt(match[1])
+  const minutes = Number.parseInt(match[3] || "0")
+  const period = match[5]?.toUpperCase()
+
+  if (period === "PM" && hour !== 12) hour += 12
+  if (period === "AM" && hour === 12) hour = 0
+
+  return { hour, minutes }
+}
+
+function formatDateForCalendar(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
+
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
+}
+
+function exportToICS(events: CalendarEvent[]) {
+  const icsEvents = events
+    .map((event) => {
+      const start = new Date(event.date)
+      const { hour, minutes } = parseEventTime(event.time)
+      start.setHours(hour, minutes, 0, 0)
+      const end = new Date(start.getTime() + 90 * 60 * 1000)
+      const escapeICS = (str: string) => str.replace(/([,;\\[\]])/g, "\\$1").replace(/\n/g, "\\n")
+      const details = event.description || event.details
+
+      return [
+        "BEGIN:VEVENT",
+        `UID:${event.id}@southlooprunners.com`,
+        `DTSTAMP:${formatDateForCalendar(new Date())}`,
+        `DTSTART:${formatDateForCalendar(start)}`,
+        `DTEND:${formatDateForCalendar(end)}`,
+        `SUMMARY:${escapeICS(event.title)}`,
+        `LOCATION:${escapeICS(event.location)}`,
+        `DESCRIPTION:${escapeICS(details)}`,
+        "END:VEVENT",
+      ].join("\r\n")
+    })
+    .join("\r\n")
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//South Loop Runners//Events Calendar//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    icsEvents,
+    "END:VCALENDAR",
+  ].join("\r\n")
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(blob)
+  link.download = "south-loop-runners-events.ics"
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+function addToGoogleCalendar(event: CalendarEvent) {
+  const start = new Date(event.date)
+  const { hour, minutes } = parseEventTime(event.time)
+  start.setHours(hour, minutes, 0, 0)
+  const end = new Date(start.getTime() + 90 * 60 * 1000)
+  const googleCalUrl = new URL("https://calendar.google.com/calendar/render")
+  googleCalUrl.searchParams.set("action", "TEMPLATE")
+  googleCalUrl.searchParams.set("text", event.title)
+  googleCalUrl.searchParams.set("dates", `${formatDateForCalendar(start)}/${formatDateForCalendar(end)}`)
+  googleCalUrl.searchParams.set("details", event.description || event.details)
+  googleCalUrl.searchParams.set("location", event.location)
+  window.open(googleCalUrl.toString(), "_blank")
+}
+
+function exportSingleEventToICS(event: CalendarEvent) {
+  const start = new Date(event.date)
+  const { hour, minutes } = parseEventTime(event.time)
+  start.setHours(hour, minutes, 0, 0)
+  const end = new Date(start.getTime() + 90 * 60 * 1000)
+  const escapeICS = (str: string) => str.replace(/([,;\\[\]])/g, "\\$1").replace(/\n/g, "\\n")
+  const details = event.description || event.details
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//South Loop Runners//Events Calendar//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${event.id}@southlooprunners.com`,
+    `DTSTAMP:${formatDateForCalendar(new Date())}`,
+    `DTSTART:${formatDateForCalendar(start)}`,
+    `DTEND:${formatDateForCalendar(end)}`,
+    `SUMMARY:${escapeICS(event.title)}`,
+    `LOCATION:${escapeICS(event.location)}`,
+    `DESCRIPTION:${escapeICS(details)}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n")
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" })
+  const link = document.createElement("a")
+  link.href = URL.createObjectURL(blob)
+  link.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}.ics`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+function toggleFilter(filters: Set<string>, type: string): Set<string> {
+  const newFilters = new Set(filters)
+  if (newFilters.has(type)) {
+    newFilters.delete(type)
+  } else {
+    newFilters.add(type)
+  }
+  return newFilters
+}
+
+function getInitialView(): "month" | "list" {
+  if (typeof window !== "undefined") {
+    return window.innerWidth < 768 ? "list" : "month"
+  }
+  return "month"
+}
+
+// --- CalendarDayCell Component ---
+interface CalendarDayCellProps {
+  day: number
+  date: Date
+  dayEvents: CalendarEvent[]
+  dailySummary: DailySummary | undefined
+  isToday: boolean
+  setSelectedEvent: (event: CalendarEvent) => void
+}
+
+function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelectedEvent }: CalendarDayCellProps) {
+  const hasRun = dailySummary?.isRun
+  const hasRace = dailySummary?.isRace
+  const hasEvents = dayEvents.length > 0
+
+  let ringClass = "border-foreground/30 hover:border-foreground/60"
+  let numberColor = "text-foreground/80"
+  let gradientWrapperStyle = undefined
+  let innerBgClass = "bg-foreground/10 backdrop-blur-md"
+
+  if (hasRun && hasRace) {
+    gradientWrapperStyle = {
+      background: "linear-gradient(135deg, var(--slr-blue) 0%, var(--slr-red) 100%)",
+      padding: "1px",
+      borderRadius: "14px",
+    }
+    ringClass = "border-none shadow-xl transition-all duration-300 p-[2px]"
+    numberColor = "text-foreground drop-shadow-sm"
+    innerBgClass = "bg-foreground/10 backdrop-blur-md"
+  } else if (hasRace) {
+    ringClass = "border-2 border-slr-red/80 ring-2 ring-slr-red/30 shadow-lg"
+    numberColor = "text-slr-red"
+  } else if (hasRun) {
+    ringClass = "border-2 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg"
+    numberColor = "text-slr-blue"
+  }
+
+  return (
+    <div
+      className={cn(
+        "min-h-[120px] rounded-2xl p-2.5 transition-all relative overflow-hidden group cursor-pointer",
+        ringClass,
+        hasEvents ? "bg-foreground/10 hover:bg-foreground/20" : "bg-foreground/5 hover:bg-foreground/10",
+      )}
+      onClick={() =>
+        hasEvents && (dayEvents.length === 1 ? setSelectedEvent(dayEvents[0]) : setSelectedEvent(dayEvents[0]))
+      }
+      style={gradientWrapperStyle}
+    >
+      <div className={cn("h-full w-full rounded-xl p-1", innerBgClass)}>
+        <div className={cn("text-sm font-bold mb-2 relative z-10", numberColor)}>{day}</div>
+
+        <div className="space-y-1.5">
+          {dayEvents.slice(0, 3).map((event) => (
+            <Tooltip key={event.id} content={`${event.title} - ${event.time}`}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedEvent(event)
+                }}
+                className={cn(
+                  "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 shadow-md",
+                  "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-foreground/30",
+                  event.type === "weekly-run"
+                    ? "bg-slr-blue/70 hover:bg-slr-blue text-slr-blue-dark"
+                    : "bg-slr-red/70 hover:bg-slr-red text-white",
+                )}
+              >
+                <div className="flex items-center h-full gap-1.5">
+                  {event.type === "race" ? (
+                    <Trophy className="h-3 w-3 flex-shrink-0" />
+                  ) : (
+                    <Activity className="h-3 w-3 flex-shrink-0" />
+                  )}
+                  <span className="line-clamp-2 leading-tight">{event.title}</span>
+                </div>
+              </button>
+            </Tooltip>
+          ))}
+          {dayEvents.length > 3 && (
+            <div className="text-[10px] text-foreground/80 font-bold text-center py-1.5 bg-black/20 rounded-md backdrop-blur-sm border border-foreground/30 shadow-sm">
+              +{dayEvents.length - 3} more
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- Main CalendarView Component ---
+
+export function CalendarView() {
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [view, setView] = useState<"month" | "list">(getInitialView)
+  const [filters, setFilters] = useState<Set<string>>(new Set(["weekly-run", "race"]))
+  const [isNotificationExpanded, setIsNotificationExpanded] = useState(false)
+  const [email, setEmail] = useState("")
+  const [subscribed, setSubscribed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [attendingSocial, setAttendingSocial] = useState(false)
-  const [isSocialSubmitting, setIsSocialSubmitting] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [dbEvents, setDbEvents] = useState<DatabaseEvent[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const {
-    data: paceInterests = [],
-    mutate,
-    error,
-  } = useSWR<Array<{ pace: string; count: number }>>(`/api/events/pace-interests/${runId}`, fetcher, {
-    refreshInterval: 5000,
-    revalidateOnFocus: true,
-    fallbackData: [],
-    shouldRetryOnError: false,
-    onError: (err) => {
-      console.error(`Failed to fetch pace interests for ${runId}:`, err)
-    },
-  })
+  useEffect(() => {
+    function handleResize() {
+      setView(getInitialView())
+    }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
-  const { data: socialData, mutate: mutateSocial } = useSWR(
-    hasSocial ? `/api/events/social-rsvp/${runId}` : null,
-    fetcher,
-    {
-      refreshInterval: 5000,
-      fallbackData: { socialCount: 0 },
-    },
-  )
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const response = await fetch("/api/events/all")
+        if (response.ok) {
+          const data = await response.json()
+          setDbEvents(data)
+        } else {
+          console.error("[Calendar] Failed to fetch events, status:", response.status)
+          const errorText = await response.text()
+          console.error("[Calendar] Error response:", errorText)
+        }
+      } catch (error) {
+        console.error("[Calendar] Failed to fetch events:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchEvents()
+  }, [])
 
-  const isApiUnavailable = error && error.message?.includes("Unexpected token")
+  const allEvents = useMemo(() => {
+    if (isLoading || dbEvents.length === 0) return []
 
-  const safePaceInterests = Array.isArray(paceInterests) ? paceInterests : []
+    const events: CalendarEvent[] = []
+    const todayStart = new Date(new Date().setHours(0, 0, 0, 0))
 
-  const paceCounts = PACE_GROUPS.reduce(
-    (acc, pace) => {
-      const interest = safePaceInterests.find((i) => i.pace === pace)
-      acc[pace] = interest?.count || 0
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+    dbEvents.forEach((event) => {
+      if (event.is_recurring && event.day_of_week !== null) {
+        const occurrences = generateWeeklyRunOccurrences(event, new Date(), 12)
+        events.push(...occurrences)
+      } else if (event.date) {
+        const [year, month, day] = event.date.split("-").map(Number)
+        const localDate = new Date(year, month - 1, day)
 
-  const totalInterested = safePaceInterests.reduce((sum, interest) => sum + interest.count, 0)
+        if (localDate < todayStart) {
+          return
+        }
 
-  const handleSubmit = async () => {
-    if (!selectedPace || isSubmitting) return
+        let details = event.distance || ""
+        if (event.distances) {
+          try {
+            const distancesArray = JSON.parse(event.distances)
+            if (Array.isArray(distancesArray) && distancesArray.length > 0) {
+              details = distancesArray.join(", ")
+            }
+          } catch (e) {
+            console.error("Failed to parse distances:", e)
+          }
+        }
 
+        events.push({
+          id: event.id,
+          title: event.title,
+          date: localDate,
+          time: event.time,
+          location: event.location,
+          type: event.type === "race" ? "race" : "weekly-run",
+          details: details,
+          isRecurring: false,
+          description: event.description,
+          facebookLink: event.facebook_link || undefined,
+          stravaLink: event.strava_link || undefined,
+          registrationUrl: event.registration_url || undefined,
+        })
+      }
+    })
+
+    return events.sort((a, b) => a.date.getTime() - b.date.getTime())
+  }, [dbEvents, isLoading])
+
+  const filteredEvents = useMemo(() => {
+    return allEvents.filter((event) => filters.has(event.type))
+  }, [allEvents, filters])
+
+  const navigateMonth = useCallback((direction: "prev" | "next") => {
+    setCurrentDate((prev) => {
+      const newDate = new Date(prev)
+      newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1))
+      return newDate
+    })
+  }, [])
+
+  const monthEvents = useMemo(() => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+
+    return filteredEvents.filter((event) => {
+      return event.date.getFullYear() === year && event.date.getMonth() === month
+    })
+  }, [filteredEvents, currentDate])
+
+  const dailyEventSummary = useMemo(() => {
+    const summary = new Map<number, { isRun: boolean; isRace: boolean }>()
+    monthEvents.forEach((event) => {
+      const day = event.date.getDate()
+      const current = summary.get(day) || { isRun: false, isRace: false }
+      if (event.type === "weekly-run") {
+        current.isRun = true
+      }
+      if (event.type === "race") {
+        current.isRace = true
+      }
+      summary.set(day, current)
+    })
+    return summary
+  }, [monthEvents])
+
+  const calendarDetails = useMemo(() => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+
+    const daysInMonth = lastDay.getDate()
+    const startingDayOfWeek = firstDay.getDay()
+
+    // Calculate total weeks needed (including leading/trailing empty cells)
+    const totalCells = daysInMonth + startingDayOfWeek
+    const weeks = Math.ceil(totalCells / 7)
+
+    return {
+      daysInMonth,
+      startingDayOfWeek,
+      monthName,
+      totalWeeks: weeks,
+    }
+  }, [currentDate])
+
+  const { daysInMonth, startingDayOfWeek, monthName, totalWeeks } = calendarDetails
+
+  const getEventsForDay = (day: number) => {
+    return monthEvents.filter((event) => event.date.getDate() === day)
+  }
+
+  const handleNotificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setIsSubmitting(true)
+
     try {
-      const response = await fetch(`/api/events/pace-interests/${runId}`, {
+      const response = await fetch("/api/subscribe-notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pace: selectedPace }),
+        body: JSON.stringify({ email }),
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        await mutate()
-        setSelectedPace("")
+        setSubscribed(true)
+        setEmail("")
+        setIsNotificationExpanded(false)
+        setTimeout(() => setSubscribed(false), 5000)
+      } else {
+        alert(data.error || "Failed to subscribe. Please try again.")
       }
     } catch (error) {
-      console.error("Failed to submit interest:", error)
+      console.error("[v0] Subscription error:", error)
+      alert("Failed to subscribe. Please check your connection and try again.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleSocialToggle = async (checked: boolean) => {
-    if (isSocialSubmitting) return
-
-    setIsSocialSubmitting(true)
-    setAttendingSocial(checked)
-
-    try {
-      const response = await fetch(`/api/events/social-rsvp/${runId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attending: checked }),
-      })
-
-      if (response.ok) {
-        await mutateSocial()
-      }
-    } catch (error) {
-      console.error("Failed to update social RSVP:", error)
-      setAttendingSocial(!checked)
-    } finally {
-      setIsSocialSubmitting(false)
-    }
-  }
-
+  // --- Start Render ---
   return (
-    <div className="border-t pt-4 mt-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        <Users className="h-4 w-4" />
-        <span>Show Your Interest</span>
-        <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
-      </div>
+    <div className="container mx-auto px-4 py-12">
+      <ScrollReveal className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+          <span className="text-slr-red">★</span> <span className="text-slr-blue">Events Calendar</span>
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          View all upcoming weekly runs and races. Never miss an event!
+        </p>
+      </ScrollReveal>
 
-      <div className="flex gap-2">
-        <Select value={selectedPace} onValueChange={setSelectedPace}>
-          <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Select your pace" />
-          </SelectTrigger>
-          <SelectContent className="bg-white">
-            {PACE_GROUPS.map((pace) => (
-              <SelectItem key={pace} value={pace}>
-                {pace}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
-          {isSubmitting ? "Adding..." : "Add"}
-        </Button>
-      </div>
-
-      <div className="flex gap-1">
-        {hasSocial && (
-          <div className="flex items-center gap-2 pl-1">
-            <Checkbox
-              id={`social-${runId}`}
-              checked={attendingSocial}
-              onCheckedChange={handleSocialToggle}
-              disabled={isSocialSubmitting}
-            />
-            <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
-              Also attending the social?
-              {socialData?.socialCount && socialData.socialCount > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {socialData.socialCount}
-                </Badge>
-              )}
-            </Label>
-          </div>
-        )}
-      </div>
-
-      {totalInterested > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">
-            {totalInterested} {totalInterested === 1 ? "runner" : "runners"} interested
-          </p>
-          <div className="space-y-1">
-            {PACE_GROUPS.map((pace) => {
-              const count = paceCounts[pace]
-              if (!count || count === 0) return null
-              return (
-                <div key={pace} className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{pace}</span>
-                  <Badge variant="secondary">{count}</Badge>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: string } {
-  if (!weather) {
-    return { url: "/weather-guide", text: "View Weather Running Guide" }
-  }
-
-  const { temperature, windSpeed, precipitation } = weather
-
-  let section = "temperature-guide"
-  let condition = ""
-
-  if (temperature > 80) {
-    condition = "hot weather"
-  } else if (temperature >= 60) {
-    condition = "ideal conditions"
-  } else if (temperature >= 40) {
-    condition = "cool weather"
-  } else if (temperature >= 20) {
-    condition = "cold weather"
-  } else {
-    condition = "extreme cold"
-  }
-
-  const additionalConditions = []
-  if (windSpeed > 20) {
-    additionalConditions.push("high winds")
-    section = "wind-guide"
-  } else if (windSpeed > 10) {
-    additionalConditions.push("windy")
-  }
-
-  if (precipitation > 50) {
-    additionalConditions.push("rain")
-    section = "rain-guide"
-  }
-
-  const fullCondition =
-    additionalConditions.length > 0 ? `${condition} with ${additionalConditions.join(" and ")}` : condition
-
-  return {
-    url: `/weather-guide#${section}`,
-    text: `Running tips for ${fullCondition}`,
-  }
-}
-
-export function UpcomingRuns() {
-  const [weatherData, setWeatherData] = useState<{ [key: string]: WeatherData | null }>({})
-
-  const { data: featuredEvents = [], isLoading } = useSWR("/api/events/featured", fetcher, {
-    fallbackData: [
-      {
-        id: "thursday-light-up",
-        title: "Light Up the Lakefront",
-        day_of_week: 4,
-        time: "6:15 PM",
-        location: "Agora Statues (Michigan Ave & Roosevelt)",
-        distance: "30 minutes",
-        pace: "Party Pace",
-        description: "Thursday evening run along the lakefront. All paces welcome!",
-        facebook_link: "https://www.facebook.com/groups/665701690539939",
-        strava_link: "https://www.strava.com/clubs/943959",
-        type: "weekly-run",
-        has_post_run_social: true,
-      },
-      {
-        id: "saturday-anchor",
-        title: "Anchor Run",
-        day_of_week: 6,
-        time: "9:00 AM",
-        location: "Agora Statues (Michigan Ave & Roosevelt)",
-        distance: "6.5 miles",
-        pace: "Pace Groups",
-        description: "Saturday morning long run. Join us for our signature Anchor Run!",
-        facebook_link: "https://www.facebook.com/groups/665701690539939",
-        strava_link: "https://www.strava.com/clubs/943959",
-        type: "weekly-run",
-        has_post_run_social: false,
-      },
-      {
-        id: "sunday-social",
-        title: "Sunday Social Run",
-        day_of_week: 0,
-        time: "9:00 AM",
-        location: "Agora Statues (Michigan Ave & Roosevelt)",
-        distance: "30 minutes",
-        pace: "11-12 min/mile",
-        description:
-          "30-minute 11-12/mile run followed by coffee in a South Loop café. Perfect way to start your Sunday!",
-        facebook_link: "https://fb.me/e/6SQ3Vaigo",
-        strava_link: "https://www.strava.com/clubs/943959/group_events/3421718402079309428",
-        type: "weekly-run",
-        has_post_run_social: true,
-      },
-    ],
-  })
-
-  const getDayName = (dayOfWeek: number) => {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    return days[dayOfWeek]
-  }
-
-  const getDayKey = (dayOfWeek: number) => {
-    const dayKeys = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-    return dayKeys[dayOfWeek]
-  }
-
-  // Add new function to get day of week from date string
-  const getDayOfWeekFromDate = (dateString: string): number => {
-    if (!dateString) return -1
-    const chicagoOffset = "-06:00"
-    const correctedDateString = `${dateString.split("T")[0]}T12:00:00${chicagoOffset}`
-    const date = new Date(correctedDateString)
-    return date.getDay()
-  }
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return null
-    const chicagoOffset = "-06:00"
-    const correctedDateString = `${dateString.split("T")[0]}T12:00:00${chicagoOffset}`
-
-    const date = new Date(correctedDateString)
-
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "America/Chicago",
-    })
-  }
-
-  const renderEventCard = (event: any, delay: number, className: string) => {
-    const isWeeklyRun = event.type === "weekly-run"
-    const isSpecialEvent = event.type === "special-event"
-    const dayKey = isWeeklyRun ? getDayKey(event.day_of_week) : 
-                   isSpecialEvent && event.date ? getDayKey(getDayOfWeekFromDate(event.date)) : null
-
-    return (
-      <ScrollReveal key={event.id} delay={delay} className={className}>
-        <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-          <Card className="h-full border-0 rounded-3xl">
-            <CardHeader>
-              <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
-              <CardDescription>{event.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3">
-                {isWeeklyRun && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{getDayName(event.day_of_week)}s</span>
-                  </div>
-                )}
-                {isSpecialEvent && event.date && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{formatDate(event.date)}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.time}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.location}</span>
-                </div>
-              </div>
-
-              {dayKey && (
-                <WeatherWidget
-                  day={dayKey as any}
-                  onWeatherLoad={(weather) =>
-                    setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))
-                  }
-                />
-              )}
-
-              <div className="flex flex-wrap gap-2">
-                {event.distance && <Badge variant="outline">{event.distance}</Badge>}
-                {event.pace && (
-                  <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
-                    {event.pace}
-                  </Badge>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-                  RSVP on the club pages / get the most up-to-date info
-                </p>
-                <div className="flex gap-2">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <ScrollReveal delay={100}>
+          <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-md shadow-2xl transition-shadow p-0">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
+                {/* Filters Group (Left side) */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Filter className="h-4 w-4 text-foreground" />
                   <Button
-                    className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                    asChild
+                    variant={filters.has("weekly-run") ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilters(toggleFilter(filters, "weekly-run"))}
+                    className={cn(
+                      "gap-2 shadow-lg transition-all",
+                      filters.has("weekly-run")
+                        ? "bg-slr-blue/80 hover:bg-slr-blue text-foreground"
+                        : "bg-foreground/5 hover:bg-foreground/10 text-foreground/50 border-foreground/30",
+                    )}
                   >
-                    <a href={event.facebook_link} target="_blank" rel="noopener noreferrer">
-                      <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                      Facebook
-                      <span className="sr-only">Opens in new window</span>
-                    </a>
+                    <Activity className="h-4 w-4" />
+                    Weekly Runs
                   </Button>
                   <Button
-                    className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                    asChild
+                    variant={filters.has("race") ? "destructive" : "outline"}
+                    size="sm"
+                    onClick={() => setFilters(toggleFilter(filters, "race"))}
+                    className={cn(
+                      "gap-2 shadow-lg transition-all",
+                      filters.has("race")
+                        ? "bg-slr-red/80 hover:bg-slr-red text-white"
+                        : "bg-foreground/5 hover:bg-foreground/10 text-foreground/50 border-foreground/30",
+                    )}
                   >
-                    <a href={event.strava_link} target="_blank" rel="noopener noreferrer">
-                      <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                      Strava
-                      <span className="sr-only">Opens in new window</span>
-                    </a>
+                    <Trophy className="h-4 w-4" />
+                    Races
                   </Button>
+                </div>
+
+                {/* CTA/Download Group (Right side) */}
+                <div className="flex items-center gap-2 flex-wrap w-full md:w-auto md:justify-end">
+                  <Button
+                    onClick={() => exportToICS(filteredEvents)}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-foreground hover:bg-foreground/20"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download All
+                  </Button>
+                  {!subscribed && (
+                    <Button
+                      onClick={() => setIsNotificationExpanded(!isNotificationExpanded)}
+                      variant={isNotificationExpanded ? "outline" : "default"}
+                      size="sm"
+                      className="gap-2 bg-foreground/20 hover:bg-foreground/30 text-foreground"
+                    >
+                      <Bell className="h-4 w-4" />
+                      {isNotificationExpanded ? "Close" : "Get Notifications"}
+                    </Button>
+                  )}
                 </div>
               </div>
 
-              <PaceInterestSection
-                runId={event.id}
-                hasSocial={
-                  event.has_post_run_social === 1 ||
-                  event.has_post_run_social === "1" ||
-                  event.has_post_run_social === true ||
-                  event.has_post_run_social === "true"
-                }
-              />
+              {/* Notification input area */}
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-300 ease-in-out",
+                  isNotificationExpanded ? "max-h-32 opacity-100 mt-4" : "max-h-0 opacity-0",
+                )}
+              >
+                <form onSubmit={handleNotificationSubmit} className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                    className="flex-1 bg-foreground/30 border-foreground/50 text-foreground placeholder:text-foreground/70 focus:ring-2 focus:ring-slr-blue"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-primary hover:bg-primary/90 text-foreground"
+                  >
+                    {isSubmitting ? "Subscribing..." : "Subscribe"}
+                  </Button>
+                </form>
+              </div>
+
+              {/* Subscription success message */}
+              {subscribed && (
+                <div className="flex items-center gap-2 text-foreground bg-green-500/50 p-3 rounded-lg mt-4">
+                  <Star className="h-4 w-4 fill-foreground" />
+                  <span className="text-sm font-medium">You're subscribed to event updates!</span>
+                </div>
+              )}
             </CardContent>
           </Card>
-        </article>
-      </ScrollReveal>
-    )
-  }
+        </ScrollReveal>
 
-  if (isLoading && featuredEvents.length === 0) {
-    return (
-      <section className="relative py-20 bg-[#f9fafb]">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">Loading weekly runs...</p>
-        </div>
-      </section>
-    )
-  }
+        <ScrollReveal delay={200}>
+          <Card className="rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl">
+            <CardContent className="p-6">
+              <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")} className="w-full">
+                <div className="flex items-center justify-between mb-4">
+                  <TabsList className="bg-foreground/20 backdrop-blur-sm border border-foreground/40 shadow-xl rounded-xl">
+                    <TabsTrigger
+                      value="month"
+                      className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg"
+                    >
+                      <CalendarDays className="h-4 w-4" />
+                      Month
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="list"
+                      className="gap-2 data-[state=active]:bg-slr-blue/80 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:rounded-lg"
+                    >
+                      <List className="h-4 w-4" />
+                      List
+                    </TabsTrigger>
+                  </TabsList>
 
-  return (
-    <section className="relative py-20 bg-[#f9fafb]" aria-labelledby="runs-heading">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance">
-            Weekly Runs
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
-            Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
-            <Link href="/weather-guide" className="text-text-[rgba(185, 225, 248,1)] hover:underline font-medium">
-              Check our weather running guide
-            </Link>{" "}
-            for tips on running in different conditions.
-          </p>
-          <div className="mt-6">
-            <Button
-              asChild
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
-            >
-              <Link href="/calendar">
-                View Events Calendar
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto">
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
-            {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, "md:col-span-6 lg:col-span-7 md:row-span-2")}
-
-            <ScrollReveal delay={100} className="md:col-span-3 lg:col-span-5 md:row-span-1">
-              <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0">
-                <div className="relative w-full h-full min-h-[250px] overflow-hidden rounded-3xl">
-                  <Image
-                    src="/images/design-mode/image.png"
-                    alt="South Loop Runners group photo at the Agora Statues meetup location"
-                    fill
-                    className="object-cover"
-                  />
+                  {view === "month" && (
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateMonth("prev")}
+                        className="border-foreground/50 hover:bg-foreground/20 bg-foreground/10 text-foreground backdrop-blur-md shadow-md rounded-lg"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <h3 className="font-bold text-lg text-foreground drop-shadow-sm">{monthName}</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateMonth("next")}
+                        className="border-foreground/50 hover:bg-foreground/20 bg-foreground/10 text-foreground backdrop-blur-md shadow-md rounded-lg"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              </Card>
-            </ScrollReveal>
 
-            <ScrollReveal delay={150} className="md:col-span-3 lg:col-span-5 md:row-span-1">
-              <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0 overflow-hidden">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2971.8!2d-87.6239!3d41.8681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2ca1b2e6e5e5%3A0x1234567890abcdef!2sV99G%2B7M%20Chicago%2C%20Illinois!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0, minHeight: "250px", borderRadius: "24px" }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="rounded-3xl"
-                  title="Map showing Agora Statues meetup location at Michigan Ave & Roosevelt"
-                />
-              </Card>
-            </ScrollReveal>
+                <TabsContent value="month" className="mt-0">
+                  {/* Assuming loading/empty state checks are rendered correctly here */}
 
-            {featuredEvents[1] && renderEventCard(featuredEvents[1], 200, "md:col-span-6 lg:col-span-7 md:row-span-2")}
-
-            <ScrollReveal delay={250} className="md:col-span-6 lg:col-span-5 md:row-span-2">
-              <Card className="glass rounded-3xl shadow-soft hover-lift h-full border-0 overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Activities</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <iframe
-                    allowTransparency
-                    frameBorder="0"
-                    height="454"
-                    scrolling="no"
-                    src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=true"
-                    width="100%"
-                    className="w-full"
-                    title="South Loop Runners Strava Club Recent Activities"
-                  />
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
-            {featuredEvents[2] && (
-              <ScrollReveal delay={300} className="md:col-span-6 lg:col-span-12 md:row-span-1">
-                <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-                  <Card className="h-full border-0 rounded-3xl">
-                    <CardHeader>
-                      <CardTitle className="text-xl mb-2">{featuredEvents[2].title}</CardTitle>
-                      <CardDescription>{featuredEvents[2].description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-3">
-                          {featuredEvents[2].type === "weekly-run" && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{getDayName(featuredEvents[2].day_of_week)}s</span>
-                            </div>
-                          )}
-                          {featuredEvents[2].type === "special-event" && featuredEvents[2].date && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{formatDate(featuredEvents[2].date)}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2 text-sm">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{featuredEvents[2].time}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{featuredEvents[2].location}</span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          {featuredEvents[2].type === "weekly-run" && (
-                            <WeatherWidget
-                              day={getDayKey(featuredEvents[2].day_of_week) as any}
-                              onWeatherLoad={(weather) =>
-                                setWeatherData((prev) => ({
-                                  ...prev,
-                                  [getDayKey(featuredEvents[2].day_of_week)]: weather,
-                                }))
-                              }
-                            />
-                          )}
-                          <div className="flex flex-wrap gap-2">
-                            {featuredEvents[2].distance && (
-                              <Badge variant="outline">{featuredEvents[2].distance}</Badge>
-                            )}
-                            {featuredEvents[2].pace && (
-                              <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
-                                {featuredEvents[2].pace}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-                            RSVP on the club pages / get the most up-to-date info
-                          </p>
-                          <div className="flex gap-2">
-                            <Button
-                              className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                              asChild
-                            >
-                              <a href={featuredEvents[2].facebook_link} target="_blank" rel="noopener noreferrer">
-                                <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                                Facebook
-                                <span className="sr-only">Opens in new window</span>
-                              </a>
-                            </Button>
-                            <Button
-                              className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                              asChild
-                            >
-                              <a href={featuredEvents[2].strava_link} target="_blank" rel="noopener noreferrer">
-                                <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                                Strava
-                                <span className="sr-only">Opens in new window</span>
-                              </a>
-                            </Button>
-                          </div>
-                        </div>
+                  <div
+                    className="grid gap-2 sm:gap-3"
+                    style={{
+                      gridTemplateColumns: "repeat(7, 1fr)",
+                      gridTemplateRows: `repeat(${totalWeeks}, minmax(120px, 1fr))`,
+                    }}
+                  >
+                    {/* Day labels (Sun, Mon, etc.) */}
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                      <div
+                        key={day}
+                        className="text-center text-xs sm:text-sm font-bold text-foreground py-3 border-b border-foreground/50 bg-foreground/20 rounded-t-lg"
+                      >
+                        {day}
                       </div>
+                    ))}
 
-                      <PaceInterestSection
-                        runId={featuredEvents[2].id}
-                        hasSocial={
-                          featuredEvents[2].has_post_run_social === 1 ||
-                          featuredEvents[2].has_post_run_social === "1" ||
-                          featuredEvents[2].has_post_run_social === true ||
-                          featuredEvents[2].has_post_run_social === "true"
-                        }
-                      />
-                    </CardContent>
-                  </Card>
-                </article>
-              </ScrollReveal>
+                    {/* Renders leading empty cells before the 1st */}
+                    {Array.from({ length: startingDayOfWeek }).map((_, i) => (
+                      <div key={`empty-leading-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
+                    ))}
+
+                    {/* Renders the cells for each day of the month using the fixed component */}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day = i + 1
+                      const dayEvents = getEventsForDay(day)
+                      const currentDateObject = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                      const isToday = new Date().toDateString() === currentDateObject.toDateString()
+
+                      return (
+                        <CalendarDayCell
+                          key={day}
+                          day={day}
+                          date={currentDateObject}
+                          dayEvents={dayEvents}
+                          dailySummary={dailyEventSummary.get(day)}
+                          isToday={isToday}
+                          setSelectedEvent={setSelectedEvent}
+                        />
+                      )
+                    })}
+                    {/* Only render trailing empty cells if needed to complete the grid */}
+                    {totalWeeks * 7 > daysInMonth + startingDayOfWeek &&
+                      Array.from({ length: totalWeeks * 7 - daysInMonth - startingDayOfWeek }).map((_, i) => (
+                        <div key={`empty-trailing-${i}`} className="min-h-[120px] rounded-2xl bg-foreground/5" />
+                      ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="list" className="mt-0">
+                  {isLoading ? (
+                    <div className="text-center py-12 text-foreground/70">Loading events...</div>
+                  ) : filteredEvents.length === 0 ? (
+                    <div className="text-center py-12 text-foreground/70">No events found.</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredEvents.map((event) => (
+                        <button key={event.id} onClick={() => setSelectedEvent(event)} className="w-full text-left">
+                          <Card className="rounded-xl border-foreground/30 bg-background/10 hover:bg-foreground/20 backdrop-blur-md hover:shadow-2xl transition-all hover:-translate-y-0.5">
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-16 text-center bg-black/20 rounded-lg p-2 text-foreground">
+                                  <div className="text-2xl font-bold">{event.date.getDate()}</div>
+                                  <div className="text-sm font-medium">
+                                    {event.date.toLocaleDateString("en-US", { month: "short" })}
+                                  </div>
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-foreground">
+                                        {event.title}
+                                        {event.isRecurring && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-xs border-foreground/50 text-foreground bg-foreground/10"
+                                          >
+                                            Recurring
+                                          </Badge>
+                                        )}
+                                      </h4>
+                                      <p className="text-sm text-foreground/80">{event.details}</p>
+                                    </div>
+                                    <Badge
+                                      variant={event.type === "race" ? "destructive" : "default"}
+                                      className={cn(
+                                        event.type === "race"
+                                          ? "bg-slr-red/80 text-white"
+                                          : "bg-slr-blue/80 text-foreground",
+                                      )}
+                                    >
+                                      {event.type === "race" ? (
+                                        <>
+                                          <Trophy className="h-3 w-3 mr-1" />
+                                          Race
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Activity className="h-3 w-3 mr-1" />
+                                          Run
+                                        </>
+                                      )}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex flex-wrap gap-4 text-sm text-foreground/70">
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-4 w-4 text-foreground" />
+                                      {event.time}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <MapPin className="h-4 w-4 text-foreground" />
+                                      {event.location}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </ScrollReveal>
+      </div>
+
+      <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
+        <DialogContent className="sm:max-w-[500px] rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl text-foreground">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              {selectedEvent?.type === "race" ? (
+                <Trophy className="h-6 w-6 text-slr-red fill-slr-red/20" />
+              ) : (
+                <Star className="h-6 w-6 fill-slr-blue text-slr-blue" />
+              )}
+              {selectedEvent?.title}
+            </DialogTitle>
+            <DialogDescription className="text-base font-medium text-foreground/80">
+              {selectedEvent?.details}
+            </DialogDescription>
+            <div className="flex flex-wrap gap-2 pt-2">
+              {selectedEvent?.type && (
+                <Badge
+                  variant={selectedEvent.type === "race" ? "destructive" : "default"}
+                  className={cn(
+                    selectedEvent.type === "race" ? "bg-slr-red/80 text-white" : "bg-slr-blue/80 text-foreground",
+                  )}
+                >
+                  {selectedEvent.type === "race" ? "Race" : "Weekly Run"}
+                </Badge>
+              )}
+              {selectedEvent?.isRecurring && (
+                <Badge variant="outline" className="border-foreground/50 text-foreground bg-foreground/10">
+                  Recurring
+                </Badge>
+              )}
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-foreground" />
+              <div className="text-sm">
+                <p className="font-medium">Date</p>
+                <p className="text-foreground/80">
+                  {selectedEvent?.date.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-slr-blue-dark flex-shrink-0 text-foreground" />
+              <div className="text-sm">
+                <p className="font-medium">Time</p>
+                <p className="text-foreground/80">{selectedEvent?.time}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-slr-blue-dark flex-shrink-0 mt-1 text-foreground" />
+              <div className="text-sm">
+                <p className="font-medium">Location</p>
+                <p className="text-foreground/80">{selectedEvent?.location}</p>
+              </div>
+            </div>
+
+            {selectedEvent?.description && (
+              <div className="space-y-2 pt-2 border-t border-foreground/30">
+                <p className="font-medium text-sm">Notes/Description</p>
+                <p className="text-sm text-foreground/80 foregroundspace-pre-line">{selectedEvent.description}</p>
+              </div>
             )}
           </div>
-        </div>
-      </div>
-      <WaveTransition fillColor="#d9eef7" />
-    </section>
+
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-4 border-t border-foreground/30">
+            {selectedEvent?.registrationUrl && (
+              <Button
+                asChild
+                variant="destructive"
+                className="w-full sm:w-auto bg-slr-red/80 hover:bg-slr-red text-white"
+              >
+                <a
+                  href={selectedEvent.registrationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Register Now
+                </a>
+              </Button>
+            )}
+            <Button
+              onClick={() => selectedEvent && addToGoogleCalendar(selectedEvent)}
+              variant="outline"
+              className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10"
+            >
+              <CalendarDays className="h-4 w-4 mr-2" />
+              Google Calendar
+            </Button>
+            <Button
+              onClick={() => selectedEvent && exportSingleEventToICS(selectedEvent)}
+              variant="outline"
+              className="w-full sm:w-auto text-foreground hover:bg-foreground/20 border-foreground/50 bg-foreground/10"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download ICS
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
