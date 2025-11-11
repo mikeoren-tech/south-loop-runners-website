@@ -134,21 +134,21 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
       </div>
 
       <div className="flex gap-2">
-          <Select value={selectedPace} onValueChange={setSelectedPace}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Select your pace" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              {PACE_GROUPS.map((pace) => (
-                <SelectItem key={pace} value={pace}>
-                  {pace}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
-            {isSubmitting ? "Adding..." : "Add"}
-          </Button>
+        <Select value={selectedPace} onValueChange={setSelectedPace}>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select your pace" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            {PACE_GROUPS.map((pace) => (
+              <SelectItem key={pace} value={pace}>
+                {pace}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
+          {isSubmitting ? "Adding..." : "Add"}
+        </Button>
       </div>
 
       <div className="flex gap-1">
@@ -240,9 +240,7 @@ function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: 
 }
 
 export function UpcomingRuns() {
-  const [thursdayWeather, setThursdayWeather] = useState<WeatherData | null>(null)
-  const [saturdayWeather, setSaturdayWeather] = useState<WeatherData | null>(null)
-  const [sundayWeather, setSundayWeather] = useState<WeatherData | null>(null)
+  const [weatherData, setWeatherData] = useState<{ [key: string]: WeatherData | null }>({})
 
   const { data: featuredEvents = [], isLoading } = useSWR("/api/events/featured", fetcher, {
     fallbackData: [
@@ -297,25 +295,31 @@ export function UpcomingRuns() {
     return days[dayOfWeek]
   }
 
+  const getDayKey = (dayOfWeek: number) => {
+    const dayKeys = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+    return dayKeys[dayOfWeek]
+  }
+
   const formatDate = (dateString: string) => {
     if (!dateString) return null
-    const chicagoOffset = '-06:00'; 
-    const correctedDateString = `${dateString.split('T')[0]}T12:00:00${chicagoOffset}`; 
+    const chicagoOffset = "-06:00"
+    const correctedDateString = `${dateString.split("T")[0]}T12:00:00${chicagoOffset}`
 
-    const date = new Date(correctedDateString); 
-  
+    const date = new Date(correctedDateString)
+
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
-      timeZone: "America/Chicago" 
-    });
+      timeZone: "America/Chicago",
+    })
   }
 
-  const renderEventCard = (event: any, index: number, delay: number, className: string) => {
+  const renderEventCard = (event: any, delay: number, className: string) => {
     const isWeeklyRun = event.type === "weekly-run"
     const isSpecialEvent = event.type === "special-event"
+    const dayKey = isWeeklyRun ? getDayKey(event.day_of_week) : null
 
     return (
       <ScrollReveal key={event.id} delay={delay} className={className}>
@@ -349,8 +353,14 @@ export function UpcomingRuns() {
                 </div>
               </div>
 
-              {index === 0 && <WeatherWidget day="thursday" onWeatherLoad={setThursdayWeather} />}
-              {index === 1 && <WeatherWidget day="saturday" onWeatherLoad={setSaturdayWeather} />}
+              {dayKey && (
+                <WeatherWidget
+                  day={dayKey as any}
+                  onWeatherLoad={(weather) =>
+                    setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))
+                  }
+                />
+              )}
 
               <div className="flex flex-wrap gap-2">
                 {event.distance && <Badge variant="outline">{event.distance}</Badge>}
@@ -389,10 +399,15 @@ export function UpcomingRuns() {
                 </div>
               </div>
 
-              <PaceInterestSection runId={event.id} // OLD: hasSocial={event.has_post_run_social === true}
-              // NEW:
-              hasSocial={event.has_post_run_social === 1 || event.has_post_run_social === "1" || event.has_post_run_social === true || event.has_post_run_social === "true"}
-               />
+              <PaceInterestSection
+                runId={event.id}
+                hasSocial={
+                  event.has_post_run_social === 1 ||
+                  event.has_post_run_social === "1" ||
+                  event.has_post_run_social === true ||
+                  event.has_post_run_social === "true"
+                }
+              />
             </CardContent>
           </Card>
         </article>
@@ -414,7 +429,6 @@ export function UpcomingRuns() {
     <section className="relative py-20 bg-[#f9fafb]" aria-labelledby="runs-heading">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-
           <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance">
             Weekly Runs
           </h2>
@@ -437,11 +451,11 @@ export function UpcomingRuns() {
               </Link>
             </Button>
           </div>
-          </div>
+        </div>
 
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
-            {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, 0, "md:col-span-6 lg:col-span-7 md:row-span-2")}
+            {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, "md:col-span-6 lg:col-span-7 md:row-span-2")}
 
             <ScrollReveal delay={100} className="md:col-span-3 lg:col-span-5 md:row-span-1">
               <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0">
@@ -472,8 +486,7 @@ export function UpcomingRuns() {
               </Card>
             </ScrollReveal>
 
-            {featuredEvents[1] &&
-              renderEventCard(featuredEvents[1], 1, 200, "md:col-span-6 lg:col-span-7 md:row-span-2")}
+            {featuredEvents[1] && renderEventCard(featuredEvents[1], 200, "md:col-span-6 lg:col-span-7 md:row-span-2")}
 
             <ScrollReveal delay={250} className="md:col-span-6 lg:col-span-5 md:row-span-2">
               <Card className="glass rounded-3xl shadow-soft hover-lift h-full border-0 overflow-hidden">
@@ -529,8 +542,16 @@ export function UpcomingRuns() {
                         </div>
 
                         <div className="space-y-3">
-                          {featuredEvents[2].day_of_week === 0 && (
-                            <WeatherWidget day="sunday" onWeatherLoad={setSundayWeather} />
+                          {featuredEvents[2].type === "weekly-run" && (
+                            <WeatherWidget
+                              day={getDayKey(featuredEvents[2].day_of_week) as any}
+                              onWeatherLoad={(weather) =>
+                                setWeatherData((prev) => ({
+                                  ...prev,
+                                  [getDayKey(featuredEvents[2].day_of_week)]: weather,
+                                }))
+                              }
+                            />
                           )}
                           <div className="flex flex-wrap gap-2">
                             {featuredEvents[2].distance && (
@@ -575,7 +596,12 @@ export function UpcomingRuns() {
 
                       <PaceInterestSection
                         runId={featuredEvents[2].id}
-                        hasSocial={featuredEvents[2].has_post_run_social === true}
+                        hasSocial={
+                          featuredEvents[2].has_post_run_social === 1 ||
+                          featuredEvents[2].has_post_run_social === "1" ||
+                          featuredEvents[2].has_post_run_social === true ||
+                          featuredEvents[2].has_post_run_social === "true"
+                        }
                       />
                     </CardContent>
                   </Card>
