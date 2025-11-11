@@ -22,9 +22,11 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  Image as ImageIcon,
 } from "lucide-react"
 import Link from "next/link"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import Image from "next/image"
 
 interface InstagramPost {
   id: number
@@ -45,6 +47,8 @@ export default function InstagramAdmin() {
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [authError, setAuthError] = useState(false)
   const [deleting, setDeleting] = useState<number | null>(null)
+  const [previewImages, setPreviewImages] = useState<{ [key: number]: string }>({})
+  const [loadingPreviews, setLoadingPreviews] = useState<{ [key: number]: boolean }>({})
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -52,6 +56,10 @@ export default function InstagramAdmin() {
     caption: "",
     display_order: 0,
   })
+
+  // Separate active and hidden posts
+  const activePosts = posts.filter((post) => post.is_active === 1)
+  const hiddenPosts = posts.filter((post) => post.is_active === 0)
 
   useEffect(() => {
     checkAuth()
@@ -101,6 +109,10 @@ export default function InstagramAdmin() {
       if (response.ok) {
         const data = await response.json()
         setPosts(data)
+        // Load previews for each post
+        data.forEach((post: InstagramPost) => {
+          loadInstagramPreview(post.id, post.URL)
+        })
       }
     } catch (error) {
       console.error("Failed to load Instagram posts:", error)
@@ -109,9 +121,29 @@ export default function InstagramAdmin() {
     }
   }
 
+  const loadInstagramPreview = async (postId: number, url: string) => {
+    setLoadingPreviews((prev) => ({ ...prev, [postId]: true }))
+    try {
+      const response = await fetch("/api/instagram/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPreviewImages((prev) => ({ ...prev, [postId]: data.imageUrl }))
+      }
+    } catch (error) {
+      console.error("Failed to load preview for post", postId, error)
+    } finally {
+      setLoadingPreviews((prev) => ({ ...prev, [postId]: false }))
+    }
+  }
+
   const handleAddPost = () => {
     setEditingPost(null)
-    setFormData({ URL: "", caption: "", display_order: posts.length })
+    setFormData({ URL: "", caption: "", display_order: activePosts.length })
     setShowForm(true)
   }
 
@@ -198,28 +230,34 @@ export default function InstagramAdmin() {
     }
   }
 
-  const moveUp = async (index: number) => {
+  const moveUp = async (postList: InstagramPost[], index: number) => {
     if (index === 0) return
 
-    const newOrder = [...posts]
+    const newOrder = [...postList]
     const temp = newOrder[index]
     newOrder[index] = newOrder[index - 1]
     newOrder[index - 1] = temp
 
-    setPosts(newOrder)
-    await saveOrder(newOrder.map((post) => post.id))
+    const allPosts = [...(postList === activePosts ? hiddenPosts : activePosts), ...newOrder].sort(
+      (a, b) => a.display_order - b.display_order
+    )
+    setPosts(allPosts)
+    await saveOrder(allPosts.map((post) => post.id))
   }
 
-  const moveDown = async (index: number) => {
-    if (index === posts.length - 1) return
+  const moveDown = async (postList: InstagramPost[], index: number) => {
+    if (index === postList.length - 1) return
 
-    const newOrder = [...posts]
+    const newOrder = [...postList]
     const temp = newOrder[index]
     newOrder[index] = newOrder[index + 1]
     newOrder[index + 1] = temp
 
-    setPosts(newOrder)
-    await saveOrder(newOrder.map((post) => post.id))
+    const allPosts = [...(postList === activePosts ? hiddenPosts : activePosts), ...newOrder].sort(
+      (a, b) => a.display_order - b.display_order
+    )
+    setPosts(allPosts)
+    await saveOrder(allPosts.map((post) => post.id))
   }
 
   const saveOrder = async (postIds: number[]) => {
@@ -243,6 +281,103 @@ export default function InstagramAdmin() {
       setSaving(false)
     }
   }
+
+  const PostItem = ({ post, index, list }: { post: InstagramPost; index: number; list: InstagramPost[] }) => (
+    <div
+      key={post.id}
+      className="flex items-start gap-4 p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
+    >
+      {/* Preview Image */}
+      <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
+        {loadingPreviews[post.id] ? (
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        ) : previewImages[post.id] ? (
+          <Image
+            src={previewImages[post.id]}
+            alt="Instagram preview"
+            width={96}
+            height={96}
+            className="w-full h-full object-cover"
+            unoptimized
+          />
+        ) : (
+          <ImageIcon className="w-6 h-6 text-muted-foreground" />
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-col gap-1 pt-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="font-mono text-xs">
+              #{index + 1}
+            </Badge>
+          </div>
+
+          <div className="text-sm break-all">
+            <a
+              href={post.URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {post.URL}
+            </a>
+          </div>
+
+          {post.caption && <p className="text-sm text-muted-foreground line-clamp-2">{post.caption}</p>}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-col gap-1 flex-shrink-0">
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => moveUp(list, index)}
+            disabled={index === 0}
+            className="h-8 w-8 p-0"
+            title="Move up"
+          >
+            <ChevronUp className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => moveDown(list, index)}
+            disabled={index === list.length - 1}
+            className="h-8 w-8 p-0"
+            title="Move down"
+          >
+            <ChevronDown className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleToggleActive(post)}
+            title={post.is_active ? "Hide from homepage" : "Show on homepage"}
+          >
+            {post.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => handleEditPost(post)}>
+            <Edit className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleDelete(post.id)}
+            disabled={deleting === post.id}
+          >
+            {deleting === post.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
 
   if (checkingAuth) {
     return (
@@ -299,14 +434,14 @@ export default function InstagramAdmin() {
       </header>
 
       <main className="container mx-auto px-4 py-8 space-y-6">
+        {/* Featured Posts Section */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Instagram Posts ({posts.length})</CardTitle>
+                <CardTitle>Featured Posts ({activePosts.length})</CardTitle>
                 <CardDescription>
-                  Manage Instagram post URLs displayed on the homepage. Up to 6 active posts are shown. Use the arrows
-                  to reorder.
+                  Posts displayed on the homepage. Up to 6 posts are shown. Use the arrows to reorder.
                 </CardDescription>
               </div>
               <Button onClick={handleAddPost}>
@@ -320,97 +455,38 @@ export default function InstagramAdmin() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
               </div>
-            ) : posts.length === 0 ? (
+            ) : activePosts.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No Instagram posts yet. Click "Add Post" to create one.
+                No featured Instagram posts yet. Click "Add Post" to create one.
               </div>
             ) : (
               <div className="space-y-3">
-                {posts.map((post, index) => (
-                  <div
-                    key={post.id}
-                    className="flex items-start gap-3 p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex flex-col gap-1 pt-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveUp(index)}
-                        disabled={index === 0}
-                        className="h-8 w-8 p-0"
-                        title="Move up"
-                      >
-                        <ChevronUp className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveDown(index)}
-                        disabled={index === posts.length - 1}
-                        className="h-8 w-8 p-0"
-                        title="Move down"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    <div className="flex-1 space-y-2 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="font-mono text-xs">
-                          #{index + 1}
-                        </Badge>
-                        {!post.is_active && (
-                          <Badge variant="secondary" className="text-xs">
-                            Hidden
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="text-sm break-all">
-                        <a
-                          href={post.URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          {post.URL}
-                        </a>
-                      </div>
-
-                      {post.caption && <p className="text-sm text-muted-foreground line-clamp-2">{post.caption}</p>}
-                    </div>
-
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleActive(post)}
-                        title={post.is_active ? "Hide from homepage" : "Show on homepage"}
-                      >
-                        {post.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleEditPost(post)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(post.id)}
-                        disabled={deleting === post.id}
-                      >
-                        {deleting === post.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                {activePosts.map((post, index) => (
+                  <PostItem key={post.id} post={post} index={index} list={activePosts} />
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Hidden Posts Section */}
+        {hiddenPosts.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div>
+                <CardTitle>Hidden Posts ({hiddenPosts.length})</CardTitle>
+                <CardDescription>These posts are not displayed on the homepage.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {hiddenPosts.map((post, index) => (
+                  <PostItem key={post.id} post={post} index={index} list={hiddenPosts} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
 
       {showForm && (
