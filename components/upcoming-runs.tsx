@@ -126,12 +126,17 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
   }
 
   return (
-    <div className="border-t pt-4 mt-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        <Users className="h-4 w-4" />
-        <span>Show Your Interest</span>
-        <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
-      </div>
+    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+      <Users className="h-4 w-4" />
+      <span>Show Your Interest</span>
+      <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
+    </div>
+    <p className="text-xs text-muted-foreground">
+      Planning to attend?{" "}
+      <a href="https://discord.gg/sFtmQknX8" target="_blank" rel="noopener noreferrer" className="text-[#5865F2] hover:underline font-medium">
+        Chat with runners on Discord
+      </a>
+    </p>
 
       <div className="flex gap-2">
         <Select value={selectedPace} onValueChange={setSelectedPace}>
