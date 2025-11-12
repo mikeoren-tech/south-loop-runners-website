@@ -139,7 +139,7 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
           href="https://discord.gg/sFtmQknX8" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-[#5865F2] hover:underline font-medium inline-flex items-center gap-1"
+          className="text-[rgba(217,42,49,1)] hover:underline font-medium inline-flex items-center gap-1"
         >
           Chat with runners on Discord
           <MessageSquare className="h-3 w-3 inline" />
@@ -457,7 +457,7 @@ export function UpcomingRuns() {
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
-            <Link href="/weather-guide" className="text-text-[rgba(185, 225, 248,1)] hover:underline font-medium">
+            <Link href="/weather-guide" className="text-[rgba(185, 225, 248,1)] hover:underline font-medium">
               Check our weather running guide
             </Link>{" "}
             for tips on running in different conditions.
