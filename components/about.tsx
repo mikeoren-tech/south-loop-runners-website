@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Heart, Trophy, Users, Zap } from "lucide-react"
+import { Heart, Trophy, Users, Zap, MessageSquare } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WaveTransition } from "@/components/wave-transition"
 
@@ -37,7 +37,6 @@ export function About() {
         <div className="max-w-6xl mx-auto">
           <ScrollReveal className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">About Our Club</h2>
-            {/* Added interactive terms with hover explanations */}
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
               South Loop Runners is more than just a running club—we're a community of passionate runners who love
               exploring Chicago's beautiful lakefront and neighborhoods together.{" "}
@@ -48,7 +47,7 @@ export function About() {
                 className="text-[#5865F2] hover:underline font-medium inline-flex items-center gap-1"
               >
                 Join our Discord
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4 inline" />
               </a>{" "}
               to connect between runs!
             </p>
