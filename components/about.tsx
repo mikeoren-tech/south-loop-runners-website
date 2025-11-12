@@ -44,7 +44,7 @@ export function About() {
                 href="https://discord.gg/sFtmQknX8" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[#5865F2] hover:underline font-medium inline-flex items-center gap-1"
+                className="text-[slr-red] hover:underline font-medium inline-flex items-center gap-1"
               >
                 Join our Discord
                 <MessageSquare className="h-4 w-4 inline" />
