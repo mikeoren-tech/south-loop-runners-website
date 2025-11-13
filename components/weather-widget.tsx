@@ -102,30 +102,35 @@ export function WeatherWidget({ day, onWeatherLoad }: WeatherWidgetProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <div className="h-5 w-5 animate-pulse bg-gray-200 rounded" />
-        <span>Loading forecast...</span>
+      <div className="flex items-center gap-2 text-sm text-foreground/70 animate-pulse">
+        <div className="h-6 w-6 bg-foreground/20 rounded-full" />
+        <div className="flex flex-col gap-1">
+          <div className="h-4 w-24 bg-foreground/20 rounded" />
+          <div className="h-3 w-20 bg-foreground/20 rounded" />
+        </div>
       </div>
-    )
+    );
   }
 
   if (!weather) {
-    return null
+    return null;
   }
 
   return (
-    <div className="flex items-center gap-3 text-sm bg-muted/50 rounded-lg p-3">
-      {getWeatherIcon(weather.condition)}
+    <div className="flex items-center gap-3 text-sm bg-foreground/10 border border-foreground/20 rounded-lg p-3 backdrop-blur-sm transition-all hover:bg-foreground/20">
+      <div className="transform transition-transform duration-300 group-hover:scale-110">
+        {getWeatherIcon(weather.condition)}
+      </div>
       <div className="flex flex-col">
-        <span className="font-medium">
+        <span className="font-medium text-foreground">
           {weather.temperature}°F • {weather.condition}
         </span>
-        <span className="text-xs text-muted-foreground flex items-center gap-2">
+        <span className="text-xs text-foreground/80 flex items-center gap-2">
           <Wind className="h-3 w-3" />
           {weather.windSpeed} mph
           {weather.precipitation > 0 && ` • ${weather.precipitation}% rain`}
         </span>
       </div>
     </div>
-  )
+  );
 }

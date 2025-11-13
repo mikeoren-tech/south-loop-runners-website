@@ -14,6 +14,7 @@ import Image from "next/image"
 import useSWR from "swr"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { WaveTransition } from "@/components/wave-transition"
+import Shimmer from "@/components/ui/shimmer";
 
 const PACE_GROUPS = [
   "Under 7:00 min/mile",
@@ -339,40 +340,43 @@ export function UpcomingRuns() {
   }
 
   const renderEventCard = (event: any, delay: number, className: string) => {
-    const isWeeklyRun = event.type === "weekly-run"
-    const isSpecialEvent = event.type === "special-event"
-    const dayKey = isWeeklyRun ? getDayKey(event.day_of_week) : 
-                   isSpecialEvent && event.date ? getDayKey(getDayOfWeekFromDate(event.date)) : null
+    const isWeeklyRun = event.type === "weekly-run";
+    const isSpecialEvent = event.type === "special-event";
+    const dayKey = isWeeklyRun
+      ? getDayKey(event.day_of_week)
+      : isSpecialEvent && event.date
+      ? getDayKey(getDayOfWeekFromDate(event.date))
+      : null;
 
     return (
       <ScrollReveal key={event.id} delay={delay} className={className}>
-        <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-          <Card className="h-full border-0 rounded-3xl">
+        <Card className="h-full rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl overflow-hidden transition-all duration-300 hover:shadow-slr-blue/40 hover:-translate-y-1">
+          <div className="bg-gradient-to-br from-slr-blue/10 via-transparent to-slr-red/5 p-6 h-full flex flex-col">
             <CardHeader>
-              <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
-              <CardDescription>{event.description}</CardDescription>
+              <CardTitle className="text-xl mb-2 text-foreground">{event.title}</CardTitle>
+              <CardDescription className="text-foreground/80">{event.description}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex-grow flex flex-col">
               <div className="grid gap-3">
                 {isWeeklyRun && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{getDayName(event.day_of_week)}s</span>
+                    <Calendar className="h-4 w-4 text-slr-blue" />
+                    <span className="font-medium text-foreground">{getDayName(event.day_of_week)}s</span>
                   </div>
                 )}
                 {isSpecialEvent && event.date && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{formatDate(event.date)}</span>
+                    <Calendar className="h-4 w-4 text-slr-blue" />
+                    <span className="font-medium text-foreground">{formatDate(event.date)}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.time}</span>
+                  <Clock className="h-4 w-4 text-slr-blue" />
+                  <span className="text-foreground">{event.time}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.location}</span>
+                  <MapPin className="h-4 w-4 text-slr-blue" />
+                  <span className="text-foreground">{event.location}</span>
                 </div>
               </div>
 
@@ -386,57 +390,66 @@ export function UpcomingRuns() {
               )}
 
               <div className="flex flex-wrap gap-2">
-                {event.distance && <Badge variant="outline">{event.distance}</Badge>}
+                {event.distance && <Badge variant="secondary">{event.distance}</Badge>}
                 {event.pace && (
-                  <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                  <Badge variant="outline" className="border-slr-red text-slr-red">
                     {event.pace}
                   </Badge>
                 )}
               </div>
 
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-                  RSVP on the club pages / get the most up-to-date info
+              <div className="space-y-3 mt-auto">
+                <p className="text-sm font-medium text-center text-foreground/70 border-t border-foreground/20 pt-3">
+                  RSVP / get up-to-date info
                 </p>
                 <div className="flex gap-2">
-                  <Button
-                    className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                    asChild
-                  >
-                    <a href={event.facebook_link} target="_blank" rel="noopener noreferrer">
-                      <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                      Facebook
-                      <span className="sr-only">Opens in new window</span>
-                    </a>
-                  </Button>
-                  <Button
-                    className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                    asChild
-                  >
-                    <a href={event.strava_link} target="_blank" rel="noopener noreferrer">
-                      <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                      Strava
-                      <span className="sr-only">Opens in new window</span>
-                    </a>
-                  </Button>
+                  <Shimmer shimmerDuration="4s">
+                    <Button
+                      className="flex-1 bg-slr-blue hover:bg-slr-blue/90 text-slr-blue-dark shadow-lg"
+                      asChild
+                    >
+                      <a
+                        href={event.facebook_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center"
+                        aria-label={`RSVP on Facebook for ${event.title} - opens in a new tab`}
+                      >
+                        <FacebookIcon className="h-4 w-4 mr-2" />
+                        Facebook
+                      </a>
+                    </Button>
+                  </Shimmer>
+                  <Shimmer shimmerDuration="4.5s">
+                    <Button
+                      className="flex-1 bg-slr-red hover:bg-slr-red/90 text-white shadow-lg"
+                      asChild
+                    >
+                      <a
+                        href={event.strava_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center"
+                        aria-label={`RSVP on Strava for ${event.title} - opens in a new tab`}
+                      >
+                        <Activity className="h-4 w-4 mr-2" />
+                        Strava
+                      </a>
+                    </Button>
+                  </Shimmer>
                 </div>
               </div>
 
               <PaceInterestSection
                 runId={event.id}
-                hasSocial={
-                  event.has_post_run_social === 1 ||
-                  event.has_post_run_social === "1" ||
-                  event.has_post_run_social === true ||
-                  event.has_post_run_social === "true"
-                }
+                hasSocial={!!event.has_post_run_social}
               />
             </CardContent>
-          </Card>
-        </article>
+          </div>
+        </Card>
       </ScrollReveal>
-    )
-  }
+    );
+  };
 
   if (isLoading && featuredEvents.length === 0) {
     return (
