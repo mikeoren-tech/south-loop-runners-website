@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "opennext build",
+    "build": "npx opennext build",
     "dev": "next dev",
     "lint": "eslint .",
-    "pages:build": "opennext build",
+    "pages:build": "npx opennext build",
     "start": "next start"
   },
   "dependencies": {
