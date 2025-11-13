@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Calendar,
@@ -30,6 +31,7 @@ import {
 import { ScrollReveal } from "@/components/scroll-reveal"
 import useSWR from "swr"
 import Image from "next/image"
+import Shimmer from "@/components/ui/shimmer";
 
 type Attendee = {
   id: string
@@ -290,377 +292,180 @@ function RaceCard({ race, index }: { race: any; index: number }) {
 
   return (
     <ScrollReveal key={race.id} delay={index * 150}>
-      <article className="glass-strong rounded-3xl shadow-soft hover-lift border-0 h-full flex flex-col group">
-        <Card className="h-full border-0 rounded-3xl overflow-hidden p-0">
-          <div className="relative h-48 overflow-hidden rounded-t-3xl">
-            <Image
-              src={
-                race.image_url && race.image_url !== ""
-                  ? race.image_url
-                  : `/placeholder.svg?height=400&width=800&query=${encodeURIComponent(race.title + " race")}`
-              }
-              alt={`${race.title} - ${race.tagline || ""}`}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <div
-              className={`absolute inset-0 bg-gradient-to-t ${race.accent_color || "from-blue-500 to-cyan-500"} opacity-60`}
-            />
+      <Card className="h-full rounded-2xl border-foreground/30 bg-foreground/10 backdrop-blur-xl shadow-2xl overflow-hidden transition-all duration-300 hover:shadow-slr-red/40 hover:-translate-y-1 group">
+        <div className="relative h-48 overflow-hidden rounded-t-2xl">
+          <Image
+            src={
+              race.image_url && race.image_url !== ""
+                ? race.image_url
+                : `/placeholder.svg?height=400&width=800&query=${encodeURIComponent(race.title + " race")}`
+            }
+            alt={`${race.title} - ${race.tagline || ""}`}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 p-6">
+            <CardTitle className="text-3xl font-bold text-white text-balance">{race.title}</CardTitle>
+            {race.tagline && (
+              <CardDescription className="text-white/90 font-medium">{race.tagline}</CardDescription>
+            )}
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="space-y-3 p-4 bg-foreground/10 rounded-lg border border-foreground/20">
+            <div className="flex items-center gap-3">
+              <Calendar className="h-5 w-5 text-slr-blue shrink-0" />
+              <div>
+                <div className="text-xs text-foreground/70 uppercase tracking-wide">Race Day</div>
+                <div className="text-xl font-bold text-foreground">{formatDate(race.date)}</div>
+                <div className="text-sm text-foreground/80">
+                  {race.time} • {race.location}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <CardHeader className="space-y-4 pb-4 pt-6">
-            <div className="space-y-2">
-              <CardTitle className="text-3xl md:text-4xl font-bold text-balance leading-tight">{race.title}</CardTitle>
-              {race.tagline && (
-                <CardDescription className="text-base font-medium text-foreground/70">{race.tagline}</CardDescription>
-              )}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {distances.map((distance: string) => (
+              <Badge key={distance} className="bg-slr-red text-white border-0">
+                {distance}
+              </Badge>
+            ))}
+            {keyFeatures.map((feature: any, idx: number) => {
+              const IconComponent = iconMap[feature.icon] || Flag;
+              return (
+                <Badge key={idx} variant="outline" className="border-slr-blue text-slr-blue">
+                  <IconComponent className="h-4 w-4 mr-1.5" />
+                  {feature.label}
+                </Badge>
+              );
+            })}
+          </div>
 
-            <div className="space-y-3 p-4 bg-gradient-to-br from-primary/10 to-destructive/10 rounded-lg border-2 border-primary/20">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-primary shrink-0" />
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Race Day</div>
-                  <div className="text-xl font-bold text-foreground">{formatDate(race.date)}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {race.time} • {race.location}
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="border-t border-foreground/20 pt-4">
+             <CountdownTimer targetDate={race.date} />
+          </div>
 
-            {keyFeatures.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {keyFeatures.map((feature: any, idx: number) => {
-                  const IconComponent = iconMap[feature.icon] || Flag
-                  return (
-                    <Badge
-                      key={idx}
-                      variant="outline"
-                      className="px-3 py-1.5 border-2 hover:scale-105 transition-transform"
-                    >
-                      <IconComponent className={`h-4 w-4 mr-1.5 ${feature.color}`} />
-                      <span className="font-medium">{feature.label}</span>
-                    </Badge>
-                  )
-                })}
-              </div>
-            )}
-
-            {distances.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {distances.map((distance: string) => (
-                  <Badge key={distance} className="bg-destructive/90 text-white border-0 px-3 py-1">
-                    {distance}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </CardHeader>
-
-          <CardContent className="space-y-4 flex-1 flex flex-col pb-6">
-            {race.unique_feature && (
-              <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                  <p className="text-sm font-medium leading-relaxed">{race.unique_feature}</p>
-                </div>
-              </div>
-            )}
-
-            <div className="p-4 bg-muted/30 rounded-lg border">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                Time Until Race
-              </div>
-              <CountdownTimer targetDate={race.date} />
-            </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setShowDetails(!showDetails)}
-                className="w-full flex items-center justify-between p-4 bg-muted/30 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                aria-expanded={showDetails}
-                aria-label={`${showDetails ? "Hide" : "Show"} race details and highlights`}
-              >
-                <span className="font-semibold text-sm">Race Details & Highlights</span>
-                {showDetails ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                )}
-              </button>
-
-              {showDetails && (
-                <div className="p-4 space-y-3 bg-muted/10">
-                  {race.depart_from && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-muted-foreground">Departs from {race.depart_from}</span>
-                    </div>
-                  )}
-
-                  {highlights.length > 0 && (
-                    <div className="pt-2 border-t">
-                      <h4 className="font-semibold text-sm mb-2">Highlights</h4>
-                      <ul className="space-y-2">
-                        {highlights.map((highlight: string, idx: number) => (
-                          <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                            <span className="text-primary mt-1 shrink-0">•</span>
-                            <span>{highlight}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="border-t pt-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold text-sm flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    South Loop Runners Going
-                  </h4>
-                  <p className="text-2xl font-bold text-primary mt-1">
-                    {racingCount} {isLoading && <Loader2 className="inline h-4 w-4 animate-spin ml-2" />}
-                  </p>
-                  {cheeringCount > 0 && (
-                    <p className="text-xs text-muted-foreground">{cheeringCount} cheering from the sidelines</p>
-                  )}
-                  {race.has_post_run_social === true &&
-                    race.post_run_social_count &&
-                    race.post_run_social_count > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {race.post_run_social_count} attending post-race social
-                      </p>
-                    )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {showSuccess && (
-                    <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                      <CheckCircle2 className="h-3 w-3" />
-                      <span>Added!</span>
-                    </div>
-                  )}
-                  {!showForm && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowForm(true)}
-                      className="text-xs"
-                      disabled={isSubmitting}
-                    >
-                      <UserPlus className="h-3 w-3 mr-1" />
-                      Add Me
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {showForm && (
-                <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-muted/30 rounded-lg border">
-                  <fieldset disabled={isSubmitting} className="space-y-3">
-                    <legend className="sr-only">RSVP for {race.title}</legend>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label htmlFor={`firstName-${race.id}`} className="text-xs font-medium mb-1.5 block">
-                          First Name{" "}
-                          <span className="text-destructive" aria-label="required">
-                            *
-                          </span>
-                        </label>
-                        <Input
-                          id={`firstName-${race.id}`}
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          placeholder="John"
-                          required
-                          className="h-9"
-                          disabled={isSubmitting}
-                          aria-required="true"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor={`lastInitial-${race.id}`} className="text-xs font-medium mb-1.5 block">
-                          Last Initial{" "}
-                          <span className="text-destructive" aria-label="required">
-                            *
-                          </span>
-                        </label>
-                        <Input
-                          id={`lastInitial-${race.id}`}
-                          value={lastInitial}
-                          onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
-                          placeholder="D"
-                          maxLength={1}
-                          required
-                          className="h-9"
-                          disabled={isSubmitting}
-                          aria-required="true"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label id={`attendance-label-${race.id}`} className="text-xs font-medium mb-2 block">
-                        I'm planning to:{" "}
-                        <span className="text-destructive" aria-label="required">
-                          *
-                        </span>
-                      </label>
-                      <RadioGroup
-                        value={attendanceType}
-                        onValueChange={(v) => setAttendanceType(v as "racing" | "cheering")}
-                        disabled={isSubmitting}
-                        aria-labelledby={`attendance-label-${race.id}`}
-                        aria-required="true"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <RadioGroupItem value="racing" id={`racing-${race.id}`} />
-                            <label
-                              htmlFor={`racing-${race.id}`}
-                              className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
-                            >
-                              <Trophy className="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
-                              Race
-                            </label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <RadioGroupItem value="cheering" id={`cheering-${race.id}`} />
-                            <label
-                              htmlFor={`cheering-${race.id}`}
-                              className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
-                            >
-                              <Users className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                              Cheer
-                            </label>
-                          </div>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                  </fieldset>
-
-                  <div className="flex gap-2">
-                    <Button type="submit" size="sm" className="flex-1" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="h-3 w-3 animate-spin mr-2" aria-hidden="true" />
-                          Adding...
-                        </>
-                      ) : (
-                        "Add My Name"
-                      )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setShowForm(false)
-                        setFirstName("")
-                        setLastInitial("")
-                        setAttendanceType("racing")
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              )}
-
-              {attendees.length > 0 && (
-                <div className="space-y-3">
-                  {racingCount > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-                        <Trophy className="h-3 w-3 text-destructive" aria-hidden="true" />
-                        Racing ({racingCount})
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {attendees
-                          .filter((a) => a.type === "racing")
-                          .map((attendee) => (
-                            <Badge
-                              key={attendee.id}
-                              variant="destructive"
-                              className="bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20 pr-1"
-                            >
-                              {attendee.name}
-                              <button
-                                onClick={() => handleRemoveAttendee(attendee.id)}
-                                className="ml-1.5 hover:bg-destructive/20 rounded-full p-0.5 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-1"
-                                aria-label={`Remove ${attendee.name} from racing list`}
-                                disabled={isSubmitting}
-                              >
-                                <X className="h-3 w-3" aria-hidden="true" />
-                              </button>
-                            </Badge>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {cheeringCount > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-                        <Users className="h-3 w-3 text-primary" aria-hidden="true" />
-                        Cheering ({cheeringCount})
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {attendees
-                          .filter((a) => a.type === "cheering")
-                          .map((attendee) => (
-                            <Badge
-                              key={attendee.id}
-                              variant="default"
-                              className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 pr-1"
-                            >
-                              {attendee.name}
-                              <button
-                                onClick={() => handleRemoveAttendee(attendee.id)}
-                                className="ml-1.5 hover:bg-primary/20 rounded-full p-0.5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                                aria-label={`Remove ${attendee.name} from cheering list`}
-                                disabled={isSubmitting}
-                              >
-                                <X className="h-3 w-3" aria-hidden="true" />
-                              </button>
-                            </Badge>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {attendees.length === 0 && !showForm && !isLoading && (
-                <p className="text-xs text-muted-foreground italic text-center py-2">
-                  Be the first to let others know you're going!
+          <div className="border-t border-foreground/20 pt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-semibold text-sm flex items-center gap-2 text-foreground">
+                  <Users className="h-4 w-4 text-slr-blue" />
+                  SLR Members Attending
+                </h4>
+                <p className="text-2xl font-bold text-slr-blue mt-1">
+                  {racingCount} {isLoading && <Loader2 className="inline h-4 w-4 animate-spin ml-2" />}
                 </p>
+                {cheeringCount > 0 && (
+                  <p className="text-xs text-foreground/70">{cheeringCount} cheering</p>
+                )}
+              </div>
+              {!showForm && (
+                <Button variant="outline" size="sm" onClick={() => setShowForm(true)} disabled={isSubmitting}>
+                  <UserPlus className="h-3 w-3 mr-1" />
+                  Add Me
+                </Button>
               )}
             </div>
 
-            {race.registration_url && (
+            {showForm && (
+              <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-foreground/10 rounded-lg border border-foreground/20">
+                <div className="flex gap-4">
+                  <Input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-background/20 border-foreground/30"
+                    required
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Last Initial"
+                    value={lastInitial}
+                    onChange={(e) => setLastInitial(e.target.value)}
+                    className="bg-background/20 border-foreground/30 w-24"
+                    required
+                    maxLength={1}
+                  />
+                </div>
+                <RadioGroup
+                  value={attendanceType}
+                  onValueChange={(value: "racing" | "cheering") => setAttendanceType(value)}
+                  className="flex gap-4 pt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="racing" id={`racing-${race.id}`} />
+                    <Label htmlFor={`racing-${race.id}`}>Racing</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="cheering" id={`cheering-${race.id}`} />
+                    <Label htmlFor={`cheering-${race.id}`}>Cheering</Label>
+                  </div>
+                </RadioGroup>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
+                  <Button type="submit" size="sm" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit"}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {showSuccess && (
+              <div className="flex items-center gap-2 text-sm text-green-500 bg-green-500/10 p-2 rounded-lg">
+                <CheckCircle2 className="h-4 w-4"/>
+                <p>You've been added to the list!</p>
+              </div>
+            )}
+
+            {attendees.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+                  {attendees.sort((a, b) => b.timestamp - a.timestamp).map((attendee) => (
+                    <div key={attendee.id} className="flex justify-between items-center bg-foreground/10 p-2 rounded-md">
+                      <div>
+                        <span className="font-semibold">{attendee.name}</span>
+                        <Badge variant="outline" className={`ml-2 text-xs ${attendee.type === 'racing' ? 'border-slr-blue text-slr-blue' : 'border-slr-red text-slr-red'}`}>
+                          {attendee.type}
+                        </Badge>
+                      </div>
+                      <Button variant="ghost" size="sm" className="opacity-50 hover:opacity-100" onClick={() => handleRemoveAttendee(attendee.id)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {race.registration_url && (
+            <Shimmer shimmerDuration="5s">
               <Button
-                className="relative z-20 w-full backdrop-blur-md bg-destructive/80 hover:bg-destructive/90 text-destructive-foreground shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
+                className="w-full bg-slr-red hover:bg-slr-red/90 text-white shadow-lg"
                 size="lg"
                 asChild
               >
-                <a href={race.registration_url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={race.registration_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center"
+                  aria-label={`Register for ${race.title} - opens in a new tab`}
+                >
                   Register Now
-                  <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
-                  <span className="sr-only">Opens in new window</span>
+                  <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
               </Button>
-            )}
-          </CardContent>
-        </Card>
-      </article>
+            </Shimmer>
+          )}
+        </div>
+      </Card>
     </ScrollReveal>
-  )
+  );
 }
 
 export function LocalRaces() {

@@ -38,13 +38,13 @@ const config: Config = {
       },
       keyframes: {
         shimmer: {
-          '0%, 100%': { transform: 'translateX(-100%)' },
-          '50%': { transform: 'translateX(100%)' }
-        }
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
       },
       animation: {
-        shimmer: 'shimmer 2s ease-in-out infinite'
-      }
+        shimmer: 'shimmer 2.5s ease-in-out infinite',
+      },
     },
   },
   // Ensure 'dark' mode works with your custom CSS variable setup

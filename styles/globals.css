@@ -150,14 +150,3 @@
     animation: pulse-glow 3s ease-in-out infinite;
   }
 }
-@keyframes shimmer {
-  0%, 100% { 
-    left: -50%; 
-  }
-  50% { 
-    left: 100%; 
-  }
-}
-@utility shimmer {
-  animation: shimmer 3s ease-in-out infinite;
-}
