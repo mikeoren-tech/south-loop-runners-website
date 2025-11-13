@@ -138,6 +138,14 @@
       transform: translateY(0);
     }
   }
+  @keyframes shimmer {
+    0%, 100% { 
+      left: -50%; 
+    }
+    50% { 
+      left: 100%; 
+    }
+  }
 
   /* These explicit RGBA definitions are essential for making the glass components transparent */
   .glass {
