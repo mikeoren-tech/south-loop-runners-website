@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "RESEND_API_KEY=dummy_key next build",
+    "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
     "pages:build": "npx @cloudflare/next-on-pages",
