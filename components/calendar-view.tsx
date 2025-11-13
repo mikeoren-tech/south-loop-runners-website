@@ -754,25 +754,28 @@ export function CalendarView() {
                                     {event.date.toLocaleDateString("en-US", { month: "short" })}
                                   </div>
                                 </div>
-                                <div className="flex-1 space-y-2">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                      <h4 className="font-semibold text-lg flex items-start gap-2 truncate text-foreground">
-                                        {event.title}
+                                <div className="flex-1 min-w-0 space-y-2">
+                                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-start gap-2 flex-wrap">
+                                        <h4 className="font-semibold text-lg text-foreground break-words">
+                                          {event.title}
+                                        </h4>
                                         {event.isRecurring && (
                                           <Badge
                                             variant="outline"
-                                            className="text-xs border-foreground/50 text-foreground bg-foreground/10"
+                                            className="text-[10px] sm:text-xs border-foreground/50 text-foreground bg-foreground/10 px-1.5 py-0.5 whitespace-nowrap flex-shrink-0"
                                           >
                                             Recurring
                                           </Badge>
                                         )}
-                                      </h4>
-                                      <p className="text-sm text-foreground/80">{event.details}</p>
+                                      </div>
+                                      <p className="text-sm text-foreground/80 mt-1 break-words">{event.details}</p>
                                     </div>
                                     <Badge
                                       variant={event.type === "race" ? "destructive" : "default"}
                                       className={cn(
+                                        "flex-shrink-0 whitespace-nowrap text-xs sm:text-sm px-2 py-1",
                                         event.type === "race"
                                           ? "bg-slr-red/80 text-white"
                                           : "bg-slr-blue/80 text-foreground",
@@ -780,25 +783,25 @@ export function CalendarView() {
                                     >
                                       {event.type === "race" ? (
                                         <>
-                                          <Trophy className="h-3 w-3 mr-1" />
+                                          <Trophy className="h-3 w-3 mr-1 flex-shrink-0" />
                                           Race
                                         </>
                                       ) : (
                                         <>
-                                          <Activity className="h-3 w-3 mr-1" />
+                                          <Activity className="h-3 w-3 mr-1 flex-shrink-0" />
                                           Run
                                         </>
                                       )}
                                     </Badge>
                                   </div>
                                   <div className="flex flex-wrap gap-4 text-sm text-foreground/70">
-                                    <div className="flex items-center gap-1">
-                                      <Clock className="h-4 w-4 text-foreground" />
-                                      {event.time}
+                                    <div className="flex items-center gap-1 min-w-0">
+                                      <Clock className="h-4 w-4 text-foreground flex-shrink-0" />
+                                      <span className="truncate">{event.time}</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                      <MapPin className="h-4 w-4 text-foreground" />
-                                      {event.location}
+                                    <div className="flex items-center gap-1 min-w-0 flex-1">
+                                      <MapPin className="h-4 w-4 text-foreground flex-shrink-0" />
+                                      <span className="truncate">{event.location}</span>
                                     </div>
                                   </div>
                                 </div>
