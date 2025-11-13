@@ -481,7 +481,7 @@ export function UpcomingRuns() {
             >
               <Link href="/calendar" className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                View Events Calendar
+                View Calendar
               </Link>
             </Button>
           </div>
