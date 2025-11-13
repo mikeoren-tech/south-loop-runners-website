@@ -463,6 +463,7 @@ export function UpcomingRuns() {
             for tips on running in different conditions.
           </p>
           <div className="mt-6">
+            <Button
                         asChild
               size="lg"
               className="relative overflow-hidden bg-[#d92a31]/70 backdrop-blur-[10px] brightness-110 
