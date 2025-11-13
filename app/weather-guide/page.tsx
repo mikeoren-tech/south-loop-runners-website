@@ -1,10 +1,12 @@
 "use client"
 
-import { CloudRain, Thermometer, Wind, Shirt } from "lucide-react"
+import { CloudRain, Thermometer, Wind, Shirt, ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollReveal } from "@/components/scroll-reveal"
+import { WaveTransition } from "@/components/wave-transition"
 import { useEffect, useState } from "react"
 
 interface CurrentWeather {
@@ -199,17 +201,18 @@ function CurrentWeatherSection() {
   const gearRecommendations = getGearRecommendations(weather)
 
   return (
-    <ScrollReveal>
-      <section className="py-12 bg-gradient-to-br from-blue-50 to-cyan-50 border-b">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
+    <section className="relative py-20 bg-[#d9eef7]">
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto">
+          <ScrollReveal className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
               <Shirt className="h-8 w-8 text-primary" />
-              <h2 className="text-3xl font-bold">What to Wear Today</h2>
+              <h2 className="text-4xl md:text-5xl font-bold">What to Wear Today</h2>
             </div>
+          </ScrollReveal>
 
-            {/* Current Weather Display */}
-            <Card className="mb-6 bg-white/80 backdrop-blur">
+          <ScrollReveal delay={100}>
+            <Card className="mb-6 glass-strong shadow-soft border-0">
               <CardHeader>
                 <CardTitle>Current Chicago Weather</CardTitle>
                 <CardDescription>Live conditions for your run</CardDescription>
@@ -239,13 +242,16 @@ function CurrentWeatherSection() {
                 </div>
               </CardContent>
             </Card>
+          </ScrollReveal>
 
-            {/* Gear Recommendations */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Recommended Gear for Today</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                {gearRecommendations.map((rec) => (
-                  <Card key={rec.category} className="bg-white/80 backdrop-blur">
+          <div className="space-y-4">
+            <ScrollReveal delay={150}>
+              <h3 className="text-2xl font-semibold text-center">Recommended Gear for Today</h3>
+            </ScrollReveal>
+            <div className="grid md:grid-cols-2 gap-4">
+              {gearRecommendations.map((rec, index) => (
+                <ScrollReveal key={rec.category} delay={200 + index * 50}>
+                  <Card className="glass-strong shadow-soft hover-lift h-full border-0">
                     <CardHeader>
                       <CardTitle className="text-base">{rec.category}</CardTitle>
                     </CardHeader>
@@ -260,12 +266,13 @@ function CurrentWeatherSection() {
                       </ul>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                </ScrollReveal>
+              ))}
             </div>
+          </div>
 
-            {/* Quick Links */}
-            <Card className="mt-6 bg-primary/5 border-primary/20">
+          <ScrollReveal delay={400}>
+            <Card className="mt-6 glass border-primary/20">
               <CardContent className="pt-6">
                 <p className="text-sm text-center mb-4">Want more detailed guidance for different conditions?</p>
                 <div className="flex flex-wrap gap-2 justify-center">
@@ -281,10 +288,11 @@ function CurrentWeatherSection() {
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </ScrollReveal>
         </div>
-      </section>
-    </ScrollReveal>
+      </div>
+      <WaveTransition fillColor="#ffffff" />
+    </section>
   )
 }
 
@@ -426,49 +434,48 @@ const rainGuidance = [
 export default function WeatherGuidePage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/">
-              <Button variant="ghost">← Back to Home</Button>
-            </Link>
-            <h1 className="text-2xl font-bold">Weather Running Guide</h1>
-            <div className="w-32" /> {/* Spacer for centering */}
-          </div>
+      <header className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10">
+        <div className="container flex h-16 items-center px-4">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <ChevronLeft className="h-5 w-5 text-slr-blue" />
+            <Image src="/slr-logo.png" alt="South Loop Runners" width={60} height={60} className="object-contain" />
+          </Link>
+          <h1 className="ml-4 text-xl font-bold">Weather Running Guide</h1>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-12 bg-gradient-to-br from-primary/10 to-primary/5">
+      <section className="relative py-20 bg-[#ffffff]">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-4">Chicago Weather Running Guide</h2>
-            <p className="text-lg text-muted-foreground">
-              Master running in Chicago's diverse weather conditions. From hot summer humidity to frigid winter winds,
-              learn how to adjust your pace and gear for optimal performance year-round.
-            </p>
+            <ScrollReveal>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Chicago Weather Running Guide</h2>
+              <p className="text-lg text-muted-foreground text-balance">
+                Master running in Chicago's diverse weather conditions. From hot summer humidity to frigid winter winds,
+                learn how to adjust your pace and gear for optimal performance year-round.
+              </p>
+            </ScrollReveal>
           </div>
         </div>
+        <WaveTransition fillColor="#d9eef7" />
       </section>
 
-      {/* Current Weather Section */}
       <CurrentWeatherSection />
 
-      {/* Temperature Guidance */}
-      <ScrollReveal>
-        <section id="temperature-guide" className="py-12 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center gap-3 mb-8">
+      <section id="temperature-guide" className="relative py-20 bg-[#ffffff]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <ScrollReveal className="text-center mb-12">
+              <div className="flex items-center justify-center gap-3 mb-4">
                 <Thermometer className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-bold">Temperature-Based Running Guide</h2>
+                <h2 className="text-4xl md:text-5xl font-bold">Temperature Guide</h2>
               </div>
-              <div className="space-y-6">
-                {temperatureGuidance.map((guide) => (
-                  <Card key={guide.range} className={`border-2 ${guide.color}`}>
+            </ScrollReveal>
+            <div className="space-y-6">
+              {temperatureGuidance.map((guide, index) => (
+                <ScrollReveal key={guide.range} delay={index * 100}>
+                  <Card className={`glass-strong shadow-soft border-2 ${guide.color}`}>
                     <CardHeader>
-                      <CardTitle>{guide.title}</CardTitle>
+                      <CardTitle className="text-xl">{guide.title}</CardTitle>
                       <CardDescription className="text-base font-semibold">
                         {guide.range} • Typical: {guide.months}
                       </CardDescription>
@@ -484,25 +491,27 @@ export default function WeatherGuidePage() {
                       </ul>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                </ScrollReveal>
+              ))}
             </div>
           </div>
-        </section>
-      </ScrollReveal>
+        </div>
+        <WaveTransition fillColor="#f9fafb" />
+      </section>
 
-      {/* Wind Guidance */}
-      <ScrollReveal>
-        <section id="wind-guide" className="py-12">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center gap-3 mb-8">
+      <section id="wind-guide" className="relative py-20 bg-[#f9fafb]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <ScrollReveal className="text-center mb-12">
+              <div className="flex items-center justify-center gap-3 mb-4">
                 <Wind className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-bold">Running in Wind</h2>
+                <h2 className="text-4xl md:text-5xl font-bold">Running in Wind</h2>
               </div>
-              <div className="grid md:grid-cols-3 gap-6">
-                {windGuidance.map((guide) => (
-                  <Card key={guide.speed}>
+            </ScrollReveal>
+            <div className="grid md:grid-cols-3 gap-6">
+              {windGuidance.map((guide, index) => (
+                <ScrollReveal key={guide.speed} delay={index * 100}>
+                  <Card className="glass-strong shadow-soft hover-lift h-full border-0">
                     <CardHeader>
                       <CardTitle className="text-lg">{guide.speed}</CardTitle>
                       <CardDescription className="font-semibold text-sm">{guide.impact}</CardDescription>
@@ -519,25 +528,27 @@ export default function WeatherGuidePage() {
                       </ul>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                </ScrollReveal>
+              ))}
             </div>
           </div>
-        </section>
-      </ScrollReveal>
+        </div>
+        <WaveTransition fillColor="#d9eef7" />
+      </section>
 
-      {/* Rain Guidance */}
-      <ScrollReveal>
-        <section id="rain-guide" className="py-12 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center gap-3 mb-8">
+      <section id="rain-guide" className="relative py-20 bg-[#d9eef7]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <ScrollReveal className="text-center mb-12">
+              <div className="flex items-center justify-center gap-3 mb-4">
                 <CloudRain className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-bold">Running in Rain</h2>
+                <h2 className="text-4xl md:text-5xl font-bold">Running in Rain</h2>
               </div>
-              <div className="grid md:grid-cols-3 gap-6">
-                {rainGuidance.map((guide) => (
-                  <Card key={guide.type}>
+            </ScrollReveal>
+            <div className="grid md:grid-cols-3 gap-6">
+              {rainGuidance.map((guide, index) => (
+                <ScrollReveal key={guide.type} delay={index * 100}>
+                  <Card className="glass-strong shadow-soft hover-lift h-full border-0">
                     <CardHeader>
                       <CardTitle className="text-lg">{guide.type}</CardTitle>
                       <p className="text-xs text-muted-foreground mt-2">{guide.frequency}</p>
@@ -553,20 +564,22 @@ export default function WeatherGuidePage() {
                       </ul>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                </ScrollReveal>
+              ))}
             </div>
           </div>
-        </section>
-      </ScrollReveal>
+        </div>
+        <WaveTransition fillColor="#ffffff" />
+      </section>
 
-      {/* Pace Adjustment Summary */}
-      <ScrollReveal>
-        <section className="py-12">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold mb-8 text-center">Quick Pace Adjustment Reference</h2>
-              <Card className="bg-primary/5">
+      <section className="relative py-20 bg-[#ffffff]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <ScrollReveal className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Quick Pace Adjustment Reference</h2>
+            </ScrollReveal>
+            <ScrollReveal delay={100}>
+              <Card className="glass-strong shadow-soft-lg border-0">
                 <CardContent className="pt-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -624,7 +637,7 @@ export default function WeatherGuidePage() {
                       </ul>
                     </div>
                   </div>
-                  <div className="mt-6 p-4 bg-background rounded-lg">
+                  <div className="mt-6 p-4 bg-background/50 rounded-lg">
                     <p className="text-sm text-muted-foreground">
                       <strong>Remember:</strong> These are general guidelines. Listen to your body and adjust based on
                       your fitness level, acclimatization, and how you feel on any given day. When in doubt, slow down
@@ -633,28 +646,39 @@ export default function WeatherGuidePage() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            </ScrollReveal>
           </div>
-        </section>
-      </ScrollReveal>
+        </div>
+        <WaveTransition fillColor="#f9fafb" />
+      </section>
 
-      {/* CTA */}
-      <section className="py-12 bg-gradient-to-br from-primary/10 to-primary/5">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Run in Any Weather?</h2>
-          <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join South Loop Runners and experience Chicago's weather with a supportive community by your side.
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Button size="lg" asChild>
-              <Link href="/">Back to Home</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <a href="https://www.facebook.com/groups/665701690539939" target="_blank" rel="noopener noreferrer">
-                Join on Facebook
-              </a>
-            </Button>
-          </div>
+      <section className="relative py-20 bg-[#f9fafb]">
+        <div className="container mx-auto px-4">
+          <ScrollReveal>
+            <Card className="glass-strong shadow-soft-lg border-0 max-w-3xl mx-auto">
+              <CardContent className="p-8 md:p-12 text-center">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">Ready to Run in Any Weather?</h2>
+                <p className="text-lg text-muted-foreground mb-6 text-balance">
+                  Join South Loop Runners and experience Chicago's weather with a supportive community by your side.
+                </p>
+                <div className="flex gap-4 justify-center flex-wrap">
+                  <Button size="lg" asChild>
+                    <Link href="/">Back to Home</Link>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0"
+                  >
+                    <a href="https://www.facebook.com/groups/665701690539939" target="_blank" rel="noopener noreferrer">
+                      Join on Facebook
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </ScrollReveal>
         </div>
       </section>
     </div>
