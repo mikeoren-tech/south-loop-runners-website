@@ -1,10 +1,292 @@
-import { CloudRain, Thermometer, Wind } from "lucide-react"
+"use client"
+
+import { CloudRain, Thermometer, Wind, Shirt } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollReveal } from "@/components/scroll-reveal"
-import Image from "next/image"
-import { ChevronLeft } from "lucide-react"
+import { useEffect, useState } from "react"
+
+interface CurrentWeather {
+  temperature: number
+  condition: string
+  windSpeed: number
+  precipitation: number
+  humidity: number
+}
+
+interface GearRecommendation {
+  category: string
+  items: string[]
+}
+
+function CurrentWeatherSection() {
+  const [weather, setWeather] = useState<CurrentWeather | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchCurrentWeather = async () => {
+      try {
+        const latitude = 41.8781
+        const longitude = -87.6298
+
+        const response = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Chicago`,
+        )
+
+        const data = await response.json()
+
+        if (data.current) {
+          const weatherCode = data.current.weather_code
+          const condition = getWeatherCondition(weatherCode)
+
+          setWeather({
+            temperature: Math.round(data.current.temperature_2m),
+            condition,
+            windSpeed: Math.round(data.current.wind_speed_10m),
+            precipitation: data.current.precipitation || 0,
+            humidity: data.current.relative_humidity_2m,
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching current weather:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCurrentWeather()
+  }, [])
+
+  const getWeatherCondition = (code: number): string => {
+    if (code === 0) return "Clear"
+    if (code <= 3) return "Partly Cloudy"
+    if (code <= 67) return "Rainy"
+    if (code <= 77) return "Snowy"
+    return "Cloudy"
+  }
+
+  const getGearRecommendations = (weather: CurrentWeather): GearRecommendation[] => {
+    const recommendations: GearRecommendation[] = []
+
+    // Temperature-based gear
+    if (weather.temperature > 80) {
+      recommendations.push({
+        category: "Hot Weather Gear",
+        items: [
+          "Light-colored, moisture-wicking shirt",
+          "Running shorts with liner",
+          "Sweat-wicking headband or visor",
+          "Sunglasses with UV protection",
+          "Sunscreen (SPF 30+)",
+          "Handheld water bottle or hydration vest",
+        ],
+      })
+    } else if (weather.temperature >= 60) {
+      recommendations.push({
+        category: "Ideal Weather Gear",
+        items: [
+          "Moisture-wicking t-shirt or tank",
+          "Running shorts or lightweight tights",
+          "Optional: Light long-sleeve shirt",
+          "Sunglasses (if sunny)",
+        ],
+      })
+    } else if (weather.temperature >= 40) {
+      recommendations.push({
+        category: "Cool Weather Gear",
+        items: [
+          "Long-sleeve moisture-wicking base layer",
+          "Running tights or pants",
+          "Light gloves or mittens",
+          "Headband or light beanie",
+          "Optional: Light wind-breaking vest",
+        ],
+      })
+    } else if (weather.temperature >= 20) {
+      recommendations.push({
+        category: "Cold Weather Gear",
+        items: [
+          "Thermal base layer (top and bottom)",
+          "Insulating mid-layer (fleece or wool)",
+          "Wind-blocking outer jacket",
+          "Insulated gloves or mittens",
+          "Warm hat or balaclava",
+          "Neck gaiter or buff",
+          "Thermal running tights",
+        ],
+      })
+    } else {
+      recommendations.push({
+        category: "Extreme Cold Gear",
+        items: [
+          "Multiple layers: thermal base + insulating mid + windproof outer",
+          "Heavy-duty insulated gloves",
+          "Full balaclava or ski mask",
+          "Thermal tights with windproof front panel",
+          "Traction devices for shoes",
+          "Petroleum jelly for exposed skin",
+          "Consider moving workout indoors",
+        ],
+      })
+    }
+
+    // Wind-based additions
+    if (weather.windSpeed > 20) {
+      recommendations.push({
+        category: "High Wind Additions",
+        items: [
+          "Wind-blocking jacket or vest",
+          "Tight-fitting clothes to reduce drag",
+          "Glasses or goggles to protect eyes",
+          "Secure hat with chin strap",
+        ],
+      })
+    } else if (weather.windSpeed > 10) {
+      recommendations.push({
+        category: "Moderate Wind Additions",
+        items: ["Light windbreaker", "Buff or neck gaiter"],
+      })
+    }
+
+    // Precipitation-based additions
+    if (weather.precipitation > 0 || weather.condition === "Rainy") {
+      recommendations.push({
+        category: "Rain Gear",
+        items: [
+          "Water-resistant running jacket",
+          "Hat with brim to keep rain off face",
+          "Anti-chafe balm or Body Glide",
+          "Moisture-wicking socks (avoid cotton)",
+          "Waterproof phone case or pouch",
+        ],
+      })
+    }
+
+    // Humidity additions
+    if (weather.humidity > 80) {
+      recommendations.push({
+        category: "High Humidity Tips",
+        items: [
+          "Extra breathable, moisture-wicking fabrics",
+          "Anti-chafe protection on all friction points",
+          "Sweat-wicking headband",
+          "Bring extra water",
+        ],
+      })
+    }
+
+    return recommendations
+  }
+
+  if (loading) {
+    return (
+      <section className="py-12 bg-gradient-to-br from-blue-50 to-cyan-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="h-8 w-8 animate-pulse bg-gray-200 rounded mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading current weather...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (!weather) {
+    return null
+  }
+
+  const gearRecommendations = getGearRecommendations(weather)
+
+  return (
+    <ScrollReveal>
+      <section className="py-12 bg-gradient-to-br from-blue-50 to-cyan-50 border-b">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <Shirt className="h-8 w-8 text-primary" />
+              <h2 className="text-3xl font-bold">What to Wear Today</h2>
+            </div>
+
+            {/* Current Weather Display */}
+            <Card className="mb-6 bg-white/80 backdrop-blur">
+              <CardHeader>
+                <CardTitle>Current Chicago Weather</CardTitle>
+                <CardDescription>Live conditions for your run</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div className="space-y-1">
+                    <Thermometer className="h-6 w-6 mx-auto text-primary" />
+                    <p className="text-2xl font-bold">{weather.temperature}°F</p>
+                    <p className="text-xs text-muted-foreground">Temperature</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Wind className="h-6 w-6 mx-auto text-primary" />
+                    <p className="text-2xl font-bold">{weather.windSpeed} mph</p>
+                    <p className="text-xs text-muted-foreground">Wind Speed</p>
+                  </div>
+                  <div className="space-y-1">
+                    <CloudRain className="h-6 w-6 mx-auto text-primary" />
+                    <p className="text-2xl font-bold">{weather.condition}</p>
+                    <p className="text-xs text-muted-foreground">Conditions</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-6 w-6 mx-auto text-primary flex items-center justify-center text-xl">💧</div>
+                    <p className="text-2xl font-bold">{weather.humidity}%</p>
+                    <p className="text-xs text-muted-foreground">Humidity</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Gear Recommendations */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">Recommended Gear for Today</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {gearRecommendations.map((rec) => (
+                  <Card key={rec.category} className="bg-white/80 backdrop-blur">
+                    <CardHeader>
+                      <CardTitle className="text-base">{rec.category}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {rec.items.map((item, index) => (
+                          <li key={index} className="flex gap-2 text-sm">
+                            <span className="text-primary">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <Card className="mt-6 bg-primary/5 border-primary/20">
+              <CardContent className="pt-6">
+                <p className="text-sm text-center mb-4">Want more detailed guidance for different conditions?</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="#temperature-guide">Temperature Guide</a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="#wind-guide">Wind Guide</a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="#rain-guide">Rain Guide</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+    </ScrollReveal>
+  )
+}
 
 const temperatureGuidance = [
   {
@@ -145,24 +427,15 @@ export default function WeatherGuidePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-       <header 
-        className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10"
-      >
-        <div className="container flex h-16 items-center px-4">
-          <Link
-            href="/"
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-          >
-          <ChevronLeft className="h-5 w-5 text-slr-blue" />
-          <Image
-              src="/slr-logo.png"
-              alt="South Loop Runners"
-              width={60}
-              height={60}
-              className="object-contain"
-            />
-          </Link>
-          <h1 className="text-2xl font-bold">Weather Guide</h1>
+      <header className="bg-white border-b sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/">
+              <Button variant="ghost">← Back to Home</Button>
+            </Link>
+            <h1 className="text-2xl font-bold">Weather Running Guide</h1>
+            <div className="w-32" /> {/* Spacer for centering */}
+          </div>
         </div>
       </header>
 
@@ -178,6 +451,9 @@ export default function WeatherGuidePage() {
           </div>
         </div>
       </section>
+
+      {/* Current Weather Section */}
+      <CurrentWeatherSection />
 
       {/* Temperature Guidance */}
       <ScrollReveal>
@@ -269,9 +545,9 @@ export default function WeatherGuidePage() {
                     <CardContent>
                       <ul className="space-y-2">
                         {guide.tips.map((tip, index) => (
-                          <li key={index} className="flex gap-2">
+                          <li key={index} className="flex gap-2 text-sm">
                             <span className="text-primary">•</span>
-                            <span className="text-sm">{tip}</span>
+                            <span>{tip}</span>
                           </li>
                         ))}
                       </ul>
