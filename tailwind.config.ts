@@ -15,7 +15,6 @@ const config: Config = {
         'slr-red': 'var(--slr-red)',
         'slr-blue-dark': 'var(--slr-blue-dark)',
         'slr-blue-light': 'var(--slr-blue-light)',
-
         // Standard Shadcn/Radix aliases (already defined in your CSS)
         'background': 'var(--background)',
         'foreground': 'var(--foreground)',
@@ -36,6 +35,15 @@ const config: Config = {
         'lg': 'var(--tw-shadow-lg)',
         'xl': 'var(--tw-shadow-xl)',
         '2xl': 'var(--tw-shadow-2xl)',
+      },
+      keyframes: {
+        shimmer: {
+          '0%, 100%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(100%)' }
+        }
+      },
+      animation: {
+        shimmer: 'shimmer 2s ease-in-out infinite'
       }
     },
   },
