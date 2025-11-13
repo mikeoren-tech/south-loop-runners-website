@@ -463,14 +463,24 @@ export function UpcomingRuns() {
             for tips on running in different conditions.
           </p>
           <div className="mt-6">
-            <Button
-              asChild
+                        asChild
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+              className="relative overflow-hidden bg-[#d92a31]/70 backdrop-blur-[10px] brightness-110 
+                        border-2 border-white/40 
+                        shadow-[0_8px_32px_0_rgba(0,0,0,0.25),inset_0_2px_8px_rgba(255,255,255,0.2)]
+                        hover:bg-[#d92a31]/90 hover:border-white/60 
+                        hover:shadow-[0_12px_40px_0_rgba(217,42,49,0.5)]
+                        hover:-translate-y-0.5
+                        transition-all duration-300 text-white font-semibold
+                        after:content-[''] after:absolute after:top-[-50%] after:left-[-50%] 
+                        after:w-[200%] after:h-[200%] 
+                        after:bg-gradient-to-br after:from-transparent after:via-white/10 after:to-transparent
+                        after:rotate-45 after:transition-all after:duration-500
+                        hover:after:left-[100%]"
             >
-              <Link href="/calendar">
+              <Link href="/calendar" className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
                 View Events Calendar
-                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
