@@ -449,15 +449,30 @@ export function UpcomingRuns() {
   }
 
   return (
-    <section className="relative py-20 bg-[#f9fafb]" aria-labelledby="runs-heading">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+    <section 
+      className="relative py-20 overflow-hidden" 
+      aria-labelledby="runs-heading"
+    >
+      <div 
+        className="absolute inset-0 z-0 -top-[120px]"
+        style={{
+          backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/583101870_10121589902045119_3691482741012992932_n-QmFjIUVKT1D4JMZAVvQ2VjNc6uI1Zd.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0 z-0 -top-[120px] bg-black/40" />
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
+          <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance text-white">
             Weekly Runs
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
+          <p className="text-lg text-white max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
-            <Link href="/weather-guide" className="text-[rgba(185, 225, 248,1)] hover:underline font-medium">
+            <Link href="/weather-guide" className="text-[rgba(185,225,248,1)] hover:underline font-medium">
               Check our weather running guide
             </Link>{" "}
             for tips on running in different conditions.
