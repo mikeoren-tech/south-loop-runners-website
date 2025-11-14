@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, AlertCircle, MessageSquare } from "lucide-react"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, AlertCircle, MessageSquare } from 'lucide-react'
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
@@ -175,7 +175,7 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
             />
             <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
               Also attending the social?
-              {socialData?.socialCount && socialData.socialCount > 0 && (
+              {socialData?.socialCount > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {socialData.socialCount}
                 </Badge>
@@ -464,7 +464,7 @@ export function UpcomingRuns() {
           </p>
           <div className="mt-6">
             <Button
-                        asChild
+              asChild
               size="lg"
               className="relative overflow-hidden bg-[#d92a31]/70 backdrop-blur-[10px] brightness-110 
                         border-2 border-white/40 
@@ -576,17 +576,24 @@ export function UpcomingRuns() {
                         </div>
 
                         <div className="space-y-3">
-                          {featuredEvents[2].type === "weekly-run" && (
-                            <WeatherWidget
-                              day={getDayKey(featuredEvents[2].day_of_week) as any}
-                              onWeatherLoad={(weather) =>
-                                setWeatherData((prev) => ({
-                                  ...prev,
-                                  [getDayKey(featuredEvents[2].day_of_week)]: weather,
-                                }))
-                              }
-                            />
-                          )}
+                          {(() => {
+                            const isWeeklyRun = featuredEvents[2].type === "weekly-run"
+                            const isSpecialEvent = featuredEvents[2].type === "special-event"
+                            const dayKey = isWeeklyRun ? getDayKey(featuredEvents[2].day_of_week) : 
+                                           isSpecialEvent && featuredEvents[2].date ? getDayKey(getDayOfWeekFromDate(featuredEvents[2].date)) : null
+                            
+                            return dayKey ? (
+                              <WeatherWidget
+                                day={dayKey as any}
+                                onWeatherLoad={(weather) =>
+                                  setWeatherData((prev) => ({
+                                    ...prev,
+                                    [dayKey]: weather,
+                                  }))
+                                }
+                              />
+                            ) : null
+                          })()}
                           <div className="flex flex-wrap gap-2">
                             {featuredEvents[2].distance && (
                               <Badge variant="outline">{featuredEvents[2].distance}</Badge>

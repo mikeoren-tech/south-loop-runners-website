@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Cloud, CloudRain, Sun, Wind } from "lucide-react"
+import { Cloud, CloudRain, Sun, Wind } from 'lucide-react'
 
 export interface WeatherData {
   temperature: number
@@ -11,7 +11,7 @@ export interface WeatherData {
 }
 
 interface WeatherWidgetProps {
-  day: "thursday" | "saturday"
+  day: "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"
   onWeatherLoad?: (weather: WeatherData) => void
 }
 
@@ -26,19 +26,28 @@ export function WeatherWidget({ day, onWeatherLoad }: WeatherWidgetProps) {
         const latitude = 41.8781
         const longitude = -87.6298
 
-        // Calculate the next occurrence of the target day
-        const now = new Date()
-        const targetDay = day === "thursday" ? 4 : 6 // Thursday = 4, Saturday = 6
-        const currentDay = now.getDay()
+        const dayMap: Record<string, number> = {
+          sunday: 0,
+          monday: 1,
+          tuesday: 2,
+          wednesday: 3,
+          thursday: 4,
+          friday: 5,
+          saturday: 6,
+        }
+
+        const targetDay = dayMap[day]
+        const currentDay = new Date().getDay()
         let daysUntilTarget = targetDay - currentDay
         if (daysUntilTarget <= 0) daysUntilTarget += 7
 
-        const targetDate = new Date(now)
-        targetDate.setDate(now.getDate() + daysUntilTarget)
+        const targetDate = new Date()
+        targetDate.setDate(targetDate.getDate() + daysUntilTarget)
         const dateStr = targetDate.toISOString().split("T")[0]
 
-        // Use Open-Meteo API (free, no API key required)
-        const hour = day === "thursday" ? 18 : 9 // 6 PM or 9 AM
+        const isWeekend = targetDay === 0 || targetDay === 6
+        const hour = isWeekend ? 9 : 18
+        
         const response = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Chicago&start_date=${dateStr}&end_date=${dateStr}`,
         )

@@ -1,4 +1,4 @@
-import { Calendar, Bell, Download, ArrowRight, Activity, Trophy } from "lucide-react"
+import { Calendar, Bell, Download, ArrowRight, Activity, Trophy } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
@@ -66,8 +66,7 @@ export function CalendarCTA() {
                   <Button
                     asChild
                     size="lg"
-                    // FIX: Ensure text is explicitly the dark brand color for max contrast
-                    className="bg-slr-blue hover:bg-slr-blue/90 text-slr-blue-dark shadow-lg hover:shadow-xl transition-all mt-6"
+                    className="shimmer-button bg-slr-blue hover:bg-slr-blue/90 text-slr-blue-dark shadow-lg hover:shadow-xl transition-all mt-6"
                   >
                     <Link href="/calendar" className="flex items-center">
                       View Events Calendar

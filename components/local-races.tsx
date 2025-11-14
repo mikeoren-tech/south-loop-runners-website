@@ -8,25 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import {
-  Calendar,
-  MapPin,
-  Trophy,
-  Sparkles,
-  Users,
-  ExternalLink,
-  UserPlus,
-  X,
-  CheckCircle2,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Flag,
-  Route,
-  PartyPopper,
-  Wind,
-} from "lucide-react"
+import { Calendar, MapPin, Trophy, Sparkles, Users, ExternalLink, UserPlus, X, CheckCircle2, Loader2, ChevronDown, ChevronUp, Clock, Flag, Route, PartyPopper, Wind } from 'lucide-react'
 import { ScrollReveal } from "@/components/scroll-reveal"
 import useSWR from "swr"
 import Image from "next/image"
@@ -429,13 +411,13 @@ function RaceCard({ race, index }: { race: any; index: number }) {
                   {cheeringCount > 0 && (
                     <p className="text-xs text-muted-foreground">{cheeringCount} cheering from the sidelines</p>
                   )}
-                  {race.has_post_run_social === true &&
-                    race.post_run_social_count &&
-                    race.post_run_social_count > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {race.post_run_social_count} attending post-race social
-                      </p>
-                    )}
+                  {race.has_post_run_social === true && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {race.post_run_social_count && race.post_run_social_count > 0
+                        ? `${race.post_run_social_count} attending post-race social`
+                        : "Post-race social available"}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   {showSuccess && (
