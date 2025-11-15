@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Heart, Trophy, Users, Zap, MessageSquare } from "lucide-react"
+import { Heart, Trophy, Users, Zap, MessageSquare } from 'lucide-react'
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WaveTransition } from "@/components/wave-transition"
 
@@ -32,19 +32,30 @@ const features = [
 
 export function About() {
   return (
-    <section className="relative py-20 bg-[#d9eef7]" id="about">
+    <section className="relative py-20 overflow-hidden bg-[#d9eef7]" id="about">
+      <div 
+        className="absolute inset-0 z-0 -top-[180px]"
+        style={{
+          backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/GPTempDownload-XU9An6PmTi2t6TZyOlMUGBsHCyWNjk.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
+      
       <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <ScrollReveal className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">About Our Club</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
+          <ScrollReveal className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance text-white">About Our Club</h2>
+            <p className="text-lg text-white max-w-2xl mx-auto text-balance">
               South Loop Runners is more than just a running club—we're a community of passionate runners who love
               exploring Chicago's beautiful lakefront and neighborhoods together.{" "}
               <a 
                 href="https://discord.gg/sFtmQknX8" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[rgba(217,42,49,1)] hover:underline font-medium inline-flex items-center gap-1"
+                className="text-[rgba(185,225,248,1)] hover:underline font-medium inline-flex items-center gap-1"
               >
                 Join our Discord
                 <MessageSquare className="h-4 w-4 inline" />
@@ -106,7 +117,27 @@ export function About() {
           </ScrollReveal>
         </div>
       </div>
-      <WaveTransition fillColor="#ffffff" />
+      <div className="absolute bottom-0 left-0 right-0 z-20 -mb-1" aria-hidden="true">
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full"
+          preserveAspectRatio="none"
+          role="presentation"
+        >
+          <defs>
+            <linearGradient id="aboutToNextWave" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.7)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,1)" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+            fill="url(#aboutToNextWave)"
+          />
+        </svg>
+      </div>
     </section>
   )
 }

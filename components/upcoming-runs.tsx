@@ -454,16 +454,16 @@ export function UpcomingRuns() {
       aria-labelledby="runs-heading"
     >
       <div 
-        className="absolute inset-0 z-0 -top-[120px]"
+        className="absolute inset-0 z-0 -top-[180px]"
         style={{
           backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/583101870_10121589902045119_3691482741012992932_n-QmFjIUVKT1D4JMZAVvQ2VjNc6uI1Zd.jpg)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundPosition: 'center 35%',
+          backgroundRepeat: 'no-repeat',
+          mixBlendMode: 'normal'
         }}
       />
-      {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 z-0 -top-[120px] bg-black/40" />
+      <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
@@ -667,7 +667,28 @@ export function UpcomingRuns() {
           </div>
         </div>
       </div>
-      <WaveTransition fillColor="#d9eef7" />
+      <div className="absolute bottom-0 left-0 right-0 z-20 -mb-1" aria-hidden="true">
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full"
+          preserveAspectRatio="none"
+          role="presentation"
+        >
+          <defs>
+            <linearGradient id="runsToAboutWave" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(0,0,0,0.3)" />
+              <stop offset="50%" stopColor="rgba(0,0,0,0.4)" />
+              <stop offset="100%" stopColor="rgba(0,0,0,0.5)" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+            fill="url(#runsToAboutWave)"
+          />
+        </svg>
+      </div>
     </section>
   )
 }
