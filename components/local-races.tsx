@@ -204,14 +204,6 @@ function RaceCard({ race, index }: { race: any; index: number }) {
       setLocalAttendees(race.id, updatedAttendees)
       setUseLocalStorage(true)
       await mutate(updatedAttendees, false)
-
-      setFirstName("")
-      setLastInitial("")
-      setAttendanceType("racing")
-      setShowForm(false)
-
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 3000)
     } finally {
       setIsSubmitting(false)
     }
@@ -714,18 +706,24 @@ export function LocalRaces() {
   }
 
   return (
-    <section className="relative py-20 bg-white" id="races" aria-labelledby="races-heading">
+    <section className="relative py-20 overflow-hidden" id="races" aria-labelledby="races-heading">
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/images/gptempdownload.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
       <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <ScrollReveal className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/20 text-primary-foreground px-4 py-2 rounded-full mb-4">
-              <Trophy className="h-5 w-5 text-destructive" aria-hidden="true" />
-              <span className="font-semibold text-foreground">Local Races</span>
-            </div>
-            <h2 id="races-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+          <ScrollReveal className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <h2 id="races-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance text-white">
               Upcoming South Loop Races
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
+            <p className="text-lg text-white max-w-2xl mx-auto text-balance">
               Join fellow South Loop Runners at these exciting local races. Both events depart from our neighborhood,
               making them perfect for our community!
             </p>
@@ -738,7 +736,22 @@ export function LocalRaces() {
           </div>
         </div>
       </div>
-      <WaveTransition fillColor="rgba(249, 250, 251, 0.5)" />
+      <div className="absolute bottom-0 left-0 right-0 z-20 -mb-1" aria-hidden="true">
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full"
+          preserveAspectRatio="none"
+          role="presentation"
+        >
+          <path
+            d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+            fill="#ffffff"
+            opacity="0.8"
+          />
+        </svg>
+      </div>
     </section>
   )
 }

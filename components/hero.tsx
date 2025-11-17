@@ -5,8 +5,8 @@ export function Hero() {
     <section className="relative w-full bg-gray-900 overflow-hidden">
       <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px]">
         <Image
-          src="/slr-group-celebrating-medals.jpg"
-          alt="South Loop Runners group celebrating after Chicago Marathon with medals"
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_7707.JPG-3Z3RJZlVguVkzzIEoAA6SfmfqIZKYh.jpeg"
+          alt="South Loop Runners with colorful LED lights running at night in Chicago"
           fill
           className="object-cover object-center"
           priority

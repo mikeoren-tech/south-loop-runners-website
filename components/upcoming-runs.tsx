@@ -456,7 +456,7 @@ export function UpcomingRuns() {
       <div 
         className="absolute inset-0 z-0 -top-[180px]"
         style={{
-          backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/583101870_10121589902045119_3691482741012992932_n-QmFjIUVKT1D4JMZAVvQ2VjNc6uI1Zd.jpg)',
+          backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_7708.JPG-OiIzN6UjbKZQQmxLz7opoX6RH2dARi.jpeg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center 35%',
           backgroundRepeat: 'no-repeat',
