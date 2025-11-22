@@ -132,14 +132,14 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
         <span>Show Your Interest</span>
         <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
       </div>
-      
+
       <p className="text-xs text-muted-foreground">
         Planning to attend?{" "}
-        <a 
-          href="https://discord.gg/sFtmQknX8" 
-          target="_blank" 
+        <a
+          href="https://discord.gg/sFtmQknX8"
+          target="_blank"
           rel="noopener noreferrer"
-          className="text-[rgba(217,42,49,1)] hover:underline font-medium inline-flex items-center gap-1"
+          className="text-slr-red hover:underline font-medium inline-flex items-center gap-1"
         >
           Chat with runners on Discord
           <MessageSquare className="h-3 w-3 inline" />
@@ -341,8 +341,8 @@ export function UpcomingRuns() {
   const renderEventCard = (event: any, delay: number, className: string) => {
     const isWeeklyRun = event.type === "weekly-run"
     const isSpecialEvent = event.type === "special-event"
-    const dayKey = isWeeklyRun ? getDayKey(event.day_of_week) : 
-                   isSpecialEvent && event.date ? getDayKey(getDayOfWeekFromDate(event.date)) : null
+    const dayKey = isWeeklyRun ? getDayKey(event.day_of_week) :
+      isSpecialEvent && event.date ? getDayKey(getDayOfWeekFromDate(event.date)) : null
 
     return (
       <ScrollReveal key={event.id} delay={delay} className={className}>
@@ -388,7 +388,7 @@ export function UpcomingRuns() {
               <div className="flex flex-wrap gap-2">
                 {event.distance && <Badge variant="outline">{event.distance}</Badge>}
                 {event.pace && (
-                  <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                  <Badge variant="outline" className="border-slr-red text-slr-red">
                     {event.pace}
                   </Badge>
                 )}
@@ -449,11 +449,11 @@ export function UpcomingRuns() {
   }
 
   return (
-    <section 
-      className="relative py-20 overflow-hidden" 
+    <section
+      className="relative py-20 overflow-hidden"
       aria-labelledby="runs-heading"
     >
-      <div 
+      <div
         className="absolute inset-0 z-0 -top-[180px]"
         style={{
           backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_7708.JPG-OiIzN6UjbKZQQmxLz7opoX6RH2dARi.jpeg)',
@@ -464,7 +464,7 @@ export function UpcomingRuns() {
         }}
       />
       <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
-      
+
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
           <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance text-white">
@@ -472,7 +472,7 @@ export function UpcomingRuns() {
           </h2>
           <p className="text-lg text-white max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
-            <Link href="/weather-guide" className="text-[rgba(185,225,248,1)] hover:underline font-medium">
+            <Link href="/weather-guide" className="text-primary hover:underline font-medium">
               Check our weather running guide
             </Link>{" "}
             for tips on running in different conditions.
@@ -481,10 +481,10 @@ export function UpcomingRuns() {
             <Button
               asChild
               size="lg"
-              className="relative overflow-hidden bg-[#d92a31]/70 backdrop-blur-[10px] brightness-110 
+              className="relative overflow-hidden bg-slr-red/70 backdrop-blur-[10px] brightness-110 
                         border-2 border-white/40 
                         shadow-[0_8px_32px_0_rgba(0,0,0,0.25),inset_0_2px_8px_rgba(255,255,255,0.2)]
-                        hover:bg-[#d92a31]/90 hover:border-white/60 
+                        hover:bg-slr-red/90 hover:border-white/60 
                         hover:shadow-[0_12px_40px_0_rgba(217,42,49,0.5)]
                         hover:-translate-y-0.5
                         transition-all duration-300 text-white font-semibold
@@ -594,9 +594,9 @@ export function UpcomingRuns() {
                           {(() => {
                             const isWeeklyRun = featuredEvents[2].type === "weekly-run"
                             const isSpecialEvent = featuredEvents[2].type === "special-event"
-                            const dayKey = isWeeklyRun ? getDayKey(featuredEvents[2].day_of_week) : 
-                                           isSpecialEvent && featuredEvents[2].date ? getDayKey(getDayOfWeekFromDate(featuredEvents[2].date)) : null
-                            
+                            const dayKey = isWeeklyRun ? getDayKey(featuredEvents[2].day_of_week) :
+                              isSpecialEvent && featuredEvents[2].date ? getDayKey(getDayOfWeekFromDate(featuredEvents[2].date)) : null
+
                             return dayKey ? (
                               <WeatherWidget
                                 day={dayKey as any}
@@ -614,7 +614,7 @@ export function UpcomingRuns() {
                               <Badge variant="outline">{featuredEvents[2].distance}</Badge>
                             )}
                             {featuredEvents[2].pace && (
-                              <Badge variant="outline" className="border-[#d92a31] text-[#d92a31]">
+                              <Badge variant="outline" className="border-slr-red text-slr-red">
                                 {featuredEvents[2].pace}
                               </Badge>
                             )}

@@ -28,7 +28,8 @@ export function JoinCTA() {
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                     <Button
                       size="lg"
-                      className="relative z-30 gap-2 backdrop-blur-md bg-[#1877F2]/80 hover:bg-[#1877F2]/90 text-white shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
+                      className="relative z-30 gap-2 text-white shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-social-facebook focus:ring-offset-2"
+                      style={{ backgroundColor: '#1877F2' }}
                       asChild
                     >
                       <a
@@ -43,7 +44,8 @@ export function JoinCTA() {
                     </Button>
                     <Button
                       size="lg"
-                      className="relative z-30 gap-2 backdrop-blur-md bg-[#FC4C02]/80 hover:bg-[#FC4C02]/90 text-white shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
+                      className="relative z-30 gap-2 text-white shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-social-strava focus:ring-offset-2"
+                      style={{ backgroundColor: '#FC4C02' }}
                       asChild
                     >
                       <a href="https://www.strava.com/clubs/943959" target="_blank" rel="noopener noreferrer">

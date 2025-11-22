@@ -15,6 +15,9 @@ const config: Config = {
         'slr-red': 'var(--slr-red)',
         'slr-blue-dark': 'var(--slr-blue-dark)',
         'slr-blue-light': 'var(--slr-blue-light)',
+        // Social Brand Colors
+        'social-facebook': '#1877F2',
+        'social-strava': '#FC4C02',
         // Standard Shadcn/Radix aliases (already defined in your CSS)
         'background': 'var(--background)',
         'foreground': 'var(--foreground)',
