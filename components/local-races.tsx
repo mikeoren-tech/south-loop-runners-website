@@ -239,19 +239,19 @@ function RaceCard({ race, index }: { race: any; index: number }) {
   const cheeringCount = attendees.filter((a) => a.type === "cheering").length
 
   function formatDate(dateStringFromDB) {
-    const chicagoOffset = '-06:00'; 
-    const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`; 
-  
-    const date = new Date(correctedDateString); 
-    
+    const chicagoOffset = '-06:00';
+    const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`;
+
+    const date = new Date(correctedDateString);
+
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
       timeZone: "America/Chicago" // The correct formatting option
-  });
-}
+    });
+  }
 
   const iconMap: Record<string, any> = {
     Flag: Flag,
@@ -707,8 +707,8 @@ export function LocalRaces() {
 
   return (
     <section className="relative py-20 overflow-hidden" id="races" aria-labelledby="races-heading">
-      <div 
-        className="absolute inset-0 z-0"
+      <div
+        className="absolute inset-0 z-0 -top-[180px]"
         style={{
           backgroundImage: 'url(/images/gptempdownload.jpg)',
           backgroundSize: 'cover',
@@ -716,6 +716,7 @@ export function LocalRaces() {
           backgroundRepeat: 'no-repeat'
         }}
       />
+      <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
 
       <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
@@ -745,10 +746,15 @@ export function LocalRaces() {
           preserveAspectRatio="none"
           role="presentation"
         >
+          <defs>
+            <linearGradient id="racesToNextWave" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,1)" />
+            </linearGradient>
+          </defs>
           <path
             d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-            fill="#ffffff"
-            opacity="0.8"
+            fill="url(#racesToNextWave)"
           />
         </svg>
       </div>
