@@ -1,14 +1,31 @@
 "use client"
 
 import type React from "react"
-import { WaveTransition } from "@/components/wave-transition"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Calendar, MapPin, Trophy, Sparkles, Users, ExternalLink, UserPlus, X, CheckCircle2, Loader2, ChevronDown, ChevronUp, Clock, Flag, Route, PartyPopper, Wind } from 'lucide-react'
+import {
+  Calendar,
+  MapPin,
+  Trophy,
+  Sparkles,
+  Users,
+  ExternalLink,
+  UserPlus,
+  X,
+  CheckCircle2,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Flag,
+  Route,
+  PartyPopper,
+  Wind,
+} from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import useSWR from "swr"
 import Image from "next/image"
@@ -239,18 +256,18 @@ function RaceCard({ race, index }: { race: any; index: number }) {
   const cheeringCount = attendees.filter((a) => a.type === "cheering").length
 
   function formatDate(dateStringFromDB) {
-    const chicagoOffset = '-06:00';
-    const correctedDateString = `${dateStringFromDB.split('T')[0]}T12:00:00${chicagoOffset}`;
+    const chicagoOffset = "-06:00"
+    const correctedDateString = `${dateStringFromDB.split("T")[0]}T12:00:00${chicagoOffset}`
 
-    const date = new Date(correctedDateString);
+    const date = new Date(correctedDateString)
 
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
-      timeZone: "America/Chicago" // The correct formatting option
-    });
+      timeZone: "America/Chicago", // The correct formatting option
+    })
   }
 
   const iconMap: Record<string, any> = {
@@ -366,15 +383,19 @@ function RaceCard({ race, index }: { race: any; index: number }) {
 
               {showDetails && (
                 <div className="p-4 space-y-3 bg-muted/10">
+                  {race.description && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">{race.description}</p>
+                  )}
+
                   {race.depart_from && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm pt-2 border-t border-border/50">
                       <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="text-muted-foreground">Departs from {race.depart_from}</span>
                     </div>
                   )}
 
                   {highlights.length > 0 && (
-                    <div className="pt-2 border-t">
+                    <div className="pt-2 border-t border-border/50">
                       <h4 className="font-semibold text-sm mb-2">Highlights</h4>
                       <ul className="space-y-2">
                         {highlights.map((highlight: string, idx: number) => (
@@ -665,6 +686,8 @@ export function LocalRaces() {
         ],
         accent_color: "from-blue-500 to-cyan-500",
         image_url: "/chicago-lakefront-running-soldier-field-skyline.jpg",
+        description:
+          "Join us for an unforgettable experience at the F³ Lake Half Marathon & 5K. The scenic lakefront course offers stunning views of the Chicago skyline, and the finish line is inside historic Soldier Field. Don't miss out on the post-race celebration at Weathermark Tavern!",
       },
       {
         id: "miles-per-hour",
@@ -691,6 +714,8 @@ export function LocalRaces() {
         ],
         accent_color: "from-orange-500 to-red-500",
         image_url: "/mccormick-place-chicago-auto-show-indoor-running.jpg",
+        description:
+          "Experience the excitement of running through the Chicago Auto Show at the Miles Per Hour Run. This unique indoor race offers a perfect opportunity for winter training and allows you to see the latest vehicles while getting your miles in.",
       },
     ],
   })
@@ -710,10 +735,10 @@ export function LocalRaces() {
       <div
         className="absolute inset-0 z-0 -top-[180px]"
         style={{
-          backgroundImage: 'url(/images/gptempdownload.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
-          backgroundRepeat: 'no-repeat'
+          backgroundImage: "url(/images/gptempdownload.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center 40%",
+          backgroundRepeat: "no-repeat",
         }}
       />
       <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />

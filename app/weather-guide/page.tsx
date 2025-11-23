@@ -25,16 +25,23 @@ interface GearRecommendation {
 function CurrentWeatherSection() {
   const [weather, setWeather] = useState<CurrentWeather | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<boolean>(false)
 
   useEffect(() => {
     const fetchCurrentWeather = async () => {
       try {
+        setLoading(true)
+        setError(false)
         const latitude = 41.8781
         const longitude = -87.6298
 
         const response = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Chicago`,
         )
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch weather data")
+        }
 
         const data = await response.json()
 
@@ -49,9 +56,12 @@ function CurrentWeatherSection() {
             precipitation: data.current.precipitation || 0,
             humidity: data.current.relative_humidity_2m,
           })
+        } else {
+          throw new Error("No current weather data available")
         }
       } catch (error) {
         console.error("Error fetching current weather:", error)
+        setError(true)
       } finally {
         setLoading(false)
       }
@@ -63,8 +73,12 @@ function CurrentWeatherSection() {
   const getWeatherCondition = (code: number): string => {
     if (code === 0) return "Clear"
     if (code <= 3) return "Partly Cloudy"
+    if (code <= 48) return "Foggy"
     if (code <= 67) return "Rainy"
     if (code <= 77) return "Snowy"
+    if (code <= 82) return "Rain Showers"
+    if (code <= 86) return "Snow Showers"
+    if (code <= 99) return "Stormy"
     return "Cloudy"
   }
 
@@ -194,8 +208,28 @@ function CurrentWeatherSection() {
     )
   }
 
-  if (!weather) {
-    return null
+  if (error || !weather) {
+    return (
+      <section className="relative py-20 bg-[#d9eef7]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <ScrollReveal className="text-center mb-8">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Shirt className="h-8 w-8 text-primary" />
+                <h2 className="text-4xl md:text-5xl font-bold">What to Wear Today</h2>
+              </div>
+              <p className="text-muted-foreground">
+                Unable to load current weather data. Please try again later or check the general guides below.
+              </p>
+              <Button variant="outline" className="mt-4 bg-transparent" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            </ScrollReveal>
+          </div>
+        </div>
+        <WaveTransition fillColor="#ffffff" />
+      </section>
+    )
   }
 
   const gearRecommendations = getGearRecommendations(weather)

@@ -6,14 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, AlertCircle, MessageSquare } from 'lucide-react'
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
 import Image from "next/image"
 import useSWR from "swr"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { WaveTransition } from "@/components/wave-transition"
 
 const PACE_GROUPS = [
   "Under 7:00 min/mile",
@@ -341,8 +340,11 @@ export function UpcomingRuns() {
   const renderEventCard = (event: any, delay: number, className: string) => {
     const isWeeklyRun = event.type === "weekly-run"
     const isSpecialEvent = event.type === "special-event"
-    const dayKey = isWeeklyRun ? getDayKey(event.day_of_week) :
-      isSpecialEvent && event.date ? getDayKey(getDayOfWeekFromDate(event.date)) : null
+    const dayKey = isWeeklyRun
+      ? getDayKey(event.day_of_week)
+      : isSpecialEvent && event.date
+        ? getDayKey(getDayOfWeekFromDate(event.date))
+        : null
 
     return (
       <ScrollReveal key={event.id} delay={delay} className={className}>
@@ -379,9 +381,7 @@ export function UpcomingRuns() {
               {dayKey && (
                 <WeatherWidget
                   day={dayKey as any}
-                  onWeatherLoad={(weather) =>
-                    setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))
-                  }
+                  onWeatherLoad={(weather) => setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))}
                 />
               )}
 
@@ -449,18 +449,15 @@ export function UpcomingRuns() {
   }
 
   return (
-    <section
-      className="relative py-20 overflow-hidden"
-      aria-labelledby="runs-heading"
-    >
+    <section className="relative py-20 overflow-hidden" aria-labelledby="runs-heading">
       <div
         className="absolute inset-0 z-0 -top-[180px]"
         style={{
-          backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_7708.JPG-OiIzN6UjbKZQQmxLz7opoX6RH2dARi.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 35%',
-          backgroundRepeat: 'no-repeat',
-          mixBlendMode: 'normal'
+          backgroundImage: "url(/images/weekly-runs-bg.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center 35%",
+          backgroundRepeat: "no-repeat",
+          mixBlendMode: "normal",
         }}
       />
       <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
@@ -472,10 +469,13 @@ export function UpcomingRuns() {
           </h2>
           <p className="text-lg text-white max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
-            <Link href="/weather-guide" className="text-primary hover:underline font-medium">
+            <Link
+              href="/weather-guide"
+              className="inline-flex items-center gap-1.5 text-slr-blue hover:text-slr-blue-light transition-colors group font-medium"
+            >
               Check our weather running guide
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>{" "}
-            for tips on running in different conditions.
           </p>
           <div className="mt-6">
             <Button
@@ -594,8 +594,11 @@ export function UpcomingRuns() {
                           {(() => {
                             const isWeeklyRun = featuredEvents[2].type === "weekly-run"
                             const isSpecialEvent = featuredEvents[2].type === "special-event"
-                            const dayKey = isWeeklyRun ? getDayKey(featuredEvents[2].day_of_week) :
-                              isSpecialEvent && featuredEvents[2].date ? getDayKey(getDayOfWeekFromDate(featuredEvents[2].date)) : null
+                            const dayKey = isWeeklyRun
+                              ? getDayKey(featuredEvents[2].day_of_week)
+                              : isSpecialEvent && featuredEvents[2].date
+                                ? getDayKey(getDayOfWeekFromDate(featuredEvents[2].date))
+                                : null
 
                             return dayKey ? (
                               <WeatherWidget
