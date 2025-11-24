@@ -190,21 +190,21 @@ function CurrentWeatherSection() {
   if (error || !weather) {
     return (
       <section className="relative py-20 bg-[#d9eef7]">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <ScrollReveal className="text-center mb-8">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Shirt className="h-8 w-8 text-primary" />
                 <h2 className="text-4xl md:text-5xl font-bold">What to Wear Today</h2>
               </div>
-              <p className="text-muted-foreground">
-                {error ||
-                  "Unable to load current weather data. Please try again later or check the general guides below."}
-              </p>
-              <Button variant="outline" className="mt-4 bg-transparent" onClick={() => window.location.reload()}>
-                Retry
-              </Button>
             </ScrollReveal>
+            <p className="text-muted-foreground">
+              {error ||
+                "Unable to load current weather data. Please try again later or check the general guides below."}
+            </p>
+            <Button variant="outline" className="mt-4 bg-transparent" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
           </div>
         </div>
         <WaveTransition fillColor="#ffffff" />
@@ -216,7 +216,7 @@ function CurrentWeatherSection() {
 
   return (
     <section className="relative py-20 bg-[#d9eef7]">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
           <ScrollReveal className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -459,7 +459,7 @@ export default function WeatherGuidePage() {
       </header>
 
       <section className="relative py-20 bg-[#ffffff]">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <ScrollReveal>
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Chicago Weather Running Guide</h2>
@@ -476,7 +476,7 @@ export default function WeatherGuidePage() {
       <CurrentWeatherSection />
 
       <section id="temperature-guide" className="relative py-20 bg-[#ffffff]">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             <ScrollReveal className="text-center mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -514,7 +514,7 @@ export default function WeatherGuidePage() {
       </section>
 
       <section id="wind-guide" className="relative py-20 bg-[#f9fafb]">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-6xl mx-auto">
             <ScrollReveal className="text-center mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -551,7 +551,7 @@ export default function WeatherGuidePage() {
       </section>
 
       <section id="rain-guide" className="relative py-20 bg-[#d9eef7]">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-6xl mx-auto">
             <ScrollReveal className="text-center mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -587,7 +587,7 @@ export default function WeatherGuidePage() {
       </section>
 
       <section className="relative py-20 bg-[#ffffff]">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             <ScrollReveal className="text-center mb-8">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Quick Pace Adjustment Reference</h2>
@@ -667,7 +667,7 @@ export default function WeatherGuidePage() {
       </section>
 
       <section className="relative py-20 bg-[#f9fafb]">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative z-10">
           <ScrollReveal>
             <Card className="glass-strong shadow-soft-lg border-0 max-w-3xl mx-auto">
               <CardContent className="p-8 md:p-12 text-center">
