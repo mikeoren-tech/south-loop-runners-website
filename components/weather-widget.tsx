@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Cloud, CloudRain, Sun, Wind } from 'lucide-react'
+import { useEffect, useState, useRef } from "react"
+import { Cloud, CloudRain, Sun, Wind } from "lucide-react"
+import { getChicagoWeather, getWeatherCondition } from "@/lib/weather"
 
 export interface WeatherData {
   temperature: number
@@ -19,13 +20,18 @@ export function WeatherWidget({ day, onWeatherLoad }: WeatherWidgetProps) {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const onWeatherLoadRef = useRef(onWeatherLoad)
+
+  useEffect(() => {
+    onWeatherLoadRef.current = onWeatherLoad
+  }, [onWeatherLoad])
+
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // Chicago coordinates
-        const latitude = 41.8781
-        const longitude = -87.6298
+        const data = await getChicagoWeather()
 
+        // Calculate target date based on Chicago time
         const dayMap: Record<string, number> = {
           sunday: 0,
           monday: 1,
@@ -36,29 +42,29 @@ export function WeatherWidget({ day, onWeatherLoad }: WeatherWidgetProps) {
           saturday: 6,
         }
 
-        const targetDay = dayMap[day]
-        const currentDay = new Date().getDay()
-        let daysUntilTarget = targetDay - currentDay
-        if (daysUntilTarget <= 0) daysUntilTarget += 7
+        const now = new Date()
+        const chicagoDateString = now.toLocaleDateString("en-US", { timeZone: "America/Chicago" })
+        const chicagoDate = new Date(chicagoDateString)
+        const currentDay = chicagoDate.getDay()
 
-        const targetDate = new Date()
-        targetDate.setDate(targetDate.getDate() + daysUntilTarget)
-        const dateStr = targetDate.toISOString().split("T")[0]
+        const targetDay = dayMap[day]
+        let daysUntilTarget = targetDay - currentDay
+        if (daysUntilTarget < 0) daysUntilTarget += 7
+
+        const targetDate = new Date(chicagoDate)
+        targetDate.setDate(chicagoDate.getDate() + daysUntilTarget)
+
+        const year = targetDate.getFullYear()
+        const month = String(targetDate.getMonth() + 1).padStart(2, "0")
+        const dateDay = String(targetDate.getDate()).padStart(2, "0")
+        const dateStr = `${year}-${month}-${dateDay}`
 
         const isWeekend = targetDay === 0 || targetDay === 6
         const hour = isWeekend ? 9 : 18
-        
-        const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Chicago&start_date=${dateStr}&end_date=${dateStr}`,
-        )
-
-        const data = await response.json()
+        const targetTimeStr = `${dateStr}T${hour.toString().padStart(2, "0")}:00`
 
         if (data.hourly) {
-          const hourIndex = data.hourly.time.findIndex((time: string) => {
-            const timeHour = new Date(time).getHours()
-            return timeHour === hour
-          })
+          const hourIndex = data.hourly.time.findIndex((time: string) => time === targetTimeStr)
 
           if (hourIndex !== -1) {
             const weatherCode = data.hourly.weather_code[hourIndex]
@@ -72,9 +78,11 @@ export function WeatherWidget({ day, onWeatherLoad }: WeatherWidgetProps) {
             }
 
             setWeather(weatherData)
-            if (onWeatherLoad) {
-              onWeatherLoad(weatherData)
+            if (onWeatherLoadRef.current) {
+              onWeatherLoadRef.current(weatherData)
             }
+          } else {
+            console.warn(`[v0] No weather data found for ${targetTimeStr}`)
           }
         }
       } catch (error) {
@@ -85,24 +93,22 @@ export function WeatherWidget({ day, onWeatherLoad }: WeatherWidgetProps) {
     }
 
     fetchWeather()
-  }, [day, onWeatherLoad])
-
-  const getWeatherCondition = (code: number): string => {
-    if (code === 0) return "Clear"
-    if (code <= 3) return "Partly Cloudy"
-    if (code <= 67) return "Rainy"
-    if (code <= 77) return "Snowy"
-    return "Cloudy"
-  }
+  }, [day])
 
   const getWeatherIcon = (condition: string) => {
     switch (condition) {
       case "Clear":
         return <Sun className="h-5 w-5 text-yellow-500" />
       case "Rainy":
+      case "Rain Showers":
+      case "Stormy":
         return <CloudRain className="h-5 w-5 text-blue-500" />
+      case "Snowy":
+      case "Snow Showers":
+        return <Cloud className="h-5 w-5 text-blue-200" />
       case "Cloudy":
       case "Partly Cloudy":
+      case "Foggy":
         return <Cloud className="h-5 w-5 text-gray-500" />
       default:
         return <Cloud className="h-5 w-5 text-gray-500" />

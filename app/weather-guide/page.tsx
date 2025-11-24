@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WaveTransition } from "@/components/wave-transition"
 import { useEffect, useState } from "react"
+import { getChicagoWeather, getWeatherCondition } from "@/lib/weather"
 
 interface CurrentWeather {
   temperature: number
@@ -25,25 +26,15 @@ interface GearRecommendation {
 function CurrentWeatherSection() {
   const [weather, setWeather] = useState<CurrentWeather | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchCurrentWeather = async () => {
       try {
         setLoading(true)
-        setError(false)
-        const latitude = 41.8781
-        const longitude = -87.6298
+        setError(null)
 
-        const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Chicago`,
-        )
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch weather data")
-        }
-
-        const data = await response.json()
+        const data = await getChicagoWeather()
 
         if (data.current) {
           const weatherCode = data.current.weather_code
@@ -59,9 +50,9 @@ function CurrentWeatherSection() {
         } else {
           throw new Error("No current weather data available")
         }
-      } catch (error) {
-        console.error("Error fetching current weather:", error)
-        setError(true)
+      } catch (err) {
+        console.error("Error fetching current weather:", err)
+        setError(err instanceof Error ? err.message : "Unknown error occurred")
       } finally {
         setLoading(false)
       }
@@ -69,18 +60,6 @@ function CurrentWeatherSection() {
 
     fetchCurrentWeather()
   }, [])
-
-  const getWeatherCondition = (code: number): string => {
-    if (code === 0) return "Clear"
-    if (code <= 3) return "Partly Cloudy"
-    if (code <= 48) return "Foggy"
-    if (code <= 67) return "Rainy"
-    if (code <= 77) return "Snowy"
-    if (code <= 82) return "Rain Showers"
-    if (code <= 86) return "Snow Showers"
-    if (code <= 99) return "Stormy"
-    return "Cloudy"
-  }
 
   const getGearRecommendations = (weather: CurrentWeather): GearRecommendation[] => {
     const recommendations: GearRecommendation[] = []
@@ -219,7 +198,8 @@ function CurrentWeatherSection() {
                 <h2 className="text-4xl md:text-5xl font-bold">What to Wear Today</h2>
               </div>
               <p className="text-muted-foreground">
-                Unable to load current weather data. Please try again later or check the general guides below.
+                {error ||
+                  "Unable to load current weather data. Please try again later or check the general guides below."}
               </p>
               <Button variant="outline" className="mt-4 bg-transparent" onClick={() => window.location.reload()}>
                 Retry
@@ -609,7 +589,7 @@ export default function WeatherGuidePage() {
       <section className="relative py-20 bg-[#ffffff]">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <ScrollReveal className="text-center mb-12">
+            <ScrollReveal className="text-center mb-8">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Quick Pace Adjustment Reference</h2>
             </ScrollReveal>
             <ScrollReveal delay={100}>
