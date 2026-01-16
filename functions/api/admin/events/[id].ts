@@ -34,6 +34,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       strava_link,
       registration_url,
       display_order,
+      route_map_iframe, // Added route_map_iframe field
       sendEmail,
     } = body
 
@@ -41,6 +42,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       id,
       title,
       has_post_run_social,
+      route_map_iframe, // Log route_map_iframe
       sendEmail,
     })
 
@@ -61,6 +63,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         strava_link = ?,
         registration_url = ?,
         display_order = ?,
+        route_map_iframe = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `)
@@ -80,6 +83,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         strava_link || null,
         registration_url || null,
         display_order ? Number.parseInt(display_order) : null,
+        route_map_iframe || null, // Bind route_map_iframe value
         id,
       )
       .run()
