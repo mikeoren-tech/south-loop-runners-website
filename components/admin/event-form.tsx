@@ -33,6 +33,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
     strava_link: "",
     registration_url: "",
     display_order: "",
+    route_map_iframe: "",
   })
   const [loading, setLoading] = useState(false)
   const [sendEmail, setSendEmail] = useState(true)
@@ -55,6 +56,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
         strava_link: event.strava_link || "",
         registration_url: event.registration_url || "",
         display_order: event.display_order?.toString() || "",
+        route_map_iframe: event.route_map_iframe || "",
       })
     }
   }, [event])
@@ -271,6 +273,23 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   value={formData.registration_url}
                   onChange={(e) => setFormData({ ...formData, registration_url: e.target.value })}
                 />
+              </div>
+            )}
+
+            {(formData.type === "weekly-run" || formData.type === "special-event") && (
+              <div className="col-span-2">
+                <Label htmlFor="route_map_iframe">Route Map (MapMyRun iframe code)</Label>
+                <Textarea
+                  id="route_map_iframe"
+                  value={formData.route_map_iframe}
+                  onChange={(e) => setFormData({ ...formData, route_map_iframe: e.target.value })}
+                  placeholder="Paste the full MapMyRun iframe embed code here..."
+                  rows={4}
+                  className="font-mono text-xs"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Get the embed code from MapMyRun by viewing the route and clicking "Share" → "Embed"
+                </p>
               </div>
             )}
           </div>

@@ -13,6 +13,7 @@ import Link from "next/link"
 import Image from "next/image"
 import useSWR from "swr"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FlipCard } from "@/components/flip-card"
 
 const PACE_GROUPS = [
   "Under 7:00 min/mile",
@@ -312,7 +313,6 @@ export function UpcomingRuns() {
     return dayKeys[dayOfWeek]
   }
 
-  // Add new function to get day of week from date string
   const getDayOfWeekFromDate = (dateString: string): number => {
     if (!dateString) return -1
     const chicagoOffset = "-06:00"
@@ -346,93 +346,103 @@ export function UpcomingRuns() {
         ? getDayKey(getDayOfWeekFromDate(event.date))
         : null
 
+    const frontContent = (
+      <Card className="h-full border-0 rounded-3xl">
+        <CardHeader>
+          <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
+          <CardDescription>{event.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3">
+            {isWeeklyRun && (
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{getDayName(event.day_of_week)}s</span>
+              </div>
+            )}
+            {isSpecialEvent && event.date && (
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{formatDate(event.date)}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span>{event.time}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <span>{event.location}</span>
+            </div>
+          </div>
+
+          {dayKey && (
+            <WeatherWidget
+              day={dayKey as any}
+              onWeatherLoad={(weather) => setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))}
+            />
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {event.distance && <Badge variant="outline">{event.distance}</Badge>}
+            {event.pace && (
+              <Badge variant="outline" className="border-slr-red text-slr-red">
+                {event.pace}
+              </Badge>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
+              RSVP on the club pages / get the most up-to-date info
+            </p>
+            <div className="flex gap-2">
+              <Button className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0" asChild>
+                <a href={event.facebook_link} target="_blank" rel="noopener noreferrer">
+                  <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Facebook
+                  <span className="sr-only">Opens in new window</span>
+                </a>
+              </Button>
+              <Button className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0" asChild>
+                <a href={event.strava_link} target="_blank" rel="noopener noreferrer">
+                  <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Strava
+                  <span className="sr-only">Opens in new window</span>
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          <PaceInterestSection
+            runId={event.id}
+            hasSocial={
+              event.has_post_run_social === 1 ||
+              event.has_post_run_social === "1" ||
+              event.has_post_run_social === true ||
+              event.has_post_run_social === "true"
+            }
+          />
+        </CardContent>
+      </Card>
+    )
+
+    const backContent = event.route_map_iframe ? (
+      <Card className="h-full border-0 rounded-3xl overflow-hidden">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl">{event.title} - Route Map</CardTitle>
+          <CardDescription>Explore the running route</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="w-full overflow-auto" dangerouslySetInnerHTML={{ __html: event.route_map_iframe }} />
+        </CardContent>
+      </Card>
+    ) : null
+
     return (
       <ScrollReveal key={event.id} delay={delay} className={className}>
         <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-          <Card className="h-full border-0 rounded-3xl">
-            <CardHeader>
-              <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
-              <CardDescription>{event.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3">
-                {isWeeklyRun && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{getDayName(event.day_of_week)}s</span>
-                  </div>
-                )}
-                {isSpecialEvent && event.date && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{formatDate(event.date)}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.time}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.location}</span>
-                </div>
-              </div>
-
-              {dayKey && (
-                <WeatherWidget
-                  day={dayKey as any}
-                  onWeatherLoad={(weather) => setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))}
-                />
-              )}
-
-              <div className="flex flex-wrap gap-2">
-                {event.distance && <Badge variant="outline">{event.distance}</Badge>}
-                {event.pace && (
-                  <Badge variant="outline" className="border-slr-red text-slr-red">
-                    {event.pace}
-                  </Badge>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-                  RSVP on the club pages / get the most up-to-date info
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                    asChild
-                  >
-                    <a href={event.facebook_link} target="_blank" rel="noopener noreferrer">
-                      <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                      Facebook
-                      <span className="sr-only">Opens in new window</span>
-                    </a>
-                  </Button>
-                  <Button
-                    className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                    asChild
-                  >
-                    <a href={event.strava_link} target="_blank" rel="noopener noreferrer">
-                      <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                      Strava
-                      <span className="sr-only">Opens in new window</span>
-                    </a>
-                  </Button>
-                </div>
-              </div>
-
-              <PaceInterestSection
-                runId={event.id}
-                hasSocial={
-                  event.has_post_run_social === 1 ||
-                  event.has_post_run_social === "1" ||
-                  event.has_post_run_social === true ||
-                  event.has_post_run_social === "true"
-                }
-              />
-            </CardContent>
-          </Card>
+          <FlipCard front={frontContent} back={backContent} hasBack={!!event.route_map_iframe} />
         </article>
       </ScrollReveal>
     )
@@ -521,24 +531,6 @@ export function UpcomingRuns() {
 
             <ScrollReveal delay={150} className="md:col-span-3 lg:col-span-5 md:row-span-1">
               <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0 overflow-hidden">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2971.8!2d-87.6239!3d41.8681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2ca1b2e6e5e5%3A0x1234567890abcdef!2sV99G%2B7M%20Chicago%2C%20Illinois!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0, minHeight: "250px", borderRadius: "24px" }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="rounded-3xl"
-                  title="Map showing Agora Statues meetup location at Michigan Ave & Roosevelt"
-                />
-              </Card>
-            </ScrollReveal>
-
-            {featuredEvents[1] && renderEventCard(featuredEvents[1], 200, "md:col-span-6 lg:col-span-7 md:row-span-2")}
-
-            <ScrollReveal delay={250} className="md:col-span-6 lg:col-span-5 md:row-span-2">
-              <Card className="glass rounded-3xl shadow-soft hover-lift h-full border-0 overflow-hidden">
                 <CardHeader>
                   <CardTitle className="text-lg">Recent Activities</CardTitle>
                 </CardHeader>
@@ -557,116 +549,9 @@ export function UpcomingRuns() {
               </Card>
             </ScrollReveal>
 
-            {featuredEvents[2] && (
-              <ScrollReveal delay={300} className="md:col-span-6 lg:col-span-12 md:row-span-1">
-                <article className="glass-strong rounded-3xl shadow-soft hover-lift h-full border-0">
-                  <Card className="h-full border-0 rounded-3xl">
-                    <CardHeader>
-                      <CardTitle className="text-xl mb-2">{featuredEvents[2].title}</CardTitle>
-                      <CardDescription>{featuredEvents[2].description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-3">
-                          {featuredEvents[2].type === "weekly-run" && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{getDayName(featuredEvents[2].day_of_week)}s</span>
-                            </div>
-                          )}
-                          {featuredEvents[2].type === "special-event" && featuredEvents[2].date && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{formatDate(featuredEvents[2].date)}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2 text-sm">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{featuredEvents[2].time}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{featuredEvents[2].location}</span>
-                          </div>
-                        </div>
+            {featuredEvents[1] && renderEventCard(featuredEvents[1], 200, "md:col-span-6 lg:col-span-7 md:row-span-2")}
 
-                        <div className="space-y-3">
-                          {(() => {
-                            const isWeeklyRun = featuredEvents[2].type === "weekly-run"
-                            const isSpecialEvent = featuredEvents[2].type === "special-event"
-                            const dayKey = isWeeklyRun
-                              ? getDayKey(featuredEvents[2].day_of_week)
-                              : isSpecialEvent && featuredEvents[2].date
-                                ? getDayKey(getDayOfWeekFromDate(featuredEvents[2].date))
-                                : null
-
-                            return dayKey ? (
-                              <WeatherWidget
-                                day={dayKey as any}
-                                onWeatherLoad={(weather) =>
-                                  setWeatherData((prev) => ({
-                                    ...prev,
-                                    [dayKey]: weather,
-                                  }))
-                                }
-                              />
-                            ) : null
-                          })()}
-                          <div className="flex flex-wrap gap-2">
-                            {featuredEvents[2].distance && (
-                              <Badge variant="outline">{featuredEvents[2].distance}</Badge>
-                            )}
-                            {featuredEvents[2].pace && (
-                              <Badge variant="outline" className="border-slr-red text-slr-red">
-                                {featuredEvents[2].pace}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-                            RSVP on the club pages / get the most up-to-date info
-                          </p>
-                          <div className="flex gap-2">
-                            <Button
-                              className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2"
-                              asChild
-                            >
-                              <a href={featuredEvents[2].facebook_link} target="_blank" rel="noopener noreferrer">
-                                <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-                                Facebook
-                                <span className="sr-only">Opens in new window</span>
-                              </a>
-                            </Button>
-                            <Button
-                              className="flex-1 bg-[#FC4C02] hover:bg-[#FC4C02]/90 text-white border-0 focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:ring-offset-2"
-                              asChild
-                            >
-                              <a href={featuredEvents[2].strava_link} target="_blank" rel="noopener noreferrer">
-                                <Activity className="h-4 w-4 mr-2" aria-hidden="true" />
-                                Strava
-                                <span className="sr-only">Opens in new window</span>
-                              </a>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <PaceInterestSection
-                        runId={featuredEvents[2].id}
-                        hasSocial={
-                          featuredEvents[2].has_post_run_social === 1 ||
-                          featuredEvents[2].has_post_run_social === "1" ||
-                          featuredEvents[2].has_post_run_social === true ||
-                          featuredEvents[2].has_post_run_social === "true"
-                        }
-                      />
-                    </CardContent>
-                  </Card>
-                </article>
-              </ScrollReveal>
-            )}
+            {featuredEvents[2] && renderEventCard(featuredEvents[2], 300, "md:col-span-6 lg:col-span-12 md:row-span-1")}
           </div>
         </div>
       </div>
