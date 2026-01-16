@@ -135,7 +135,7 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
       <p className="text-xs text-muted-foreground">
         Planning to attend?{" "}
         <a
-          href="https://discord.gg/sFtmQknX8"
+          href="https://discord.gg/U5u3DxmCQN"
           target="_blank"
           rel="noopener noreferrer"
           className="text-slr-red hover:underline font-medium inline-flex items-center gap-1"

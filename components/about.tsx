@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Heart, Trophy, Users, Zap, MessageSquare } from 'lucide-react'
+import { Heart, Trophy, Users, Zap, MessageSquare } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 
 const features = [
@@ -32,17 +32,17 @@ const features = [
 export function About() {
   return (
     <section className="relative py-20 overflow-hidden bg-[#d9eef7]" id="about">
-      <div 
+      <div
         className="absolute inset-0 z-0 -top-[180px]"
         style={{
-          backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_7694.JPG-R0C6sbZBEjN2E46ljCCBV7dHEsKH4z.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
-          backgroundRepeat: 'no-repeat'
+          backgroundImage: "url(/images/img-7694.jpeg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center 40%",
+          backgroundRepeat: "no-repeat",
         }}
       />
       <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
-      
+
       <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
@@ -50,9 +50,9 @@ export function About() {
             <p className="text-lg text-white max-w-2xl mx-auto text-balance">
               South Loop Runners is more than just a running club—we're a community of passionate runners who love
               exploring Chicago's beautiful lakefront and neighborhoods together.{" "}
-              <a 
-                href="https://discord.gg/sFtmQknX8" 
-                target="_blank" 
+              <a
+                href="https://discord.gg/U5u3DxmCQN"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-[rgba(185,225,248,1)] hover:underline font-medium inline-flex items-center gap-1"
               >
