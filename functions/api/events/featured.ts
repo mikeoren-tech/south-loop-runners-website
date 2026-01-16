@@ -11,7 +11,7 @@ export async function onRequestGet(context: { env: Env; request: Request }) {
         id, title, description, date, time, location, 
         type, is_recurring, day_of_week, is_featured_homepage, 
         display_order, distance, pace, facebook_link, strava_link,
-        has_post_run_social,
+        has_post_run_social, route_map_iframe,
         created_at, updated_at
       FROM events 
       WHERE deleted_at IS NULL 
@@ -22,13 +22,13 @@ export async function onRequestGet(context: { env: Env; request: Request }) {
 
     const { results } = await context.env.DB.prepare(query).all()
 
-        // Convert integer boolean fields to actual booleans
-            const events = results?.map((event: any) => ({
-                  ...event,
-                        has_post_run_social: Boolean(event.has_post_run_social),
-                              is_recurring: Boolean(event.is_recurring),
-                                    is_featured_homepage: Boolean(event.is_featured_homepage),
-                                        }))
+    // Convert integer boolean fields to actual booleans
+    const events = results?.map((event: any) => ({
+      ...event,
+      has_post_run_social: Boolean(event.has_post_run_social),
+      is_recurring: Boolean(event.is_recurring),
+      is_featured_homepage: Boolean(event.is_featured_homepage),
+    }))
 
     console.log("[v0] Featured events fetched (excluding races):", results?.length || 0)
     console.log(
