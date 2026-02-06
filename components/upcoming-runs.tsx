@@ -10,7 +10,7 @@ import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, Mes
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
-import Image from "next/image"
+
 import useSWR from "swr"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FlipCard } from "@/components/flip-card"
@@ -513,45 +513,10 @@ export function UpcomingRuns() {
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4 auto-rows-[minmax(200px,auto)]">
-            {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, "md:col-span-6 lg:col-span-7 md:row-span-2")}
-
-            <ScrollReveal delay={100} className="md:col-span-3 lg:col-span-5 md:row-span-1">
-              <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0">
-                <div className="relative w-full h-full min-h-[250px] overflow-hidden rounded-3xl">
-                  <Image
-                    src="/images/design-mode/image.png"
-                    alt="South Loop Runners group photo at the Agora Statues meetup location"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </Card>
-            </ScrollReveal>
-
-            <ScrollReveal delay={150} className="md:col-span-3 lg:col-span-5 md:row-span-1">
-              <Card className="glass rounded-3xl shadow-soft hover-scale h-full border-0 p-0 overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Activities</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <iframe
-                    allowTransparency
-                    frameBorder="0"
-                    height="454"
-                    scrolling="no"
-                    src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=true"
-                    width="100%"
-                    className="w-full"
-                    title="South Loop Runners Strava Club Recent Activities"
-                  />
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
-            {featuredEvents[1] && renderEventCard(featuredEvents[1], 200, "md:col-span-6 lg:col-span-7 md:row-span-2")}
-
-            {featuredEvents[2] && renderEventCard(featuredEvents[2], 300, "md:col-span-6 lg:col-span-12 md:row-span-1")}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, "")}
+            {featuredEvents[1] && renderEventCard(featuredEvents[1], 100, "")}
+            {featuredEvents[2] && renderEventCard(featuredEvents[2], 200, "")}
           </div>
         </div>
       </div>
