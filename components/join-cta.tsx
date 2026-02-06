@@ -17,8 +17,7 @@ export function JoinCTA() {
         <div className="container mx-auto px-4">
           <Card className="max-w-6xl mx-auto glass-strong shadow-soft-lg border-0">
             <CardContent className="p-8 md:p-12">
-              <div className="grid lg:grid-cols-2 gap-8 items-start">
-                <div className="space-y-6">
+              <div className="flex flex-col items-center text-center space-y-6 max-w-2xl mx-auto">
                   <h2 className="text-3xl md:text-4xl font-bold text-balance">Ready to Join the Pack?</h2>
                   <p className="text-lg text-muted-foreground text-balance">
                     Whether you're new to running or a seasoned marathoner, there's a place for you in South Loop
@@ -55,9 +54,6 @@ export function JoinCTA() {
                       </a>
                     </Button>
                   </div>
-                </div>
-
-                
               </div>
             </CardContent>
           </Card>
