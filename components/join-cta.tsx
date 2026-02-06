@@ -67,10 +67,10 @@ export function JoinCTA() {
                         title="Strava Club Statistics"
                         allowTransparency
                         frameBorder="0"
-                        height="160"
+                        height="454"
                         scrolling="no"
-                        src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=false"
-                        width="100%"
+                        src="https://www.strava.com/clubs/943959/latest-rides/f004bd56b781ef2add4c82f7e5115cf897c16808?show_rides=true"
+                        width="300"
                         className="w-full"
                       />
                     </CardContent>

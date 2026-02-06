@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare } from "lucide-react"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
-import { GearRecommendation } from "@/components/gear-recommendation"
 import Link from "next/link"
 import Image from "next/image"
 import useSWR from "swr"
@@ -378,13 +377,10 @@ export function UpcomingRuns() {
           </div>
 
           {dayKey && (
-            <>
-              <WeatherWidget
-                day={dayKey as any}
-                onWeatherLoad={(weather) => setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))}
-              />
-              <GearRecommendation weather={weatherData[dayKey] || null} />
-            </>
+            <WeatherWidget
+              day={dayKey as any}
+              onWeatherLoad={(weather) => setWeatherData((prev) => ({ ...prev, [dayKey]: weather }))}
+            />
           )}
 
           <div className="flex flex-wrap gap-2">
