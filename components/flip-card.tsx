@@ -34,7 +34,7 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
       >
         {/* Front */}
         <div
-          className="flip-card-face"
+          className="flip-card-face flex flex-col"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
@@ -43,23 +43,25 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
             height: "100%",
           }}
         >
-          {front}
+          <div className="flex-1 min-h-0">{front}</div>
           {hasBack && (
-            <Button
-              onClick={() => setIsFlipped(true)}
-              size="sm"
-              variant="secondary"
-              className="absolute bottom-4 right-4 shadow-lg hover:shadow-xl transition-all"
-            >
-              <RotateCw className="h-4 w-4 mr-2" />
-              View Route Map
-            </Button>
+            <div className="sticky bottom-0 z-10 rounded-b-3xl bg-gradient-to-t from-card via-card/95 to-transparent px-4 pb-3 pt-8 flex justify-end">
+              <Button
+                onClick={() => setIsFlipped(true)}
+                size="sm"
+                variant="secondary"
+                className="shadow-lg hover:shadow-xl transition-all"
+              >
+                <RotateCw className="h-4 w-4 mr-2" />
+                View Route Map
+              </Button>
+            </div>
           )}
         </div>
 
         {/* Back */}
         <div
-          className="flip-card-face"
+          className="flip-card-face flex flex-col"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
@@ -69,13 +71,13 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
             height: "100%",
           }}
         >
-          <div className="relative h-full">
-            {back}
+          <div className="flex-1 min-h-0">{back}</div>
+          <div className="sticky bottom-0 z-10 rounded-b-3xl bg-gradient-to-t from-card via-card/95 to-transparent px-4 pb-3 pt-8 flex justify-end">
             <Button
               onClick={() => setIsFlipped(false)}
               size="sm"
               variant="secondary"
-              className="absolute bottom-4 right-4 shadow-lg hover:shadow-xl transition-all z-10"
+              className="shadow-lg hover:shadow-xl transition-all"
             >
               <RotateCw className="h-4 w-4 mr-2" />
               View Details
