@@ -41,6 +41,7 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
             position: isFlipped ? "absolute" : "relative",
             width: "100%",
             height: "100%",
+            pointerEvents: isFlipped ? "none" : "auto",
           }}
         >
           <div className="flex-1 min-h-0">{front}</div>
@@ -69,6 +70,7 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
             position: !isFlipped ? "absolute" : "relative",
             width: "100%",
             height: "100%",
+            pointerEvents: !isFlipped ? "none" : "auto",
           }}
         >
           <div className="flex-1 min-h-0">{back}</div>
