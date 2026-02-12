@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare } from "lucide-react"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare, UserPlus } from "lucide-react"
+import { Input } from "@/components/ui/input"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
 import Link from "next/link"
@@ -35,11 +36,13 @@ interface PaceInterest {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: boolean }) {
+function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: string; hasSocial: boolean; collectRsvpNames: boolean }) {
   const [selectedPace, setSelectedPace] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [attendingSocial, setAttendingSocial] = useState(false)
   const [isSocialSubmitting, setIsSocialSubmitting] = useState(false)
+  const [rsvpName, setRsvpName] = useState("")
+  const [isRsvpSubmitting, setIsRsvpSubmitting] = useState(false)
 
   const {
     data: paceInterests = [],
@@ -61,6 +64,16 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
     {
       refreshInterval: 5000,
       fallbackData: { socialCount: 0 },
+    },
+  )
+
+  const { data: runRsvps = [], mutate: mutateRsvps } = useSWR<Array<{ id: number; name: string; pace: string | null; created_at: string }>>(
+    collectRsvpNames ? `/api/events/run-rsvps/${runId}` : null,
+    fetcher,
+    {
+      refreshInterval: 5000,
+      fallbackData: [],
+      shouldRetryOnError: false,
     },
   )
 
@@ -98,6 +111,28 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
       console.error("Failed to submit interest:", error)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleRsvpSubmit = async () => {
+    if (!rsvpName.trim() || isRsvpSubmitting) return
+
+    setIsRsvpSubmitting(true)
+    try {
+      const response = await fetch(`/api/events/run-rsvps/${runId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: rsvpName.trim(), pace: selectedPace || null }),
+      })
+
+      if (response.ok) {
+        await mutateRsvps()
+        setRsvpName("")
+      }
+    } catch (error) {
+      console.error("Failed to submit RSVP:", error)
+    } finally {
+      setIsRsvpSubmitting(false)
     }
   }
 
@@ -184,6 +219,53 @@ function PaceInterestSection({ runId, hasSocial }: { runId: string; hasSocial: b
           </div>
         )}
       </div>
+
+      {collectRsvpNames && (
+        <div className="border-t pt-3 mt-3 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <UserPlus className="h-4 w-4" />
+            <span>RSVP with Your Name</span>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={rsvpName}
+              onChange={(e) => setRsvpName(e.target.value)}
+              placeholder="First name + last initial (e.g. Mike O.)"
+              className="flex-1"
+              maxLength={50}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  handleRsvpSubmit()
+                }
+              }}
+            />
+            <Button
+              onClick={handleRsvpSubmit}
+              disabled={!rsvpName.trim() || isRsvpSubmitting}
+              size="sm"
+              variant="default"
+            >
+              {isRsvpSubmitting ? "Adding..." : "RSVP"}
+            </Button>
+          </div>
+          {Array.isArray(runRsvps) && runRsvps.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {runRsvps.length} {runRsvps.length === 1 ? "runner" : "runners"} attending
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {runRsvps.map((rsvp) => (
+                  <Badge key={rsvp.id} variant="secondary" className="text-xs">
+                    {rsvp.name}
+                    {rsvp.pace ? ` - ${rsvp.pace}` : ""}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {totalInterested > 0 && (
         <div className="space-y-2">
@@ -421,6 +503,12 @@ export function UpcomingRuns() {
               event.has_post_run_social === "1" ||
               event.has_post_run_social === true ||
               event.has_post_run_social === "true"
+            }
+            collectRsvpNames={
+              event.collect_rsvp_names === 1 ||
+              event.collect_rsvp_names === "1" ||
+              event.collect_rsvp_names === true ||
+              event.collect_rsvp_names === "true"
             }
           />
         </CardContent>

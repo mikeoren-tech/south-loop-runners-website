@@ -11,7 +11,7 @@ export async function onRequestGet(context: { env: Env; request: Request }) {
         id, title, description, date, time, location, 
         type, is_recurring, day_of_week, is_featured_homepage, 
         display_order, distance, pace, facebook_link, strava_link,
-        has_post_run_social, route_map_iframe,
+        has_post_run_social, collect_rsvp_names, route_map_iframe,
         created_at, updated_at
       FROM events 
       WHERE deleted_at IS NULL 
@@ -26,6 +26,7 @@ export async function onRequestGet(context: { env: Env; request: Request }) {
     const events = results?.map((event: any) => ({
       ...event,
       has_post_run_social: Boolean(event.has_post_run_social),
+      collect_rsvp_names: Boolean(event.collect_rsvp_names),
       is_recurring: Boolean(event.is_recurring),
       is_featured_homepage: Boolean(event.is_featured_homepage),
     }))

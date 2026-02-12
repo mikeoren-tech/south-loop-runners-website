@@ -23,6 +23,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
     type: "special-event",
     is_recurring: false,
     has_post_run_social: false,
+    collect_rsvp_names: false,
     date: "",
     time: "",
     day_of_week: "",
@@ -46,6 +47,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
         type: event.type || "special-event",
         is_recurring: Boolean(event.is_recurring),
         has_post_run_social: Boolean(event.has_post_run_social),
+        collect_rsvp_names: Boolean(event.collect_rsvp_names),
         date: event.date || "",
         time: event.time || "",
         day_of_week: event.day_of_week?.toString() || "",
@@ -157,6 +159,17 @@ export function EventForm({ event, onClose }: EventFormProps) {
               />
               <Label htmlFor="post_run_social">Has Post-Run Social</Label>
             </div>
+
+            {(formData.type === "weekly-run" || formData.type === "special-event") && (
+              <div className="flex items-center space-x-2 pt-8">
+                <Checkbox
+                  id="collect_rsvp_names"
+                  checked={formData.collect_rsvp_names}
+                  onCheckedChange={(checked) => setFormData({ ...formData, collect_rsvp_names: checked as boolean })}
+                />
+                <Label htmlFor="collect_rsvp_names">Collect RSVP Names</Label>
+              </div>
+            )}
 
             {formData.is_recurring ? (
               <div>

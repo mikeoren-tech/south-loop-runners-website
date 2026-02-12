@@ -24,6 +24,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       type,
       is_recurring,
       has_post_run_social,
+      collect_rsvp_names,
       date,
       time,
       day_of_week,
@@ -34,7 +35,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       strava_link,
       registration_url,
       display_order,
-      route_map_iframe, // Added route_map_iframe field
+      route_map_iframe,
       sendEmail,
     } = body
 
@@ -42,7 +43,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       id,
       title,
       has_post_run_social,
-      route_map_iframe, // Log route_map_iframe
+      collect_rsvp_names,
+      route_map_iframe,
       sendEmail,
     })
 
@@ -53,6 +55,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         type = ?,
         is_recurring = ?,
         has_post_run_social = ?,
+        collect_rsvp_names = ?,
         date = ?,
         time = ?,
         day_of_week = ?,
@@ -73,6 +76,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         type,
         is_recurring ? 1 : 0,
         has_post_run_social ? 1 : 0,
+        collect_rsvp_names ? 1 : 0,
         date || null,
         time || null,
         day_of_week ? Number.parseInt(day_of_week) : null,
@@ -83,7 +87,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         strava_link || null,
         registration_url || null,
         display_order ? Number.parseInt(display_order) : null,
-        route_map_iframe || null, // Bind route_map_iframe value
+        route_map_iframe || null,
         id,
       )
       .run()

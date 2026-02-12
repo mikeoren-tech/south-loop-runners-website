@@ -104,6 +104,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       })
 
       console.log(`[v0] Reset ${resetQuery.meta.changes} pace groups for ${eventTitle}`)
+
+      // Also clear run RSVPs (name-based) for this event
+      const rsvpResetQuery = await env.DB.prepare(
+        `DELETE FROM run_rsvps WHERE event_id = ?`,
+      )
+        .bind(eventId)
+        .run()
+
+      console.log(`[v0] Cleared ${rsvpResetQuery.meta.changes} run RSVPs for ${eventTitle}`)
+
+      resetResults[resetResults.length - 1].rsvpsCleared = rsvpResetQuery.meta.changes
     }
 
     return new Response(
