@@ -162,70 +162,27 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
 
   return (
     <div className="border-t pt-4 mt-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        <Users className="h-4 w-4" />
-        <span>Show Your Interest</span>
-        <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
-      </div>
-
-      <p className="text-xs text-muted-foreground">
-        Planning to attend?{" "}
-        <a
-          href="https://discord.gg/U5u3DxmCQN"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-slr-red hover:underline font-medium inline-flex items-center gap-1"
-        >
-          Chat with runners on Discord
-          <MessageSquare className="h-3 w-3 inline" />
-        </a>
-      </p>
-
-      <div className="flex gap-2">
-        <Select value={selectedPace} onValueChange={setSelectedPace}>
-          <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Select your pace" />
-          </SelectTrigger>
-          <SelectContent className="bg-white">
-            {PACE_GROUPS.map((pace) => (
-              <SelectItem key={pace} value={pace}>
-                {pace}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
-          {isSubmitting ? "Adding..." : "Add"}
-        </Button>
-      </div>
-
-      <div className="flex gap-1">
-        {hasSocial && (
-          <div className="flex items-center gap-2 pl-1">
-            <Checkbox
-              id={`social-${runId}`}
-              checked={attendingSocial}
-              onCheckedChange={handleSocialToggle}
-              disabled={isSocialSubmitting}
-            />
-            <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
-              Also attending the social?
-              {socialData?.socialCount > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {socialData.socialCount}
-                </Badge>
-              )}
-            </Label>
-          </div>
-        )}
-      </div>
-
-      {collectRsvpNames && (
-        <div className="border-t pt-3 mt-3 space-y-3">
+      {collectRsvpNames ? (
+        // RSVP name collection UI
+        <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <UserPlus className="h-4 w-4" />
             <span>RSVP with Your Name</span>
           </div>
+
+          <p className="text-xs text-muted-foreground">
+            Planning to attend?{" "}
+            <a
+              href="https://discord.gg/U5u3DxmCQN"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slr-red hover:underline font-medium inline-flex items-center gap-1"
+            >
+              Chat with runners on Discord
+              <MessageSquare className="h-3 w-3 inline" />
+            </a>
+          </p>
+
           <div className="flex gap-2">
             <Input
               value={rsvpName}
@@ -249,6 +206,23 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
               {isRsvpSubmitting ? "Adding..." : "RSVP"}
             </Button>
           </div>
+
+          <div className="space-y-2">
+            <Select value={selectedPace} onValueChange={setSelectedPace}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your pace (optional)" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                {PACE_GROUPS.map((pace) => (
+                  <SelectItem key={pace} value={pace}>
+                    {pace}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground italic">Your pace selection is optional</p>
+          </div>
+
           {Array.isArray(runRsvps) && runRsvps.length > 0 && (
             <div className="space-y-1">
               <p className="text-sm font-medium">
@@ -264,27 +238,107 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
               </div>
             </div>
           )}
-        </div>
-      )}
 
-      {totalInterested > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">
-            {totalInterested} {totalInterested === 1 ? "runner" : "runners"} interested
-          </p>
-          <div className="space-y-1">
-            {PACE_GROUPS.map((pace) => {
-              const count = paceCounts[pace]
-              if (!count || count === 0) return null
-              return (
-                <div key={pace} className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{pace}</span>
-                  <Badge variant="secondary">{count}</Badge>
-                </div>
-              )
-            })}
-          </div>
+          {hasSocial && (
+            <div className="flex items-center gap-2 pl-1 pt-2 border-t">
+              <Checkbox
+                id={`social-${runId}`}
+                checked={attendingSocial}
+                onCheckedChange={handleSocialToggle}
+                disabled={isSocialSubmitting}
+              />
+              <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
+                Also attending the social?
+                {socialData?.socialCount > 0 && (
+                  <Badge variant="secondary" className="ml-1">
+                    {socialData.socialCount}
+                  </Badge>
+                )}
+              </Label>
+            </div>
+          )}
         </div>
+      ) : (
+        // Original pace interest UI
+        <>
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <span>Show Your Interest</span>
+            <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Planning to attend?{" "}
+            <a
+              href="https://discord.gg/U5u3DxmCQN"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slr-red hover:underline font-medium inline-flex items-center gap-1"
+            >
+              Chat with runners on Discord
+              <MessageSquare className="h-3 w-3 inline" />
+            </a>
+          </p>
+
+          <div className="flex gap-2">
+            <Select value={selectedPace} onValueChange={setSelectedPace}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select your pace" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                {PACE_GROUPS.map((pace) => (
+                  <SelectItem key={pace} value={pace}>
+                    {pace}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
+              {isSubmitting ? "Adding..." : "Add"}
+            </Button>
+          </div>
+
+          <div className="flex gap-1">
+            {hasSocial && (
+              <div className="flex items-center gap-2 pl-1">
+                <Checkbox
+                  id={`social-${runId}`}
+                  checked={attendingSocial}
+                  onCheckedChange={handleSocialToggle}
+                  disabled={isSocialSubmitting}
+                />
+                <Label htmlFor={`social-${runId}`} className="text-sm cursor-pointer flex items-center gap-2">
+                  Also attending the social?
+                  {socialData?.socialCount > 0 && (
+                    <Badge variant="secondary" className="ml-1">
+                      {socialData.socialCount}
+                    </Badge>
+                  )}
+                </Label>
+              </div>
+            )}
+          </div>
+
+          {totalInterested > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                {totalInterested} {totalInterested === 1 ? "runner" : "runners"} interested
+              </p>
+              <div className="space-y-1">
+                {PACE_GROUPS.map((pace) => {
+                  const count = paceCounts[pace]
+                  if (!count || count === 0) return null
+                  return (
+                    <div key={pace} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{pace}</span>
+                      <Badge variant="secondary">{count}</Badge>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
