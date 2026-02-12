@@ -167,7 +167,7 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <UserPlus className="h-4 w-4" />
-            <span>RSVP with Your Name</span>
+            <span>RSVP for This Run</span>
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -187,8 +187,8 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
             <Input
               value={rsvpName}
               onChange={(e) => setRsvpName(e.target.value)}
-              placeholder="First name + last initial (e.g. Mike O.)"
-              className="flex-1"
+              placeholder="First + last initial (e.g. Mike O.)"
+              className="flex-1 min-w-0"
               maxLength={50}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -202,45 +202,27 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
               disabled={!rsvpName.trim() || isRsvpSubmitting}
               size="sm"
               variant="default"
+              className="shrink-0"
             >
-              {isRsvpSubmitting ? "Adding..." : "RSVP"}
+              {isRsvpSubmitting ? "..." : "RSVP"}
             </Button>
           </div>
 
-          <div className="space-y-2">
-            <Select value={selectedPace} onValueChange={setSelectedPace}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select your pace (optional)" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                {PACE_GROUPS.map((pace) => (
-                  <SelectItem key={pace} value={pace}>
-                    {pace}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground italic">Your pace selection is optional</p>
-          </div>
-
-          {Array.isArray(runRsvps) && runRsvps.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-sm font-medium">
-                {runRsvps.length} {runRsvps.length === 1 ? "runner" : "runners"} attending
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {runRsvps.map((rsvp) => (
-                  <Badge key={rsvp.id} variant="secondary" className="text-xs">
-                    {rsvp.name}
-                    {rsvp.pace ? ` - ${rsvp.pace}` : ""}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+          <Select value={selectedPace} onValueChange={setSelectedPace}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your pace (optional)" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {PACE_GROUPS.map((pace) => (
+                <SelectItem key={pace} value={pace}>
+                  {pace}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {hasSocial && (
-            <div className="flex items-center gap-2 pl-1 pt-2 border-t">
+            <div className="flex items-center gap-2">
               <Checkbox
                 id={`social-${runId}`}
                 checked={attendingSocial}
@@ -257,6 +239,42 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
               </Label>
             </div>
           )}
+
+          {Array.isArray(runRsvps) && runRsvps.length > 0 && (() => {
+            // Group RSVPs by pace
+            const grouped: Record<string, string[]> = {}
+            runRsvps.forEach((rsvp) => {
+              const paceKey = rsvp.pace || "TBD"
+              if (!grouped[paceKey]) grouped[paceKey] = []
+              grouped[paceKey].push(rsvp.name)
+            })
+            // Sort pace groups: named paces first (in PACE_GROUPS order), then TBD last
+            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+              if (a === "TBD") return 1
+              if (b === "TBD") return -1
+              const aIndex = PACE_GROUPS.indexOf(a)
+              const bIndex = PACE_GROUPS.indexOf(b)
+              if (aIndex === -1 && bIndex === -1) return a.localeCompare(b)
+              if (aIndex === -1) return 1
+              if (bIndex === -1) return -1
+              return aIndex - bIndex
+            })
+            return (
+              <div className="space-y-2 border-t pt-3">
+                <p className="text-sm font-medium">
+                  {runRsvps.length} {runRsvps.length === 1 ? "runner" : "runners"} attending
+                </p>
+                <div className="space-y-1.5">
+                  {sortedKeys.map((paceKey) => (
+                    <div key={paceKey} className="text-sm">
+                      <span className="font-medium text-muted-foreground">{paceKey}:</span>{" "}
+                      <span>{grouped[paceKey].join(", ")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
         </div>
       ) : (
         // Original pace interest UI
