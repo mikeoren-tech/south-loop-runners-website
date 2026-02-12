@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Calendar, Clock, MapPin, RotateCcw, Loader2 } from "lucide-react"
+import { Edit, Trash2, Calendar, Clock, MapPin, RotateCcw, Loader2, Users } from "lucide-react"
 import { format } from "date-fns"
 
 interface Event {
@@ -15,6 +15,7 @@ interface Event {
   location?: string
   type: string
   is_recurring: number
+  collect_rsvp_names?: number
   day_of_week?: number
 }
 
@@ -27,6 +28,7 @@ interface EventListProps {
 export function EventList({ events, onEdit, onDelete }: EventListProps) {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [resetting, setResetting] = useState<string | null>(null)
+  const [resettingRsvps, setResettingRsvps] = useState<string | null>(null)
 
   const handleDelete = async (eventId: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return
@@ -69,6 +71,29 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
       alert("Failed to reset pace group counts")
     } finally {
       setResetting(null)
+    }
+  }
+
+  const handleResetRunRsvps = async (eventId: string, eventTitle: string) => {
+    if (!confirm(`Clear all RSVP names for "${eventTitle}"?`)) return
+
+    setResettingRsvps(eventId)
+    try {
+      const response = await fetch(`/api/admin/events/reset-run-rsvps/${eventId}`, {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message || "RSVPs cleared successfully!")
+      } else {
+        alert("Failed to clear RSVPs")
+      }
+    } catch (error) {
+      console.error("[v0] Error resetting run RSVPs:", error)
+      alert("Failed to clear RSVPs")
+    } finally {
+      setResettingRsvps(null)
     }
   }
 
@@ -115,6 +140,12 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-lg">{event.title}</h3>
               <Badge variant="secondary">{getEventType(event.type, event.is_recurring)}</Badge>
+              {Boolean(event.collect_rsvp_names) && (
+                <Badge variant="outline" className="text-xs">
+                  <Users className="w-3 h-3 mr-1" />
+                  RSVP Names
+                </Badge>
+              )}
             </div>
 
             {event.description && <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>}
@@ -164,6 +195,21 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
                 <RotateCcw className="w-4 h-4" />
               )}
             </Button>
+            {Boolean(event.collect_rsvp_names) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleResetRunRsvps(event.id, event.title)}
+                disabled={resettingRsvps === event.id}
+                title="Clear RSVP names"
+              >
+                {resettingRsvps === event.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Users className="w-4 h-4" />
+                )}
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => onEdit(event)}>
               <Edit className="w-4 h-4" />
             </Button>

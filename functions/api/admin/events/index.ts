@@ -21,6 +21,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       type,
       is_recurring,
       has_post_run_social,
+      collect_rsvp_names,
       date,
       time,
       day_of_week,
@@ -31,7 +32,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       strava_link,
       registration_url,
       display_order,
-      route_map_iframe, // Added route_map_iframe field
+      route_map_iframe,
       sendEmail,
     } = body
 
@@ -40,10 +41,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     await DB.prepare(`
       INSERT INTO events (
-        id, title, description, type, is_recurring, has_post_run_social, date, time,
+        id, title, description, type, is_recurring, has_post_run_social, collect_rsvp_names, date, time,
         day_of_week, location, distance, pace, facebook_link,
         strava_link, registration_url, display_order, route_map_iframe
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
       .bind(
         id,
@@ -52,6 +53,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         type,
         is_recurring ? 1 : 0,
         has_post_run_social ? 1 : 0,
+        collect_rsvp_names ? 1 : 0,
         date || null,
         time || "",
         day_of_week ? Number.parseInt(day_of_week) : null,
@@ -62,7 +64,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         strava_link || null,
         registration_url || null,
         display_order ? Number.parseInt(display_order) : null,
-        route_map_iframe || null, // Bind route_map_iframe value
+        route_map_iframe || null,
       )
       .run()
 
