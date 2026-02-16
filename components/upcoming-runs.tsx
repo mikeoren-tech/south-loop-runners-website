@@ -183,43 +183,52 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
             </a>
           </p>
 
-          <div className="flex gap-2">
-            <Input
-              value={rsvpName}
-              onChange={(e) => setRsvpName(e.target.value)}
-              placeholder="First + last initial (e.g. Mike O.)"
-              className="flex-1 min-w-0"
-              maxLength={50}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault()
-                  handleRsvpSubmit()
-                }
-              }}
-            />
-            <Button
-              onClick={handleRsvpSubmit}
-              disabled={!rsvpName.trim() || isRsvpSubmitting}
-              size="sm"
-              variant="default"
-              className="shrink-0"
-            >
-              {isRsvpSubmitting ? "..." : "RSVP"}
-            </Button>
-          </div>
+          {Array.isArray(runRsvps) && runRsvps.length >= 25 ? (
+            <div className="bg-muted/50 border border-muted rounded-lg p-4 text-center">
+              <p className="text-sm font-medium text-muted-foreground">RSVPs are full (25/25)</p>
+              <p className="text-xs text-muted-foreground mt-1">This run has reached maximum capacity</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex gap-2">
+                <Input
+                  value={rsvpName}
+                  onChange={(e) => setRsvpName(e.target.value)}
+                  placeholder="First + last initial (e.g. Mike O.)"
+                  className="flex-1 min-w-0"
+                  maxLength={50}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleRsvpSubmit()
+                    }
+                  }}
+                />
+                <Button
+                  onClick={handleRsvpSubmit}
+                  disabled={!rsvpName.trim() || isRsvpSubmitting}
+                  size="sm"
+                  variant="default"
+                  className="shrink-0"
+                >
+                  {isRsvpSubmitting ? "..." : "RSVP"}
+                </Button>
+              </div>
 
-          <Select value={selectedPace} onValueChange={setSelectedPace}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select your pace (optional)" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              {PACE_GROUPS.map((pace) => (
-                <SelectItem key={pace} value={pace}>
-                  {pace}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              <Select value={selectedPace} onValueChange={setSelectedPace}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your pace (optional)" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  {PACE_GROUPS.map((pace) => (
+                    <SelectItem key={pace} value={pace}>
+                      {pace}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </>
+          )}
 
           {hasSocial && (
             <div className="flex items-center gap-2">
