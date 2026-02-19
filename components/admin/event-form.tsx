@@ -24,6 +24,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
     is_recurring: false,
     has_post_run_social: false,
     collect_rsvp_names: false,
+    max_rsvp_limit: "",
     date: "",
     time: "",
     day_of_week: "",
@@ -48,6 +49,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
         is_recurring: Boolean(event.is_recurring),
         has_post_run_social: Boolean(event.has_post_run_social),
         collect_rsvp_names: Boolean(event.collect_rsvp_names),
+        max_rsvp_limit: event.max_rsvp_limit?.toString() || "",
         date: event.date || "",
         time: event.time || "",
         day_of_week: event.day_of_week?.toString() || "",
@@ -168,6 +170,21 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   onCheckedChange={(checked) => setFormData({ ...formData, collect_rsvp_names: checked as boolean })}
                 />
                 <Label htmlFor="collect_rsvp_names">Collect RSVP Names</Label>
+              </div>
+            )}
+
+            {formData.collect_rsvp_names && (
+              <div>
+                <Label htmlFor="max_rsvp_limit">Max RSVP Limit</Label>
+                <Input
+                  id="max_rsvp_limit"
+                  type="number"
+                  min="1"
+                  value={formData.max_rsvp_limit}
+                  onChange={(e) => setFormData({ ...formData, max_rsvp_limit: e.target.value })}
+                  placeholder="No limit"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Leave blank for unlimited RSVPs</p>
               </div>
             )}
 

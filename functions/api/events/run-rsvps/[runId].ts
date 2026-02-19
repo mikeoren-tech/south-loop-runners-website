@@ -69,6 +69,28 @@ export async function onRequestPost(context: { env: Env; params: { runId: string
     // Sanitize name input (first name + last initial, max 50 chars)
     const sanitizedName = name.trim().slice(0, 50)
 
+    // Check if event has a max RSVP limit
+    const event = await context.env.DB.prepare(
+      `SELECT max_rsvp_limit FROM events WHERE id = ?`,
+    )
+      .bind(runId)
+      .first()
+
+    if (event?.max_rsvp_limit) {
+      const countResult = await context.env.DB.prepare(
+        `SELECT COUNT(*) as count FROM run_rsvps WHERE event_id = ?`,
+      )
+        .bind(runId)
+        .first()
+
+      if (countResult && (countResult.count as number) >= (event.max_rsvp_limit as number)) {
+        return new Response(JSON.stringify({ error: "RSVPs are full" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        })
+      }
+    }
+
     await context.env.DB.prepare(
       `INSERT INTO run_rsvps (event_id, name, pace) VALUES (?, ?, ?)`,
     )

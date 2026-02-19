@@ -39,6 +39,16 @@ export async function onRequestPost(context: { env: Env; params: { eventId: stri
       .bind(eventId)
       .run()
 
+    // Also clear run_rsvps entries for this event
+    const rsvpDeleteResult = await context.env.DB.prepare(
+      `DELETE FROM run_rsvps WHERE event_id = ?`,
+    )
+      .bind(eventId)
+      .run()
+
+    const rsvpsCleared = rsvpDeleteResult.meta?.changes || 0
+    console.log("[v0] Cleared run_rsvps:", rsvpsCleared)
+
     console.log("[v0] Reset result:", resetResult)
 
     if (!resetResult.success) {
@@ -58,7 +68,7 @@ export async function onRequestPost(context: { env: Env; params: { eventId: stri
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Reset ${changesCount} pace group counts`,
+        message: `Reset ${changesCount} pace group counts and cleared ${rsvpsCleared} RSVPs`,
         paceInterests,
       }),
       {

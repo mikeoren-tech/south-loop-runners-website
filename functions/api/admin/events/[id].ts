@@ -36,6 +36,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       registration_url,
       display_order,
       route_map_iframe,
+      max_rsvp_limit,
       sendEmail,
     } = body
 
@@ -44,6 +45,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       title,
       has_post_run_social,
       collect_rsvp_names,
+      max_rsvp_limit,
       route_map_iframe,
       sendEmail,
     })
@@ -56,6 +58,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         is_recurring = ?,
         has_post_run_social = ?,
         collect_rsvp_names = ?,
+        max_rsvp_limit = ?,
         date = ?,
         time = ?,
         day_of_week = ?,
@@ -77,6 +80,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         is_recurring ? 1 : 0,
         has_post_run_social ? 1 : 0,
         collect_rsvp_names ? 1 : 0,
+        max_rsvp_limit ? Number.parseInt(max_rsvp_limit) : null,
         date || null,
         time || null,
         day_of_week ? Number.parseInt(day_of_week) : null,
