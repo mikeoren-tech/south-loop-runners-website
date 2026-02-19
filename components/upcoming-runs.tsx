@@ -36,7 +36,7 @@ interface PaceInterest {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: string; hasSocial: boolean; collectRsvpNames: boolean }) {
+function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit }: { runId: string; hasSocial: boolean; collectRsvpNames: boolean; maxRsvpLimit: number | null }) {
   const [selectedPace, setSelectedPace] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [attendingSocial, setAttendingSocial] = useState(false)
@@ -183,7 +183,7 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
             </a>
           </p>
 
-          {!(Array.isArray(runRsvps) && runRsvps.length >= 25) && (
+          {!(maxRsvpLimit && Array.isArray(runRsvps) && runRsvps.length >= maxRsvpLimit) && (
             <>
               <div className="flex gap-2">
                 <Input
@@ -266,7 +266,10 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames }: { runId: st
             return (
               <div className="space-y-2 border-t pt-3">
                 <p className="text-sm font-medium">
-                  {runRsvps.length} {runRsvps.length === 1 ? "runner" : "runners"} attending
+                  {runRsvps.length}{maxRsvpLimit ? `/${maxRsvpLimit}` : ""} {runRsvps.length === 1 ? "runner" : "runners"} attending
+                  {maxRsvpLimit && runRsvps.length >= maxRsvpLimit && (
+                    <span className="text-muted-foreground font-normal"> - RSVPs full</span>
+                  )}
                 </p>
                 <div className="space-y-1.5">
                   {sortedKeys.map((paceKey) => (
@@ -586,6 +589,7 @@ export function UpcomingRuns() {
               event.collect_rsvp_names === true ||
               event.collect_rsvp_names === "true"
             }
+            maxRsvpLimit={event.max_rsvp_limit ? Number(event.max_rsvp_limit) : null}
           />
         </CardContent>
       </Card>

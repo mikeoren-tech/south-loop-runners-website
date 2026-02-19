@@ -33,6 +33,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       registration_url,
       display_order,
       route_map_iframe,
+      max_rsvp_limit,
       sendEmail,
     } = body
 
@@ -41,10 +42,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     await DB.prepare(`
       INSERT INTO events (
-        id, title, description, type, is_recurring, has_post_run_social, collect_rsvp_names, date, time,
+        id, title, description, type, is_recurring, has_post_run_social, collect_rsvp_names, max_rsvp_limit, date, time,
         day_of_week, location, distance, pace, facebook_link,
         strava_link, registration_url, display_order, route_map_iframe
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
       .bind(
         id,
@@ -54,6 +55,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         is_recurring ? 1 : 0,
         has_post_run_social ? 1 : 0,
         collect_rsvp_names ? 1 : 0,
+        max_rsvp_limit ? Number.parseInt(max_rsvp_limit) : null,
         date || null,
         time || "",
         day_of_week ? Number.parseInt(day_of_week) : null,
