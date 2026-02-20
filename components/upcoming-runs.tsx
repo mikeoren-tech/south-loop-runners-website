@@ -555,7 +555,7 @@ export function UpcomingRuns() {
 
           <div className="space-y-3">
             <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
-              RSVP on the club pages / get the most up-to-date info
+              Follow us on social for the latest
             </p>
             <div className="flex gap-2">
               <Button className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0" asChild>
