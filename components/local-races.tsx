@@ -63,19 +63,20 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 const attendeeFetcher = async (url: string): Promise<Attendee[]> => {
   try {
     const response = await fetch(url)
-    const contentType = response.headers.get("content-type")
-
-    if (contentType?.includes("text/html")) {
-      const raceId = url.split("/").pop() || ""
-      return getLocalAttendees(raceId)
-    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
     }
 
-    return await response.json()
+    const contentType = response.headers.get("content-type")
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Invalid response type")
+    }
+
+    const data = await response.json()
+    return Array.isArray(data) ? data : []
   } catch (error) {
+    // Fall back to localStorage only if API is unreachable
     const raceId = url.split("/").pop() || ""
     return getLocalAttendees(raceId)
   }
@@ -196,17 +197,12 @@ function RaceCard({ race, index }: { race: any; index: number }) {
         body: JSON.stringify(newAttendee),
       })
 
-      const contentType = response.headers.get("content-type")
-
-      if (contentType?.includes("text/html") || !response.ok) {
-        const currentAttendees = getLocalAttendees(race.id)
-        const updatedAttendees = [...currentAttendees, newAttendee]
-        setLocalAttendees(race.id, updatedAttendees)
-        setUseLocalStorage(true)
-        await mutate(updatedAttendees, false)
-      } else {
-        await mutate()
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
       }
+
+      const updatedList = await response.json()
+      await mutate(updatedList, false)
 
       setFirstName("")
       setLastInitial("")
@@ -216,6 +212,7 @@ function RaceCard({ race, index }: { race: any; index: number }) {
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
     } catch (error) {
+      // Fallback to localStorage if API fails
       const currentAttendees = getLocalAttendees(race.id)
       const updatedAttendees = [...currentAttendees, newAttendee]
       setLocalAttendees(race.id, updatedAttendees)
@@ -232,18 +229,14 @@ function RaceCard({ race, index }: { race: any; index: number }) {
         method: "DELETE",
       })
 
-      const contentType = response.headers.get("content-type")
-
-      if (contentType?.includes("text/html") || !response.ok) {
-        const currentAttendees = getLocalAttendees(race.id)
-        const updatedAttendees = currentAttendees.filter((a) => a.id !== attendeeId)
-        setLocalAttendees(race.id, updatedAttendees)
-        setUseLocalStorage(true)
-        await mutate(updatedAttendees, false)
-      } else {
-        await mutate()
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
       }
+
+      const updatedList = await response.json()
+      await mutate(updatedList, false)
     } catch (error) {
+      // Fallback to localStorage if API fails
       const currentAttendees = getLocalAttendees(race.id)
       const updatedAttendees = currentAttendees.filter((a) => a.id !== attendeeId)
       setLocalAttendees(race.id, updatedAttendees)

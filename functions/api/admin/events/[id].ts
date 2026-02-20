@@ -37,6 +37,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       display_order,
       route_map_iframe,
       max_rsvp_limit,
+      image_url,
       sendEmail,
     } = body
 
@@ -46,6 +47,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       has_post_run_social,
       collect_rsvp_names,
       max_rsvp_limit,
+      image_url,
       route_map_iframe,
       sendEmail,
     })
@@ -70,6 +72,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         registration_url = ?,
         display_order = ?,
         route_map_iframe = ?,
+        image_url = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `)
@@ -92,6 +95,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         registration_url || null,
         display_order ? Number.parseInt(display_order) : null,
         route_map_iframe || null,
+        image_url || null,
         id,
       )
       .run()
