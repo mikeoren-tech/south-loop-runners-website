@@ -36,6 +36,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
     registration_url: "",
     display_order: "",
     route_map_iframe: "",
+    image_url: "",
   })
   const [loading, setLoading] = useState(false)
   const [sendEmail, setSendEmail] = useState(true)
@@ -61,6 +62,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
         registration_url: event.registration_url || "",
         display_order: event.display_order?.toString() || "",
         route_map_iframe: event.route_map_iframe || "",
+        image_url: event.image_url || "",
       })
     }
   }, [event])
@@ -295,15 +297,39 @@ export function EventForm({ event, onClose }: EventFormProps) {
             </div>
 
             {formData.type === "race" && (
-              <div className="col-span-2">
-                <Label htmlFor="registration_url">Registration URL</Label>
-                <Input
-                  id="registration_url"
-                  type="url"
-                  value={formData.registration_url}
-                  onChange={(e) => setFormData({ ...formData, registration_url: e.target.value })}
-                />
-              </div>
+              <>
+                <div className="col-span-2">
+                  <Label htmlFor="registration_url">Registration URL</Label>
+                  <Input
+                    id="registration_url"
+                    type="url"
+                    value={formData.registration_url}
+                    onChange={(e) => setFormData({ ...formData, registration_url: e.target.value })}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="image_url">Race Image URL</Label>
+                  <Input
+                    id="image_url"
+                    type="url"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                    placeholder="e.g., /chicago-lakefront-running.jpg or https://..."
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    URL of the hero image for this race card. Use a path like /image-name.jpg for local images.
+                  </p>
+                  {formData.image_url && (
+                    <div className="mt-2 relative h-32 rounded-lg overflow-hidden border">
+                      <img
+                        src={formData.image_url}
+                        alt="Race image preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {(formData.type === "weekly-run" || formData.type === "special-event") && (
