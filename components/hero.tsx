@@ -33,7 +33,7 @@ export function Hero() {
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-black/50 backdrop-blur-md rounded-3xl p-8 mx-auto max-w-3xl shadow-2xl">
               <p className="text-sm md:text-base text-white/90 font-semibold mb-4 drop-shadow-lg tracking-wide uppercase">
-                More Than Miles: South Loop Smiles
+                Lakefront Regulars
               </p>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-balance text-white drop-shadow-2xl mb-4">
                 South Loop Runners
