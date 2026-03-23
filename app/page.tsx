@@ -2,6 +2,7 @@ import { Hero } from "@/components/hero"
 import { UpcomingRuns } from "@/components/upcoming-runs"
 import { About } from "@/components/about"
 import { LocalRaces } from "@/components/local-races"
+import { NotificationSignup } from "@/components/notification-signup"
 import { InstagramFeed } from "@/components/instagram-feed"
 import { JoinCTA } from "@/components/join-cta"
 import { Footer } from "@/components/footer"
@@ -22,6 +23,7 @@ export default function Home() {
       <div id="races">
         <LocalRaces />
       </div>
+      <NotificationSignup />
       <div id="instagram">
         <InstagramFeed />
       </div>
