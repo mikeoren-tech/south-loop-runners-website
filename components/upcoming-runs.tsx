@@ -711,7 +711,7 @@ export function UpcomingRuns() {
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+          <div className="mt-6 flex flex-col items-center justify-center gap-3">
             <Button
               variant="ghost"
               size="sm"
