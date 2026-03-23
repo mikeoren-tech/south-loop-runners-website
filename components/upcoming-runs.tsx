@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare, UserPlus } from "lucide-react"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare, UserPlus, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
@@ -415,7 +415,10 @@ function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: 
 
 export function UpcomingRuns() {
   const [weatherData, setWeatherData] = useState<{ [key: string]: WeatherData | null }>({})
-
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notificationEmail, setNotificationEmail] = useState("")
+  const [isNotificationSubmitting, setIsNotificationSubmitting] = useState(false)
+  const [notificationSuccess, setNotificationSuccess] = useState(false)
   const { data: featuredEvents = [], isLoading } = useSWR("/api/events/featured", fetcher, {
     fallbackData: [
       {
@@ -496,6 +499,30 @@ export function UpcomingRuns() {
       day: "numeric",
       timeZone: "America/Chicago",
     })
+  }
+
+  const handleNotificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!notificationEmail.trim() || isNotificationSubmitting) return
+
+    setIsNotificationSubmitting(true)
+    try {
+      const response = await fetch("/api/subscribe-notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: notificationEmail.trim() }),
+      })
+
+      if (response.ok) {
+        setNotificationEmail("")
+        setNotificationSuccess(true)
+        setTimeout(() => setNotificationSuccess(false), 3000)
+      }
+    } catch (error) {
+      console.error("Failed to subscribe:", error)
+    } finally {
+      setIsNotificationSubmitting(false)
+    }
   }
 
   const renderEventCard = (event: any, delay: number, className: string) => {
@@ -641,10 +668,19 @@ export function UpcomingRuns() {
       <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
-          <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance text-white">
-            Weekly Runs
-          </h2>
+        <button
+          onClick={() => setShowNotifications(!showNotifications)}
+          className="w-full text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl hover:border-white/40 transition-all"
+        >
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold text-balance text-white">
+              Weekly Runs
+            </h2>
+            <ChevronDown
+              className="h-6 w-6 text-white transition-transform"
+              style={{ transform: showNotifications ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </div>
           <p className="text-lg text-white max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
             <Link
@@ -655,6 +691,31 @@ export function UpcomingRuns() {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>{" "}
           </p>
+
+          {showNotifications && (
+            <div className="mt-6 space-y-3 border-t border-white/20 pt-6">
+              <p className="text-sm text-white/80">Get notified about upcoming runs and races</p>
+              <form onSubmit={handleNotificationSubmit} className="flex gap-2 justify-center max-w-md mx-auto">
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={notificationEmail}
+                  onChange={(e) => setNotificationEmail(e.target.value)}
+                  className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                  disabled={isNotificationSubmitting}
+                />
+                <Button
+                  type="submit"
+                  disabled={!notificationEmail.trim() || isNotificationSubmitting}
+                  className="bg-slr-red/70 hover:bg-slr-red/90 text-white"
+                  size="sm"
+                >
+                  {isNotificationSubmitting ? "..." : notificationSuccess ? "✓" : "Notify"}
+                </Button>
+              </form>
+            </div>
+          )}
+
           <div className="mt-6">
             <Button
               asChild
@@ -678,7 +739,7 @@ export function UpcomingRuns() {
               </Link>
             </Button>
           </div>
-        </div>
+        </button>
 
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
