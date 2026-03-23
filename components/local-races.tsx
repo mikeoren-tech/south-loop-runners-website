@@ -9,17 +9,13 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Calendar,
-  MapPin,
   Trophy,
-  Sparkles,
   Users,
   ExternalLink,
   UserPlus,
   X,
   CheckCircle2,
   Loader2,
-  ChevronDown,
-  ChevronUp,
   Clock,
   Flag,
   Route,
@@ -132,7 +128,6 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
 
 function RaceCard({ race, index }: { race: any; index: number }) {
   const [useLocalStorage, setUseLocalStorage] = useState(false)
-  const [showDetails, setShowDetails] = useState(false)
 
   const {
     data: attendees = [],
@@ -154,11 +149,6 @@ function RaceCard({ race, index }: { race: any; index: number }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const highlights = race.highlights
-    ? typeof race.highlights === "string"
-      ? JSON.parse(race.highlights)
-      : race.highlights
-    : []
   const distances = race.distances
     ? typeof race.distances === "string"
       ? JSON.parse(race.distances)
@@ -269,7 +259,6 @@ function RaceCard({ race, index }: { race: any; index: number }) {
     PartyPopper: PartyPopper,
     Trophy: Trophy,
     Wind: Wind,
-    Sparkles: Sparkles,
   }
 
   return (
@@ -343,15 +332,6 @@ function RaceCard({ race, index }: { race: any; index: number }) {
           </CardHeader>
 
           <CardContent className="space-y-4 flex-1 flex flex-col pb-6">
-            {race.unique_feature && (
-              <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                  <p className="text-sm font-medium leading-relaxed">{race.unique_feature}</p>
-                </div>
-              </div>
-            )}
-
             <div className="p-4 bg-muted/30 rounded-lg border">
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Time Until Race
@@ -359,50 +339,11 @@ function RaceCard({ race, index }: { race: any; index: number }) {
               <CountdownTimer targetDate={race.date} />
             </div>
 
-            <div className="border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setShowDetails(!showDetails)}
-                className="w-full flex items-center justify-between p-4 bg-muted/30 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                aria-expanded={showDetails}
-                aria-label={`${showDetails ? "Hide" : "Show"} race details and highlights`}
-              >
-                <span className="font-semibold text-sm">Race Details & Highlights</span>
-                {showDetails ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                )}
-              </button>
-
-              {showDetails && (
-                <div className="p-4 space-y-3 bg-muted/10">
-                  {race.description && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">{race.description}</p>
-                  )}
-
-                  {race.depart_from && (
-                    <div className="flex items-center gap-2 text-sm pt-2 border-t border-border/50">
-                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-muted-foreground">Departs from {race.depart_from}</span>
-                    </div>
-                  )}
-
-                  {highlights.length > 0 && (
-                    <div className="pt-2 border-t border-border/50">
-                      <h4 className="font-semibold text-sm mb-2">Highlights</h4>
-                      <ul className="space-y-2">
-                        {highlights.map((highlight: string, idx: number) => (
-                          <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                            <span className="text-primary mt-1 shrink-0">•</span>
-                            <span>{highlight}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            {race.description && (
+              <div className="p-4 bg-muted/10 rounded-lg border">
+                <p className="text-sm text-muted-foreground leading-relaxed">{race.description}</p>
+              </div>
+            )}
 
             <div className="border-t pt-4 space-y-4">
               <div className="flex items-center justify-between">
