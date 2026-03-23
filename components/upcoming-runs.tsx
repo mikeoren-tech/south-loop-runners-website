@@ -668,19 +668,10 @@ export function UpcomingRuns() {
       <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <button
-          onClick={() => setShowNotifications(!showNotifications)}
-          className="w-full text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl hover:border-white/40 transition-all"
-        >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold text-balance text-white">
-              Weekly Runs
-            </h2>
-            <ChevronDown
-              className="h-6 w-6 text-white transition-transform"
-              style={{ transform: showNotifications ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </div>
+        <div className="w-full text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
+          <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance text-white">
+            Weekly Runs
+          </h2>
           <p className="text-lg text-white max-w-2xl mx-auto text-balance">
             Join us for our regularly scheduled runs. All fitness levels welcome!{" "}
             <Link
@@ -689,34 +680,50 @@ export function UpcomingRuns() {
             >
               Check our weather running guide
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Link>{" "}
+            </Link>
           </p>
 
           {showNotifications && (
-            <div className="mt-6 space-y-3 border-t border-white/20 pt-6">
-              <p className="text-sm text-white/80">Get notified about upcoming runs and races</p>
-              <form onSubmit={handleNotificationSubmit} className="flex gap-2 justify-center max-w-md mx-auto">
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={notificationEmail}
-                  onChange={(e) => setNotificationEmail(e.target.value)}
-                  className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
-                  disabled={isNotificationSubmitting}
-                />
-                <Button
-                  type="submit"
-                  disabled={!notificationEmail.trim() || isNotificationSubmitting}
-                  className="bg-slr-red/70 hover:bg-slr-red/90 text-white"
-                  size="sm"
-                >
-                  {isNotificationSubmitting ? "..." : notificationSuccess ? "✓" : "Notify"}
-                </Button>
-              </form>
+            <div className="mt-6 border-t border-white/20 pt-6">
+              {notificationSuccess ? (
+                <p className="text-sm text-white font-medium">You're signed up for notifications.</p>
+              ) : (
+                <form onSubmit={handleNotificationSubmit} className="flex gap-2 justify-center max-w-sm mx-auto">
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={notificationEmail}
+                    onChange={(e) => setNotificationEmail(e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                    disabled={isNotificationSubmitting}
+                    autoFocus
+                  />
+                  <Button
+                    type="submit"
+                    disabled={!notificationEmail.trim() || isNotificationSubmitting}
+                    className="bg-white/20 hover:bg-white/30 text-white border border-white/30 shrink-0"
+                    size="sm"
+                  >
+                    {isNotificationSubmitting ? "..." : "Submit"}
+                  </Button>
+                </form>
+              )}
             </div>
           )}
 
-          <div className="mt-6">
+          <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 gap-2"
+            >
+              <ChevronDown
+                className="h-4 w-4 transition-transform duration-200"
+                style={{ transform: showNotifications ? "rotate(180deg)" : "rotate(0deg)" }}
+              />
+              Get Run Notifications
+            </Button>
             <Button
               asChild
               size="lg"
@@ -739,7 +746,7 @@ export function UpcomingRuns() {
               </Link>
             </Button>
           </div>
-        </button>
+        </div>
 
         <div className="max-w-7xl mx-auto">
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
