@@ -179,6 +179,7 @@ function RaceCard({ race, index }: { race: any; index: number }) {
     }
 
     try {
+      console.log("[v0] Submitting RSVP:", { raceId: race.id, newAttendee })
       const response = await fetch(`/api/rsvp/${race.id}`, {
         method: "POST",
         headers: {
@@ -187,11 +188,16 @@ function RaceCard({ race, index }: { race: any; index: number }) {
         body: JSON.stringify(newAttendee),
       })
 
+      console.log("[v0] RSVP response status:", response.status)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.log("[v0] RSVP error response:", errorText)
         throw new Error(`HTTP ${response.status}`)
       }
 
       const updatedList = await response.json()
+      console.log("[v0] RSVP updated list:", updatedList)
       await mutate(updatedList, false)
 
       setFirstName("")
@@ -202,12 +208,21 @@ function RaceCard({ race, index }: { race: any; index: number }) {
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
     } catch (error) {
+      console.log("[v0] RSVP error, falling back to localStorage:", error)
       // Fallback to localStorage if API fails
       const currentAttendees = getLocalAttendees(race.id)
       const updatedAttendees = [...currentAttendees, newAttendee]
       setLocalAttendees(race.id, updatedAttendees)
       setUseLocalStorage(true)
       await mutate(updatedAttendees, false)
+      
+      // Show success even on localStorage fallback
+      setFirstName("")
+      setLastInitial("")
+      setAttendanceType("racing")
+      setShowForm(false)
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
     } finally {
       setIsSubmitting(false)
     }
