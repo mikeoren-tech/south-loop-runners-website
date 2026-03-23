@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare, UserPlus } from "lucide-react"
+import { Calendar, Clock, MapPin, FacebookIcon, Activity, Users, ArrowRight, MessageSquare, UserPlus, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { WeatherWidget, type WeatherData } from "@/components/weather-widget"
@@ -415,7 +415,10 @@ function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: 
 
 export function UpcomingRuns() {
   const [weatherData, setWeatherData] = useState<{ [key: string]: WeatherData | null }>({})
-
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notificationEmail, setNotificationEmail] = useState("")
+  const [isNotificationSubmitting, setIsNotificationSubmitting] = useState(false)
+  const [notificationSuccess, setNotificationSuccess] = useState(false)
   const { data: featuredEvents = [], isLoading } = useSWR("/api/events/featured", fetcher, {
     fallbackData: [
       {
@@ -496,6 +499,30 @@ export function UpcomingRuns() {
       day: "numeric",
       timeZone: "America/Chicago",
     })
+  }
+
+  const handleNotificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!notificationEmail.trim() || isNotificationSubmitting) return
+
+    setIsNotificationSubmitting(true)
+    try {
+      const response = await fetch("/api/subscribe-notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: notificationEmail.trim() }),
+      })
+
+      if (response.ok) {
+        setNotificationEmail("")
+        setNotificationSuccess(true)
+        setTimeout(() => setNotificationSuccess(false), 3000)
+      }
+    } catch (error) {
+      console.error("Failed to subscribe:", error)
+    } finally {
+      setIsNotificationSubmitting(false)
+    }
   }
 
   const renderEventCard = (event: any, delay: number, className: string) => {
@@ -641,7 +668,7 @@ export function UpcomingRuns() {
       <div className="absolute inset-0 z-0 -top-[180px] bg-gradient-to-b from-transparent via-black/30 to-black/40" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="w-full text-center mb-12 backdrop-blur-md bg-black/30 rounded-3xl p-8 border border-white/20 shadow-2xl">
           <h2 id="runs-heading" className="text-4xl md:text-5xl font-bold mb-4 text-balance text-white">
             Weekly Runs
           </h2>
@@ -653,9 +680,50 @@ export function UpcomingRuns() {
             >
               Check our weather running guide
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Link>{" "}
+            </Link>
           </p>
-          <div className="mt-6">
+
+          {showNotifications && (
+            <div className="mt-6 border-t border-white/20 pt-6">
+              {notificationSuccess ? (
+                <p className="text-sm text-white font-medium">You're signed up for notifications.</p>
+              ) : (
+                <form onSubmit={handleNotificationSubmit} className="flex gap-2 justify-center max-w-sm mx-auto">
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={notificationEmail}
+                    onChange={(e) => setNotificationEmail(e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                    disabled={isNotificationSubmitting}
+                    autoFocus
+                  />
+                  <Button
+                    type="submit"
+                    disabled={!notificationEmail.trim() || isNotificationSubmitting}
+                    className="bg-white/20 hover:bg-white/30 text-white border border-white/30 shrink-0"
+                    size="sm"
+                  >
+                    {isNotificationSubmitting ? "..." : "Submit"}
+                  </Button>
+                </form>
+              )}
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-col items-center justify-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 gap-2"
+            >
+              <ChevronDown
+                className="h-4 w-4 transition-transform duration-200"
+                style={{ transform: showNotifications ? "rotate(180deg)" : "rotate(0deg)" }}
+              />
+              Get Run Notifications
+            </Button>
             <Button
               asChild
               size="lg"
