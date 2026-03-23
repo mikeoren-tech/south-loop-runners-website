@@ -11,7 +11,6 @@ import {
   Calendar,
   MapPin,
   Trophy,
-  Sparkles,
   Users,
   ExternalLink,
   UserPlus,
@@ -269,7 +268,6 @@ function RaceCard({ race, index }: { race: any; index: number }) {
     PartyPopper: PartyPopper,
     Trophy: Trophy,
     Wind: Wind,
-    Sparkles: Sparkles,
   }
 
   return (
@@ -343,15 +341,6 @@ function RaceCard({ race, index }: { race: any; index: number }) {
           </CardHeader>
 
           <CardContent className="space-y-4 flex-1 flex flex-col pb-6">
-            {race.unique_feature && (
-              <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                  <p className="text-sm font-medium leading-relaxed">{race.unique_feature}</p>
-                </div>
-              </div>
-            )}
-
             <div className="p-4 bg-muted/30 rounded-lg border">
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Time Until Race
