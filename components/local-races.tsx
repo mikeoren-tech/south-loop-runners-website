@@ -208,6 +208,14 @@ function RaceCard({ race, index }: { race: any; index: number }) {
       setLocalAttendees(race.id, updatedAttendees)
       setUseLocalStorage(true)
       await mutate(updatedAttendees, false)
+      
+      // Show success even on localStorage fallback
+      setFirstName("")
+      setLastInitial("")
+      setAttendanceType("racing")
+      setShowForm(false)
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
     } finally {
       setIsSubmitting(false)
     }

@@ -24,10 +24,11 @@ export async function onRequestGet(context: any) {
       .all()
 
     // Map to the Attendee shape the frontend expects: { id, name, type, timestamp }
+    // Map database "running" back to frontend "racing"
     const attendees = (results || []).map((row: any) => ({
       id: String(row.id),
       name: row.name,
-      type: row.type || "racing",
+      type: row.type === "running" ? "racing" : (row.type || "racing"),
       timestamp: new Date(row.timestamp).getTime(),
     }))
 
@@ -62,7 +63,9 @@ export async function onRequestPost(context: any) {
 
     // Frontend sends { id, name, type, timestamp }
     const name = body.name?.trim()
-    const rsvpType = body.type || "racing"
+    // Map frontend "racing" to database "running" (CHECK constraint expects 'running', 'cheering', 'volunteering')
+    const frontendType = body.type || "racing"
+    const rsvpType = frontendType === "racing" ? "running" : frontendType
 
     if (!name) {
       return new Response(JSON.stringify({ error: "Name is required" }), {
@@ -87,7 +90,7 @@ export async function onRequestPost(context: any) {
     const attendees = (results || []).map((row: any) => ({
       id: String(row.id),
       name: row.name,
-      type: row.type || "racing",
+      type: row.type === "running" ? "racing" : (row.type || "racing"),
       timestamp: new Date(row.timestamp).getTime(),
     }))
 
@@ -153,7 +156,7 @@ export async function onRequestDelete(context: any) {
     const attendees = (results || []).map((row: any) => ({
       id: String(row.id),
       name: row.name,
-      type: row.type || "racing",
+      type: row.type === "running" ? "racing" : (row.type || "racing"),
       timestamp: new Date(row.timestamp).getTime(),
     }))
 
