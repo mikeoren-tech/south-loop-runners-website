@@ -56,9 +56,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {process.env.NEXT_PUBLIC_VWO_ACCOUNT_ID && (
-          <VWOScript accountId={process.env.NEXT_PUBLIC_VWO_ACCOUNT_ID} />
-        )}
+        <VWOScript 
+          accountId={process.env.NEXT_PUBLIC_VWO_ACCOUNT_ID || ""} 
+          settingsTimeout={3000}
+        />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-8VZ5WD7W0D" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
