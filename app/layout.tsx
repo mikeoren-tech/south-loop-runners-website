@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import Script from "next/script"
+import { VWOScript } from "vwo-smartcode-nextjs"
 
 import "./globals.css"
 
@@ -55,6 +56,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {process.env.NEXT_PUBLIC_VWO_ACCOUNT_ID && (
+          <VWOScript accountId={process.env.NEXT_PUBLIC_VWO_ACCOUNT_ID} />
+        )}
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-8VZ5WD7W0D" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
