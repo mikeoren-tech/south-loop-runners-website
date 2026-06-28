@@ -749,10 +749,11 @@ export function UpcomingRuns() {
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, "")}
             {featuredEvents[1] && renderEventCard(featuredEvents[1], 100, "")}
             {featuredEvents[2] && renderEventCard(featuredEvents[2], 200, "")}
+            {featuredEvents[3] && renderEventCard(featuredEvents[3], 300, "")}
           </div>
         </div>
       </div>
