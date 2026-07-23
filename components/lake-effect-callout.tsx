@@ -32,7 +32,7 @@ export function LakeEffectCallout() {
             </div>
             <Button
               size="lg"
-              className="shrink-0 gap-2 bg-slr-blue text-white shadow-lg transition-all hover:bg-slr-blue-light hover:shadow-xl"
+              className="shimmer-button shrink-0 gap-2 bg-slr-blue hover:bg-slr-blue/90 text-slr-blue-dark shadow-lg hover:shadow-xl transition-all"
               asChild
             >
               <a
