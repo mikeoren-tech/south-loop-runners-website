@@ -1,4 +1,5 @@
 import { Hero } from "@/components/hero"
+import { LakeEffectCallout } from "@/components/lake-effect-callout"
 import { UpcomingRuns } from "@/components/upcoming-runs"
 import { About } from "@/components/about"
 import { LocalRaces } from "@/components/local-races"
@@ -13,6 +14,7 @@ export default function Home() {
       <div id="home">
         <Hero />
       </div>
+      <LakeEffectCallout />
       <div id="runs">
         <UpcomingRuns />
       </div>
