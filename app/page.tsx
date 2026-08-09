@@ -13,8 +13,6 @@ export default function Home() {
     <main className="min-h-screen">
       <div id="home">
         <Hero />
-      </div>
-      <LakeEffectCallout />
       <div id="runs">
         <UpcomingRuns />
       </div>
