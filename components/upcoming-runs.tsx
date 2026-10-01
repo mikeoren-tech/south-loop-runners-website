@@ -15,6 +15,7 @@ import Link from "next/link"
 import useSWR from "swr"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FlipCard } from "@/components/flip-card"
+import { RouteMapEmbed } from "@/components/route-map-embed"
 
 const PACE_GROUPS = [
   "Under 7:00 min/mile",
@@ -629,7 +630,7 @@ export function UpcomingRuns() {
           <CardDescription>Explore the running route</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full overflow-auto" dangerouslySetInnerHTML={{ __html: event.route_map_iframe }} />
+          <RouteMapEmbed className="w-full overflow-auto" html={event.route_map_iframe} />
         </CardContent>
       </Card>
     ) : null

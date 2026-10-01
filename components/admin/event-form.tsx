@@ -334,17 +334,17 @@ export function EventForm({ event, onClose }: EventFormProps) {
 
             {(formData.type === "weekly-run" || formData.type === "special-event") && (
               <div className="col-span-2">
-                <Label htmlFor="route_map_iframe">Route Map (MapMyRun iframe code)</Label>
+                <Label htmlFor="route_map_iframe">Route Map (MapMyRun or Strava embed code)</Label>
                 <Textarea
                   id="route_map_iframe"
                   value={formData.route_map_iframe}
                   onChange={(e) => setFormData({ ...formData, route_map_iframe: e.target.value })}
-                  placeholder="Paste the full MapMyRun iframe embed code here..."
+                  placeholder="Paste the full MapMyRun or Strava embed code here..."
                   rows={4}
                   className="font-mono text-xs"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Get the embed code from MapMyRun by viewing the route and clicking "Share" → "Embed"
+                  Get the embed code from MapMyRun or Strava by viewing the route and clicking "Share" → "Embed"
                 </p>
               </div>
             )}
