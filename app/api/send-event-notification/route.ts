@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: NextRequest) {
   try {
+    // Created per request so the build doesn't require RESEND_API_KEY
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const { eventName, eventType, eventDate, eventDetails, isNew } = await request.json()
 
     const subject = isNew ? `🏃 New ${eventType}: ${eventName}` : `📅 Updated Event: ${eventName}`
