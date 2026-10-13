@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -287,10 +287,10 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit 
       ) : (
         // Original pace interest UI
         <>
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <Users className="h-4 w-4" />
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium text-muted-foreground">
+            <Users className="h-4 w-4 shrink-0" />
             <span>Show Your Interest</span>
-            <span className="text-xs">(Official RSVP on Facebook/Strava)</span>
+            <span className="basis-full text-xs font-normal">(Official RSVP on Facebook/Strava)</span>
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -308,7 +308,7 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit 
 
           <div className="flex gap-2">
             <Select value={selectedPace} onValueChange={setSelectedPace}>
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1 min-w-0">
                 <SelectValue placeholder="Select your pace" />
               </SelectTrigger>
               <SelectContent className="bg-white">
@@ -319,7 +319,7 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit 
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default">
+            <Button onClick={handleSubmit} disabled={!selectedPace || isSubmitting} size="sm" variant="default" className="shrink-0">
               {isSubmitting ? "Adding..." : "Add"}
             </Button>
           </div>
@@ -365,6 +365,73 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit 
             </div>
           )}
         </>
+      )}
+    </div>
+  )
+}
+
+const URL_PATTERN = /(https?:\/\/[^\s]+)/g
+
+// Turns bare URLs in event descriptions into links that can wrap inside narrow cards
+function linkifyText(text?: string) {
+  if (!text) return text
+  return text.split(URL_PATTERN).map((part, i) => {
+    if (i % 2 === 0) return part
+    const trailing = part.match(/[.,!?;:)]+$/)?.[0] ?? ""
+    const url = trailing ? part.slice(0, -trailing.length) : part
+    return (
+      <span key={i}>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-slr-red underline [overflow-wrap:anywhere]"
+        >
+          {url.replace(/^https?:\/\/(www\.)?/, "")}
+        </a>
+        {trailing}
+      </span>
+    )
+  })
+}
+
+// Shows the first few lines of a description, with a toggle when there's more
+function EventDescription({ text }: { text?: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const [isClamped, setIsClamped] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const check = () => {
+      if (!expanded) setIsClamped(el.scrollHeight > el.clientHeight + 1)
+    }
+    check()
+    const observer = new ResizeObserver(check)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [text, expanded])
+
+  if (!text) return null
+
+  return (
+    <div>
+      <CardDescription
+        ref={ref}
+        className={`whitespace-pre-line break-words ${expanded ? "" : "line-clamp-6"}`}
+      >
+        {linkifyText(text)}
+      </CardDescription>
+      {(isClamped || expanded) && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          className="mt-1 text-sm font-medium text-slr-red hover:underline"
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
       )}
     </div>
   )
@@ -539,7 +606,7 @@ export function UpcomingRuns() {
       <Card className="h-full border-0 rounded-3xl">
         <CardHeader>
           <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
-          <CardDescription>{event.description}</CardDescription>
+          <EventDescription text={event.description} />
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3">
@@ -585,7 +652,7 @@ export function UpcomingRuns() {
             <p className="text-sm font-medium text-center text-muted-foreground border-t pt-3">
               Follow us on social for the latest
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button className="flex-1 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white border-0" asChild>
                 <a href={event.facebook_link} target="_blank" rel="noopener noreferrer">
                   <FacebookIcon className="h-4 w-4 mr-2" aria-hidden="true" />
@@ -750,7 +817,7 @@ export function UpcomingRuns() {
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {featuredEvents[0] && renderEventCard(featuredEvents[0], 0, "")}
             {featuredEvents[1] && renderEventCard(featuredEvents[1], 100, "")}
             {featuredEvents[2] && renderEventCard(featuredEvents[2], 200, "")}
@@ -758,7 +825,7 @@ export function UpcomingRuns() {
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 z-20 -mb-1" aria-hidden="true">
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-20 -mb-1" aria-hidden="true">
         <svg
           viewBox="0 0 1440 120"
           fill="none"

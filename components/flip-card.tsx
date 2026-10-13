@@ -16,7 +16,7 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
 
   if (!hasBack) {
-    return <div className="flip-card-inner">{front}</div>
+    return <div className="flip-card-inner h-full">{front}</div>
   }
 
   return (
@@ -44,9 +44,9 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
             pointerEvents: isFlipped ? "none" : "auto",
           }}
         >
-          <div className="flex-1 min-h-0">{front}</div>
+          <div className="flex-1 min-h-0 [&>*]:pb-20">{front}</div>
           {hasBack && (
-            <div className="sticky bottom-0 z-10 rounded-b-3xl bg-gradient-to-t from-card via-card/95 to-transparent px-4 pb-3 pt-8 flex justify-end">
+            <div className="absolute inset-x-0 bottom-0 z-10 rounded-b-3xl bg-gradient-to-t from-card via-card/95 to-transparent px-4 pb-3 pt-8 flex justify-end">
               <Button
                 onClick={() => setIsFlipped(true)}
                 size="sm"
@@ -73,8 +73,8 @@ export function FlipCard({ front, back, hasBack = true }: FlipCardProps) {
             pointerEvents: !isFlipped ? "none" : "auto",
           }}
         >
-          <div className="flex-1 min-h-0">{back}</div>
-          <div className="sticky bottom-0 z-10 rounded-b-3xl bg-gradient-to-t from-card via-card/95 to-transparent px-4 pb-3 pt-8 flex justify-end">
+          <div className="flex-1 min-h-0 [&>*]:pb-20">{back}</div>
+          <div className="absolute inset-x-0 bottom-0 z-10 rounded-b-3xl bg-gradient-to-t from-card via-card/95 to-transparent px-4 pb-3 pt-8 flex justify-end">
             <Button
               onClick={() => setIsFlipped(false)}
               size="sm"
