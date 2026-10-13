@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -395,6 +395,48 @@ function linkifyText(text?: string) {
   })
 }
 
+// Shows the first few lines of a description, with a toggle when there's more
+function EventDescription({ text }: { text?: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const [isClamped, setIsClamped] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const check = () => {
+      if (!expanded) setIsClamped(el.scrollHeight > el.clientHeight + 1)
+    }
+    check()
+    const observer = new ResizeObserver(check)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [text, expanded])
+
+  if (!text) return null
+
+  return (
+    <div>
+      <CardDescription
+        ref={ref}
+        className={`whitespace-pre-line break-words ${expanded ? "" : "line-clamp-6"}`}
+      >
+        {linkifyText(text)}
+      </CardDescription>
+      {(isClamped || expanded) && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          className="mt-1 text-sm font-medium text-slr-red hover:underline"
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      )}
+    </div>
+  )
+}
+
 function getWeatherGuideLink(weather: WeatherData | null): { url: string; text: string } {
   if (!weather) {
     return { url: "/weather-guide", text: "View Weather Running Guide" }
@@ -564,7 +606,7 @@ export function UpcomingRuns() {
       <Card className="h-full border-0 rounded-3xl">
         <CardHeader>
           <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
-          <CardDescription className="break-words">{linkifyText(event.description)}</CardDescription>
+          <EventDescription text={event.description} />
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3">
@@ -783,7 +825,7 @@ export function UpcomingRuns() {
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 z-20 -mb-1" aria-hidden="true">
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-20 -mb-1" aria-hidden="true">
         <svg
           viewBox="0 0 1440 120"
           fill="none"
