@@ -1,4 +1,4 @@
-import { Facebook, Instagram, MapPin } from "lucide-react"
+import { Facebook, Instagram, Mail, MapPin } from "lucide-react"
 import Image from "next/image"
 
 function StravaIcon({ className }: { className?: string }) {
@@ -50,6 +50,13 @@ export function Footer() {
                 aria-label="Join our Strava club"
               >
                 <StravaIcon className="h-5 w-5" aria-hidden="true" />
+              </a>
+              <a
+                href="mailto:southlooprunners@gmail.com"
+                className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                aria-label="Email us"
+              >
+                <Mail className="h-5 w-5" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -109,6 +116,17 @@ export function Footer() {
                 <p>Michigan Ave & Roosevelt</p>
                 <p>South Loop, Chicago, IL</p>
               </address>
+            </div>
+
+            <h4 className="font-semibold mt-6 mb-4">Contact</h4>
+            <div className="flex gap-2 text-sm text-muted-foreground">
+              <Mail className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <a
+                href="mailto:southlooprunners@gmail.com"
+                className="break-all hover:text-primary transition-colors focus:outline-none focus:underline"
+              >
+                southlooprunners@gmail.com
+              </a>
             </div>
           </div>
         </div>
