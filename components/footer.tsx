@@ -117,17 +117,6 @@ export function Footer() {
                 <p>South Loop, Chicago, IL</p>
               </address>
             </div>
-
-            <h4 className="font-semibold mt-6 mb-4">Contact</h4>
-            <div className="flex gap-2 text-sm text-muted-foreground">
-              <Mail className="h-5 w-5 shrink-0" aria-hidden="true" />
-              <a
-                href="mailto:southlooprunners@gmail.com"
-                className="break-all hover:text-primary transition-colors focus:outline-none focus:underline"
-              >
-                southlooprunners@gmail.com
-              </a>
-            </div>
           </div>
         </div>
 
