@@ -4,7 +4,7 @@ import Link from "next/link"
 export function AnnouncementBanner() {
   return (
     <Link
-      href="https://docs.google.com/forms/d/e/1FAIpQLSddb2wsdmhb6WqeRexSnHHGBAhB6sW1BRzYqYfR3tQ3ueVBRQ/viewform?usp=dialog"
+      href="https://forms.gle/ZghbyZBxP59BFrTn8"
       target="_blank"
       rel="noopener noreferrer"
       className="block bg-gradient-to-r from-[#b4def7] to-[#d4ebfa] hover:from-[#a0d4f0] hover:to-[#c0e0f5] transition-colors"

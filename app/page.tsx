@@ -11,6 +11,7 @@ import { AnnouncementBanner } from "@/components/announcement-banner"
 export default function Home() {
   return (
     <main className="min-h-screen">
+      <AnnouncementBanner />
       <div id="home">
         <Hero />
       </div>
