@@ -14,14 +14,17 @@ export async function onRequestPost(context: any) {
   }
 
   try {
-    const { eventId } = await context.request.json();
-    const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(eventId).first();
+    // The caller deletes the event before sending, so it passes the full event in the body
+    const body = await context.request.json();
+    const event = body.event ?? (body.eventId
+      ? await DB.prepare("SELECT * FROM events WHERE id = ?").bind(body.eventId).first()
+      : null);
 
     if (!event) {
       return new Response(JSON.stringify({ error: "Event not found" }), { status: 404 });
     }
 
-    const { subject, html } = getUpdatedEventEmailTemplate(event);
+    const { subject, html } = getCanceledEventEmailTemplate(event);
     const finalHtml = `${html}<br><p><a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a></p>`;
 
     const resend = new Resend(RESEND_API_KEY);
