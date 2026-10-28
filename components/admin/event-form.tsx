@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
+import { normalizeLumaInput } from "@/lib/luma"
 
 interface EventFormProps {
   event?: any
@@ -318,16 +319,16 @@ export function EventForm({ event, onClose }: EventFormProps) {
 
             {isSocial && (
               <div className="col-span-2">
-                <Label htmlFor="registration_url">Luma RSVP Link</Label>
+                <Label htmlFor="registration_url">Luma Event Link or Embed Code</Label>
                 <Input
                   id="registration_url"
-                  type="url"
                   value={formData.registration_url}
-                  onChange={(e) => setFormData({ ...formData, registration_url: e.target.value })}
-                  placeholder="https://lu.ma/..."
+                  onChange={(e) => setFormData({ ...formData, registration_url: normalizeLumaInput(e.target.value) })}
+                  placeholder="https://luma.com/event/evt-..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Create the event on Luma, then paste its link here. The site shows an "RSVP on Luma" button.
+                  Paste the event link, or the checkout button embed code from Luma (Share → Embed). Links that include
+                  the event ID (evt-…) open registration right on our site; other links open the Luma page.
                 </p>
               </div>
             )}

@@ -1,10 +1,12 @@
 "use client"
 
+import { useEffect } from "react"
 import useSWR from "swr"
 import { Clock, MapPin, ArrowUpRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ScrollReveal } from "@/components/scroll-reveal"
+import { getLumaEventId } from "@/lib/luma"
 
 interface SocialEvent {
   id: string
@@ -26,6 +28,7 @@ function parseDate(date: string) {
 
 function SocialCard({ event, index }: { event: SocialEvent; index: number }) {
   const date = parseDate(event.date)
+  const lumaEventId = getLumaEventId(event.registration_url)
 
   return (
     <ScrollReveal
@@ -69,11 +72,26 @@ function SocialCard({ event, index }: { event: SocialEvent; index: number }) {
 
           {event.registration_url && (
             <Button asChild className="mt-auto w-full bg-slr-red hover:bg-slr-red/90 text-white">
-              <a href={event.registration_url} target="_blank" rel="noopener noreferrer">
-                RSVP on Luma
-                <ArrowUpRight className="h-4 w-4 ml-1" aria-hidden="true" />
-                <span className="sr-only">(opens in new window)</span>
-              </a>
+              {lumaEventId ? (
+                // Luma's checkout script opens registration in an overlay on our page. Leaving off
+                // its "luma-checkout--button" class keeps our button style. If the script doesn't
+                // load, this is still a normal link to the event page.
+                <a
+                  href={event.registration_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-luma-action="checkout"
+                  data-luma-event-id={lumaEventId}
+                >
+                  RSVP on Luma
+                </a>
+              ) : (
+                <a href={event.registration_url} target="_blank" rel="noopener noreferrer">
+                  RSVP on Luma
+                  <ArrowUpRight className="h-4 w-4 ml-1" aria-hidden="true" />
+                  <span className="sr-only">(opens in new window)</span>
+                </a>
+              )}
             </Button>
           )}
         </CardContent>
@@ -85,6 +103,17 @@ function SocialCard({ event, index }: { event: SocialEvent; index: number }) {
 export function SocialEvents() {
   const { data } = useSWR<SocialEvent[]>("/api/events/socials", fetcher)
   const socials = Array.isArray(data) ? data : []
+  const hasLumaCheckout = socials.some((event) => getLumaEventId(event.registration_url))
+
+  // Load Luma's checkout script after the buttons are on the page so it can find them
+  useEffect(() => {
+    if (!hasLumaCheckout || document.getElementById("luma-checkout")) return
+    const script = document.createElement("script")
+    script.id = "luma-checkout"
+    script.src = "https://embed.lu.ma/checkout-button.js"
+    script.async = true
+    document.body.appendChild(script)
+  }, [hasLumaCheckout])
 
   // Only show the section when there's an upcoming social
   if (socials.length === 0) return null
