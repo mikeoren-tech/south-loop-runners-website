@@ -100,6 +100,7 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
   const getEventType = (type: string, isRecurring: number) => {
     if (isRecurring) return "Weekly Run"
     if (type === "race") return "Race"
+    if (type === "social") return "Social"
     return "Special Event"
   }
 

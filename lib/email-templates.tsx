@@ -1,3 +1,5 @@
+import { isLumaUrl } from "./luma"
+
 interface Event {
   id: string
   title: string
@@ -431,7 +433,7 @@ const buildCTAButtons = (event: Event, includeCalendar: boolean = true): string 
       </div>
       ` : ""}
       <div class="cta-row">
-        ${event.registration_url ? `<a href="${event.registration_url}" class="cta-button" target="_blank">View Pace Groups</a>` : ""}
+        ${event.registration_url ? `<a href="${event.registration_url}" class="cta-button" target="_blank">${event.type === "social" ? "RSVP on Luma" : isLumaUrl(event.registration_url) ? "RSVP for the Post-Run Social" : "View Pace Groups"}</a>` : ""}
         ${event.facebook_link ? `<a href="${event.facebook_link}" class="cta-button secondary" target="_blank">RSVP on Facebook</a>` : ""}
         ${event.strava_link ? `<a href="${event.strava_link}" class="cta-button secondary" target="_blank">View on Strava</a>` : ""}
       </div>
@@ -469,8 +471,9 @@ const buildEmailTemplate = (content: string): string => `
 
 // Main template functions
 export function getNewEventEmailTemplate(event: Event) {
+  const isSocial = event.type === "social"
   const content = `
-    ${buildHeader("You're Invited! 🏃", "New event from South Loop Runners")}
+    ${buildHeader(isSocial ? "You're Invited! 🎉" : "You're Invited! 🏃", "New event from South Loop Runners")}
     
     <div class="content">
       <h2 class="event-title">${event.title}</h2>
@@ -482,7 +485,7 @@ export function getNewEventEmailTemplate(event: Event) {
       <div class="divider"></div>
       
       <p class="closing-message">
-        We can't wait to see you there! Mark your calendar and get ready for an amazing run with South Loop Runners. 🎉
+        We can't wait to see you there! Mark your calendar and get ready for ${isSocial ? "a great time" : "an amazing run"} with South Loop Runners. 🎉
       </p>
     </div>
     
@@ -490,7 +493,7 @@ export function getNewEventEmailTemplate(event: Event) {
   `
 
   return {
-    subject: `New SLR Run: ${event.title}`,
+    subject: `${isSocial ? "New SLR Social" : "New SLR Run"}: ${event.title}`,
     html: buildEmailTemplate(content)
   }
 }

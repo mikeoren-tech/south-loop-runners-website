@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
+import { isLumaUrl, normalizeLumaInput } from "@/lib/luma"
 
 interface EventFormProps {
   event?: any
@@ -40,6 +41,12 @@ export function EventForm({ event, onClose }: EventFormProps) {
   })
   const [loading, setLoading] = useState(false)
   const [sendEmail, setSendEmail] = useState(true)
+  // How RSVPs are taken: on Luma (link stored in registration_url) or on this site. For socials this
+  // covers the event itself; for runs it covers the post-run social.
+  const [rsvpMethod, setRsvpMethod] = useState<"luma" | "site" | "none">("site")
+  const isSocial = formData.type === "social"
+  const isRun = formData.type === "weekly-run" || formData.type === "special-event"
+  const usesLuma = rsvpMethod === "luma" && (isSocial || (isRun && formData.has_post_run_social))
 
   useEffect(() => {
     if (event) {
@@ -64,11 +71,30 @@ export function EventForm({ event, onClose }: EventFormProps) {
         route_map_iframe: event.route_map_iframe || "",
         image_url: event.image_url || "",
       })
+      if (isLumaUrl(event.registration_url)) setRsvpMethod("luma")
+      else if (event.type === "social") setRsvpMethod(event.collect_rsvp_names ? "site" : event.registration_url ? "luma" : "none")
     }
   }, [event])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (usesLuma && !isLumaUrl(formData.registration_url)) {
+      alert("Paste a Luma event link or embed code, or choose another RSVP option.")
+      return
+    }
+
+    // Only send the RSVP settings that match the chosen option
+    const payload = { ...formData }
+    if (isSocial) {
+      Object.assign(payload, { is_recurring: false, day_of_week: "", has_post_run_social: false })
+      payload.collect_rsvp_names = rsvpMethod === "site"
+      if (rsvpMethod !== "site") payload.max_rsvp_limit = ""
+      if (rsvpMethod !== "luma") payload.registration_url = ""
+    } else if (isRun && !usesLuma && isLumaUrl(formData.registration_url)) {
+      payload.registration_url = ""
+    }
+
     setLoading(true)
 
     try {
@@ -81,7 +107,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, sendEmail }),
+        body: JSON.stringify({ ...payload, sendEmail }),
       })
 
       console.log("[v0] Response status:", response.status)
@@ -134,7 +160,13 @@ export function EventForm({ event, onClose }: EventFormProps) {
 
             <div>
               <Label htmlFor="type">Event Type*</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+              <Select
+                value={formData.type}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, type: value, ...(value === "social" && { is_recurring: false }) })
+                  if (!event) setRsvpMethod(value === "social" ? "luma" : "site")
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -142,27 +174,89 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   <SelectItem value="weekly-run">Weekly Run</SelectItem>
                   <SelectItem value="special-event">Special Event</SelectItem>
                   <SelectItem value="race">Race</SelectItem>
+                  <SelectItem value="social">Social</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex items-center space-x-2 pt-8">
-              <Checkbox
-                id="recurring"
-                checked={formData.is_recurring}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked as boolean })}
-              />
-              <Label htmlFor="recurring">Recurring Event</Label>
-            </div>
+            {!isSocial && (
+              <>
+                <div className="flex items-center space-x-2 pt-8">
+                  <Checkbox
+                    id="recurring"
+                    checked={formData.is_recurring}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked as boolean })}
+                  />
+                  <Label htmlFor="recurring">Recurring Event</Label>
+                </div>
 
-            <div className="flex items-center space-x-2 pt-8">
-              <Checkbox
-                id="post_run_social"
-                checked={formData.has_post_run_social}
-                onCheckedChange={(checked) => setFormData({ ...formData, has_post_run_social: checked as boolean })}
-              />
-              <Label htmlFor="post_run_social">Has Post-Run Social</Label>
-            </div>
+                <div className="flex items-center space-x-2 pt-8">
+                  <Checkbox
+                    id="post_run_social"
+                    checked={formData.has_post_run_social}
+                    onCheckedChange={(checked) => setFormData({ ...formData, has_post_run_social: checked as boolean })}
+                  />
+                  <Label htmlFor="post_run_social">Has Post-Run Social</Label>
+                </div>
+              </>
+            )}
+
+            {isSocial && (
+              <div className="col-span-2">
+                <Label htmlFor="rsvp_method">RSVPs</Label>
+                <Select
+                  value={rsvpMethod}
+                  onValueChange={(value: "luma" | "site" | "none") => {
+                    setRsvpMethod(value)
+                    setFormData({ ...formData, collect_rsvp_names: value === "site" })
+                  }}
+                >
+                  <SelectTrigger id="rsvp_method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="luma">Luma</SelectItem>
+                    <SelectItem value="site">This website (name list with optional limit)</SelectItem>
+                    <SelectItem value="none">No RSVP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {isRun && formData.has_post_run_social && (
+              <div className="col-span-2">
+                <Label htmlFor="social_rsvp_method">Post-Run Social RSVPs</Label>
+                <Select
+                  value={rsvpMethod === "luma" ? "luma" : "site"}
+                  onValueChange={(value: "luma" | "site") => setRsvpMethod(value)}
+                >
+                  <SelectTrigger id="social_rsvp_method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="site">This website ("Also attending the social?" checkbox)</SelectItem>
+                    <SelectItem value="luma">Luma</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {usesLuma && (
+              <div className="col-span-2">
+                <Label htmlFor="registration_url">Luma Event Link or Embed Code</Label>
+                <Input
+                  id="registration_url"
+                  value={formData.registration_url}
+                  onChange={(e) => setFormData({ ...formData, registration_url: normalizeLumaInput(e.target.value) })}
+                  placeholder="https://luma.com/event/evt-..."
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Paste the event link, or the checkout button embed code from Luma (Share → Embed). Links that include
+                  the event ID (evt-…) open registration right on our site; other links open the Luma page.
+                </p>
+              </div>
+            )}
 
             {(formData.type === "weekly-run" || formData.type === "special-event") && (
               <div className="flex items-center space-x-2 pt-8">
@@ -218,6 +312,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   id="date"
                   type="date"
                   value={formData.date}
+                  required={isSocial}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 />
               </div>
@@ -243,25 +338,29 @@ export function EventForm({ event, onClose }: EventFormProps) {
               />
             </div>
 
-            <div>
-              <Label htmlFor="distance">Distance</Label>
-              <Input
-                id="distance"
-                value={formData.distance}
-                onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
-                placeholder="e.g., 6.5 miles"
-              />
-            </div>
+            {!isSocial && (
+              <>
+                <div>
+                  <Label htmlFor="distance">Distance</Label>
+                  <Input
+                    id="distance"
+                    value={formData.distance}
+                    onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+                    placeholder="e.g., 6.5 miles"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="pace">Pace</Label>
-              <Input
-                id="pace"
-                value={formData.pace}
-                onChange={(e) => setFormData({ ...formData, pace: e.target.value })}
-                placeholder="e.g., Party Pace"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="pace">Pace</Label>
+                  <Input
+                    id="pace"
+                    value={formData.pace}
+                    onChange={(e) => setFormData({ ...formData, pace: e.target.value })}
+                    placeholder="e.g., Party Pace"
+                  />
+                </div>
+              </>
+            )}
 
             {formData.is_recurring && (
               <div>
@@ -276,25 +375,30 @@ export function EventForm({ event, onClose }: EventFormProps) {
               </div>
             )}
 
-            <div className="col-span-2">
-              <Label htmlFor="facebook_link">Facebook Link</Label>
-              <Input
-                id="facebook_link"
-                type="url"
-                value={formData.facebook_link}
-                onChange={(e) => setFormData({ ...formData, facebook_link: e.target.value })}
-              />
-            </div>
+            {!isSocial && (
+              <>
+                <div className="col-span-2">
+                  <Label htmlFor="facebook_link">Facebook Link</Label>
+                  <Input
+                    id="facebook_link"
+                    type="url"
+                    value={formData.facebook_link}
+                    onChange={(e) => setFormData({ ...formData, facebook_link: e.target.value })}
+                  />
+                </div>
 
-            <div className="col-span-2">
-              <Label htmlFor="strava_link">Strava Link</Label>
-              <Input
-                id="strava_link"
-                type="url"
-                value={formData.strava_link}
-                onChange={(e) => setFormData({ ...formData, strava_link: e.target.value })}
-              />
-            </div>
+                <div className="col-span-2">
+                  <Label htmlFor="strava_link">Strava Link</Label>
+                  <Input
+                    id="strava_link"
+                    type="url"
+                    value={formData.strava_link}
+                    onChange={(e) => setFormData({ ...formData, strava_link: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
 
             {formData.type === "race" && (
               <>

@@ -15,6 +15,8 @@ import Link from "next/link"
 import useSWR from "swr"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FlipCard } from "@/components/flip-card"
+import { LumaRsvpLink } from "@/components/luma-rsvp-link"
+import { isLumaUrl } from "@/lib/luma"
 import { RouteMapEmbed } from "@/components/route-map-embed"
 
 const PACE_GROUPS = [
@@ -37,7 +39,19 @@ interface PaceInterest {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit }: { runId: string; hasSocial: boolean; collectRsvpNames: boolean; maxRsvpLimit: number | null }) {
+// Shown instead of the "Also attending the social?" checkbox when the post-run social uses Luma
+function PostRunSocialLumaLink({ url }: { url: string }) {
+  return (
+    <p className="text-sm">
+      <span className="text-muted-foreground">Post-run social: </span>
+      <LumaRsvpLink url={url} className="font-medium text-slr-red hover:underline">
+        RSVP on Luma
+      </LumaRsvpLink>
+    </p>
+  )
+}
+
+function PaceInterestSection({ runId, hasSocial, socialLumaUrl, collectRsvpNames, maxRsvpLimit }: { runId: string; hasSocial: boolean; socialLumaUrl: string | null; collectRsvpNames: boolean; maxRsvpLimit: number | null }) {
   const [selectedPace, setSelectedPace] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [attendingSocial, setAttendingSocial] = useState(false)
@@ -60,7 +74,7 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit 
   })
 
   const { data: socialData, mutate: mutateSocial } = useSWR(
-    hasSocial ? `/api/events/social-rsvp/${runId}` : null,
+    hasSocial && !socialLumaUrl ? `/api/events/social-rsvp/${runId}` : null,
     fetcher,
     {
       refreshInterval: 5000,
@@ -226,7 +240,9 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit 
             </>
           )}
 
-          {hasSocial && (
+          {hasSocial && socialLumaUrl && <PostRunSocialLumaLink url={socialLumaUrl} />}
+
+          {hasSocial && !socialLumaUrl && (
             <div className="flex items-center gap-2">
               <Checkbox
                 id={`social-${runId}`}
@@ -324,8 +340,10 @@ function PaceInterestSection({ runId, hasSocial, collectRsvpNames, maxRsvpLimit 
             </Button>
           </div>
 
+          {hasSocial && socialLumaUrl && <PostRunSocialLumaLink url={socialLumaUrl} />}
+
           <div className="flex gap-1">
-            {hasSocial && (
+            {hasSocial && !socialLumaUrl && (
               <div className="flex items-center gap-2 pl-1">
                 <Checkbox
                   id={`social-${runId}`}
@@ -685,6 +703,7 @@ export function UpcomingRuns() {
               event.collect_rsvp_names === "true"
             }
             maxRsvpLimit={event.max_rsvp_limit ? Number(event.max_rsvp_limit) : null}
+            socialLumaUrl={isLumaUrl(event.registration_url) ? event.registration_url : null}
           />
         </CardContent>
       </Card>
