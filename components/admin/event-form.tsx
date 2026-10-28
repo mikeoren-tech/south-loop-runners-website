@@ -40,6 +40,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
   })
   const [loading, setLoading] = useState(false)
   const [sendEmail, setSendEmail] = useState(true)
+  const isSocial = formData.type === "social"
 
   useEffect(() => {
     if (event) {
@@ -134,7 +135,12 @@ export function EventForm({ event, onClose }: EventFormProps) {
 
             <div>
               <Label htmlFor="type">Event Type*</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+              <Select
+                value={formData.type}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, type: value, ...(value === "social" && { is_recurring: false }) })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -142,27 +148,32 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   <SelectItem value="weekly-run">Weekly Run</SelectItem>
                   <SelectItem value="special-event">Special Event</SelectItem>
                   <SelectItem value="race">Race</SelectItem>
+                  <SelectItem value="social">Social</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex items-center space-x-2 pt-8">
-              <Checkbox
-                id="recurring"
-                checked={formData.is_recurring}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked as boolean })}
-              />
-              <Label htmlFor="recurring">Recurring Event</Label>
-            </div>
+            {!isSocial && (
+              <>
+                <div className="flex items-center space-x-2 pt-8">
+                  <Checkbox
+                    id="recurring"
+                    checked={formData.is_recurring}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked as boolean })}
+                  />
+                  <Label htmlFor="recurring">Recurring Event</Label>
+                </div>
 
-            <div className="flex items-center space-x-2 pt-8">
-              <Checkbox
-                id="post_run_social"
-                checked={formData.has_post_run_social}
-                onCheckedChange={(checked) => setFormData({ ...formData, has_post_run_social: checked as boolean })}
-              />
-              <Label htmlFor="post_run_social">Has Post-Run Social</Label>
-            </div>
+                <div className="flex items-center space-x-2 pt-8">
+                  <Checkbox
+                    id="post_run_social"
+                    checked={formData.has_post_run_social}
+                    onCheckedChange={(checked) => setFormData({ ...formData, has_post_run_social: checked as boolean })}
+                  />
+                  <Label htmlFor="post_run_social">Has Post-Run Social</Label>
+                </div>
+              </>
+            )}
 
             {(formData.type === "weekly-run" || formData.type === "special-event") && (
               <div className="flex items-center space-x-2 pt-8">
@@ -218,6 +229,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   id="date"
                   type="date"
                   value={formData.date}
+                  required={isSocial}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 />
               </div>
@@ -243,25 +255,29 @@ export function EventForm({ event, onClose }: EventFormProps) {
               />
             </div>
 
-            <div>
-              <Label htmlFor="distance">Distance</Label>
-              <Input
-                id="distance"
-                value={formData.distance}
-                onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
-                placeholder="e.g., 6.5 miles"
-              />
-            </div>
+            {!isSocial && (
+              <>
+                <div>
+                  <Label htmlFor="distance">Distance</Label>
+                  <Input
+                    id="distance"
+                    value={formData.distance}
+                    onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+                    placeholder="e.g., 6.5 miles"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="pace">Pace</Label>
-              <Input
-                id="pace"
-                value={formData.pace}
-                onChange={(e) => setFormData({ ...formData, pace: e.target.value })}
-                placeholder="e.g., Party Pace"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="pace">Pace</Label>
+                  <Input
+                    id="pace"
+                    value={formData.pace}
+                    onChange={(e) => setFormData({ ...formData, pace: e.target.value })}
+                    placeholder="e.g., Party Pace"
+                  />
+                </div>
+              </>
+            )}
 
             {formData.is_recurring && (
               <div>
@@ -276,25 +292,45 @@ export function EventForm({ event, onClose }: EventFormProps) {
               </div>
             )}
 
-            <div className="col-span-2">
-              <Label htmlFor="facebook_link">Facebook Link</Label>
-              <Input
-                id="facebook_link"
-                type="url"
-                value={formData.facebook_link}
-                onChange={(e) => setFormData({ ...formData, facebook_link: e.target.value })}
-              />
-            </div>
+            {!isSocial && (
+              <>
+                <div className="col-span-2">
+                  <Label htmlFor="facebook_link">Facebook Link</Label>
+                  <Input
+                    id="facebook_link"
+                    type="url"
+                    value={formData.facebook_link}
+                    onChange={(e) => setFormData({ ...formData, facebook_link: e.target.value })}
+                  />
+                </div>
 
-            <div className="col-span-2">
-              <Label htmlFor="strava_link">Strava Link</Label>
-              <Input
-                id="strava_link"
-                type="url"
-                value={formData.strava_link}
-                onChange={(e) => setFormData({ ...formData, strava_link: e.target.value })}
-              />
-            </div>
+                <div className="col-span-2">
+                  <Label htmlFor="strava_link">Strava Link</Label>
+                  <Input
+                    id="strava_link"
+                    type="url"
+                    value={formData.strava_link}
+                    onChange={(e) => setFormData({ ...formData, strava_link: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {isSocial && (
+              <div className="col-span-2">
+                <Label htmlFor="registration_url">Luma RSVP Link</Label>
+                <Input
+                  id="registration_url"
+                  type="url"
+                  value={formData.registration_url}
+                  onChange={(e) => setFormData({ ...formData, registration_url: e.target.value })}
+                  placeholder="https://lu.ma/..."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Create the event on Luma, then paste its link here. The site shows an "RSVP on Luma" button.
+                </p>
+              </div>
+            )}
 
             {formData.type === "race" && (
               <>

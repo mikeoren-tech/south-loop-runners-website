@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Clock, MapPin, Trophy, Activity, Bell, ChevronLeft, ChevronRight, Filter, CalendarDays, List, Download, ExternalLink, Star } from 'lucide-react'
+import { Clock, MapPin, Trophy, Activity, Bell, ChevronLeft, ChevronRight, Filter, CalendarDays, List, Download, ExternalLink, Star, PartyPopper } from 'lucide-react'
 import { ScrollReveal } from "@/components/scroll-reveal"
 import { cn } from "@/lib/utils"
 import {
@@ -46,7 +46,7 @@ interface CalendarEvent {
   date: Date
   time: string
   location: string
-  type: "weekly-run" | "race"
+  type: CalendarEventType
   details: string
   isRecurring: boolean
   description?: string
@@ -58,6 +58,41 @@ interface CalendarEvent {
 interface DailySummary {
   isRun: boolean
   isRace: boolean
+  isSocial: boolean
+}
+
+type CalendarEventType = "weekly-run" | "race" | "social"
+
+function toCalendarEventType(type: string): CalendarEventType {
+  if (type === "race" || type === "social") return type
+  return "weekly-run"
+}
+
+const EVENT_TYPE_STYLES: Record<
+  CalendarEventType,
+  { label: string; shortLabel: string; icon: typeof Activity; chipClass: string; badgeClass: string }
+> = {
+  "weekly-run": {
+    label: "Weekly Run",
+    shortLabel: "Run",
+    icon: Activity,
+    chipClass: "bg-slr-blue/70 hover:bg-slr-blue text-white",
+    badgeClass: "bg-slr-blue/80 text-white",
+  },
+  race: {
+    label: "Race",
+    shortLabel: "Race",
+    icon: Trophy,
+    chipClass: "bg-slr-red/70 hover:bg-slr-red text-white",
+    badgeClass: "bg-slr-red/80 text-white",
+  },
+  social: {
+    label: "Social",
+    shortLabel: "Social",
+    icon: PartyPopper,
+    chipClass: "bg-amber-500/80 hover:bg-amber-500 text-white",
+    badgeClass: "bg-amber-500/80 text-white",
+  },
 }
 
 const Tooltip = ({ children, content }: { children: React.ReactNode; content: string }) => (
@@ -88,7 +123,7 @@ function generateWeeklyRunOccurrences(run: DatabaseEvent, startDate: Date, weeks
       date: eventDate,
       time: run.time,
       location: run.location,
-      type: run.type === "race" ? "race" : "weekly-run",
+      type: toCalendarEventType(run.type),
       details: `${run.distance || ""} • ${run.pace || ""}`.trim().replace(/^ • | • $/g, ""),
       isRecurring: true,
       description: run.description,
@@ -235,6 +270,11 @@ function getInitialView(): "month" | "list" {
   return "month"
 }
 
+function EventTypeIcon({ type, className }: { type: CalendarEventType; className?: string }) {
+  const Icon = EVENT_TYPE_STYLES[type].icon
+  return <Icon className={className} />
+}
+
 // --- CalendarDayCell Component ---
 interface CalendarDayCellProps {
   day: number
@@ -248,6 +288,7 @@ interface CalendarDayCellProps {
 function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelectedEvent }: CalendarDayCellProps) {
   const hasRun = dailySummary?.isRun
   const hasRace = dailySummary?.isRace
+  const hasSocial = dailySummary?.isSocial
   const hasEvents = dayEvents.length > 0
 
   let ringClass = "border-white/30 hover:border-white/60"
@@ -270,6 +311,9 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
   } else if (hasRun) {
     ringClass = "border-2 border-slr-blue/80 ring-2 ring-slr-blue/30 shadow-lg"
     numberColor = "text-slr-blue"
+  } else if (hasSocial) {
+    ringClass = "border-2 border-amber-500/80 ring-2 ring-amber-500/30 shadow-lg"
+    numberColor = "text-amber-400"
   }
 
   return (
@@ -298,17 +342,11 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
                 className={cn(
                   "w-full text-[10px] px-2 py-1 rounded-md text-left transition-all font-semibold h-7 shadow-md",
                   "bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/30",
-                  event.type === "weekly-run"
-                    ? "bg-slr-blue/70 hover:bg-slr-blue text-white"
-                    : "bg-slr-red/70 hover:bg-slr-red text-white",
+                  EVENT_TYPE_STYLES[event.type].chipClass,
                 )}
               >
                 <div className="flex items-center h-full gap-1.5">
-                  {event.type === "race" ? (
-                    <Trophy className="h-3 w-3 flex-shrink-0" />
-                  ) : (
-                    <Activity className="h-3 w-3 flex-shrink-0" />
-                  )}
+                  <EventTypeIcon type={event.type} className="h-3 w-3 flex-shrink-0" />
                   <span className="line-clamp-2 leading-tight">{event.title}</span>
                 </div>
               </button>
@@ -330,7 +368,7 @@ function CalendarDayCell({ day, date, dayEvents, dailySummary, isToday, setSelec
 export function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<"month" | "list">(getInitialView)
-  const [filters, setFilters] = useState<Set<string>>(new Set(["weekly-run", "race"]))
+  const [filters, setFilters] = useState<Set<string>>(new Set(["weekly-run", "race", "social"]))
   const [isNotificationExpanded, setIsNotificationExpanded] = useState(false)
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
@@ -404,7 +442,7 @@ export function CalendarView() {
           date: localDate,
           time: event.time,
           location: event.location,
-          type: event.type === "race" ? "race" : "weekly-run",
+          type: toCalendarEventType(event.type),
           details: details,
           isRecurring: false,
           description: event.description,
@@ -440,15 +478,18 @@ export function CalendarView() {
   }, [filteredEvents, currentDate])
 
   const dailyEventSummary = useMemo(() => {
-    const summary = new Map<number, { isRun: boolean; isRace: boolean }>()
+    const summary = new Map<number, DailySummary>()
     monthEvents.forEach((event) => {
       const day = event.date.getDate()
-      const current = summary.get(day) || { isRun: false, isRace: false }
+      const current = summary.get(day) || { isRun: false, isRace: false, isSocial: false }
       if (event.type === "weekly-run") {
         current.isRun = true
       }
       if (event.type === "race") {
         current.isRace = true
+      }
+      if (event.type === "social") {
+        current.isSocial = true
       }
       summary.set(day, current)
     })
@@ -520,7 +561,7 @@ export function CalendarView() {
           <span className="text-slr-red">★</span> <span className="text-white">Events Calendar</span>
         </h1>
         <p className="text-lg text-white/90 max-w-2xl mx-auto">
-          View all upcoming weekly runs and races. Never miss an event!
+          View all upcoming weekly runs, races and socials. Never miss an event!
         </p>
       </ScrollReveal>
 
@@ -559,6 +600,20 @@ export function CalendarView() {
                   >
                     <Trophy className="h-4 w-4" />
                     Races
+                  </Button>
+                  <Button
+                    variant={filters.has("social") ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilters(toggleFilter(filters, "social"))}
+                    className={cn(
+                      "gap-2 shadow-lg transition-all",
+                      filters.has("social")
+                        ? "bg-amber-500/80 hover:bg-amber-500 text-white"
+                        : "bg-white/5 hover:bg-white/10 text-white/80 border-white/30",
+                    )}
+                  >
+                    <PartyPopper className="h-4 w-4" />
+                    Socials
                   </Button>
                 </div>
 
@@ -762,22 +817,11 @@ export function CalendarView() {
                                       variant={event.type === "race" ? "destructive" : "default"}
                                       className={cn(
                                         "flex-shrink-0 whitespace-nowrap text-xs sm:text-sm px-2 py-1",
-                                        event.type === "race"
-                                          ? "bg-slr-red/80 text-white"
-                                          : "bg-slr-blue/80 text-white",
+                                        EVENT_TYPE_STYLES[event.type].badgeClass,
                                       )}
                                     >
-                                      {event.type === "race" ? (
-                                        <>
-                                          <Trophy className="h-3 w-3 mr-1 flex-shrink-0" />
-                                          Race
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Activity className="h-3 w-3 mr-1 flex-shrink-0" />
-                                          Run
-                                        </>
-                                      )}
+                                      <EventTypeIcon type={event.type} className="h-3 w-3 mr-1 flex-shrink-0" />
+                                      {EVENT_TYPE_STYLES[event.type].shortLabel}
                                     </Badge>
                                   </div>
                                   <div className="flex flex-wrap gap-4 text-sm text-white/70">
@@ -811,6 +855,8 @@ export function CalendarView() {
             <DialogTitle className="text-2xl flex items-center gap-2 text-white">
               {selectedEvent?.type === "race" ? (
                 <Trophy className="h-6 w-6 text-slr-red fill-slr-red/20" />
+              ) : selectedEvent?.type === "social" ? (
+                <PartyPopper className="h-6 w-6 text-amber-400" />
               ) : (
                 <Star className="h-6 w-6 fill-slr-blue text-slr-blue" />
               )}
@@ -823,11 +869,9 @@ export function CalendarView() {
               {selectedEvent?.type && (
                 <Badge
                   variant={selectedEvent.type === "race" ? "destructive" : "default"}
-                  className={cn(
-                    selectedEvent.type === "race" ? "bg-slr-red/80 text-white" : "bg-slr-blue/80 text-white",
-                  )}
+                  className={EVENT_TYPE_STYLES[selectedEvent.type].badgeClass}
                 >
-                  {selectedEvent.type === "race" ? "Race" : "Weekly Run"}
+                  {EVENT_TYPE_STYLES[selectedEvent.type].label}
                 </Badge>
               )}
               {selectedEvent?.isRecurring && (
@@ -892,7 +936,7 @@ export function CalendarView() {
                   className="flex items-center gap-2"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Register Now
+                  {selectedEvent.type === "social" ? "RSVP on Luma" : "Register Now"}
                 </a>
               </Button>
             )}

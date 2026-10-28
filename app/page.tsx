@@ -3,15 +3,14 @@ import { LakeEffectCallout } from "@/components/lake-effect-callout"
 import { UpcomingRuns } from "@/components/upcoming-runs"
 import { About } from "@/components/about"
 import { LocalRaces } from "@/components/local-races"
+import { SocialEvents } from "@/components/social-events"
 import { InstagramFeed } from "@/components/instagram-feed"
 import { JoinCTA } from "@/components/join-cta"
 import { Footer } from "@/components/footer"
-import { AnnouncementBanner } from "@/components/announcement-banner"
 
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <AnnouncementBanner />
       <div id="home">
         <Hero />
       </div>
@@ -24,6 +23,7 @@ export default function Home() {
       <div id="races">
         <LocalRaces />
       </div>
+      <SocialEvents />
       <div id="instagram">
         <InstagramFeed />
       </div>
