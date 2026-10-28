@@ -20,3 +20,7 @@ export function normalizeLumaInput(input: string): string {
 
   return href ?? value
 }
+
+export function isLumaUrl(url?: string | null): boolean {
+  return /^https?:\/\/(www\.)?(lu\.ma|luma\.com)\//i.test(url?.trim() ?? "")
+}

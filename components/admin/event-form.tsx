@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { normalizeLumaInput } from "@/lib/luma"
+import { isLumaUrl, normalizeLumaInput } from "@/lib/luma"
 
 interface EventFormProps {
   event?: any
@@ -41,7 +41,12 @@ export function EventForm({ event, onClose }: EventFormProps) {
   })
   const [loading, setLoading] = useState(false)
   const [sendEmail, setSendEmail] = useState(true)
+  // How RSVPs are taken: on Luma (link stored in registration_url) or on this site. For socials this
+  // covers the event itself; for runs it covers the post-run social.
+  const [rsvpMethod, setRsvpMethod] = useState<"luma" | "site" | "none">("site")
   const isSocial = formData.type === "social"
+  const isRun = formData.type === "weekly-run" || formData.type === "special-event"
+  const usesLuma = rsvpMethod === "luma" && (isSocial || (isRun && formData.has_post_run_social))
 
   useEffect(() => {
     if (event) {
@@ -66,11 +71,30 @@ export function EventForm({ event, onClose }: EventFormProps) {
         route_map_iframe: event.route_map_iframe || "",
         image_url: event.image_url || "",
       })
+      if (isLumaUrl(event.registration_url)) setRsvpMethod("luma")
+      else if (event.type === "social") setRsvpMethod(event.collect_rsvp_names ? "site" : event.registration_url ? "luma" : "none")
     }
   }, [event])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (usesLuma && !isLumaUrl(formData.registration_url)) {
+      alert("Paste a Luma event link or embed code, or choose another RSVP option.")
+      return
+    }
+
+    // Only send the RSVP settings that match the chosen option
+    const payload = { ...formData }
+    if (isSocial) {
+      Object.assign(payload, { is_recurring: false, day_of_week: "", has_post_run_social: false })
+      payload.collect_rsvp_names = rsvpMethod === "site"
+      if (rsvpMethod !== "site") payload.max_rsvp_limit = ""
+      if (rsvpMethod !== "luma") payload.registration_url = ""
+    } else if (isRun && !usesLuma && isLumaUrl(formData.registration_url)) {
+      payload.registration_url = ""
+    }
+
     setLoading(true)
 
     try {
@@ -83,7 +107,7 @@ export function EventForm({ event, onClose }: EventFormProps) {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, sendEmail }),
+        body: JSON.stringify({ ...payload, sendEmail }),
       })
 
       console.log("[v0] Response status:", response.status)
@@ -138,9 +162,10 @@ export function EventForm({ event, onClose }: EventFormProps) {
               <Label htmlFor="type">Event Type*</Label>
               <Select
                 value={formData.type}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
                   setFormData({ ...formData, type: value, ...(value === "social" && { is_recurring: false }) })
-                }
+                  if (!event) setRsvpMethod(value === "social" ? "luma" : "site")
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -174,6 +199,63 @@ export function EventForm({ event, onClose }: EventFormProps) {
                   <Label htmlFor="post_run_social">Has Post-Run Social</Label>
                 </div>
               </>
+            )}
+
+            {isSocial && (
+              <div className="col-span-2">
+                <Label htmlFor="rsvp_method">RSVPs</Label>
+                <Select
+                  value={rsvpMethod}
+                  onValueChange={(value: "luma" | "site" | "none") => {
+                    setRsvpMethod(value)
+                    setFormData({ ...formData, collect_rsvp_names: value === "site" })
+                  }}
+                >
+                  <SelectTrigger id="rsvp_method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="luma">Luma</SelectItem>
+                    <SelectItem value="site">This website (name list with optional limit)</SelectItem>
+                    <SelectItem value="none">No RSVP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {isRun && formData.has_post_run_social && (
+              <div className="col-span-2">
+                <Label htmlFor="social_rsvp_method">Post-Run Social RSVPs</Label>
+                <Select
+                  value={rsvpMethod === "luma" ? "luma" : "site"}
+                  onValueChange={(value: "luma" | "site") => setRsvpMethod(value)}
+                >
+                  <SelectTrigger id="social_rsvp_method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="site">This website ("Also attending the social?" checkbox)</SelectItem>
+                    <SelectItem value="luma">Luma</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {usesLuma && (
+              <div className="col-span-2">
+                <Label htmlFor="registration_url">Luma Event Link or Embed Code</Label>
+                <Input
+                  id="registration_url"
+                  value={formData.registration_url}
+                  onChange={(e) => setFormData({ ...formData, registration_url: normalizeLumaInput(e.target.value) })}
+                  placeholder="https://luma.com/event/evt-..."
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Paste the event link, or the checkout button embed code from Luma (Share → Embed). Links that include
+                  the event ID (evt-…) open registration right on our site; other links open the Luma page.
+                </p>
+              </div>
             )}
 
             {(formData.type === "weekly-run" || formData.type === "special-event") && (
@@ -317,21 +399,6 @@ export function EventForm({ event, onClose }: EventFormProps) {
               </>
             )}
 
-            {isSocial && (
-              <div className="col-span-2">
-                <Label htmlFor="registration_url">Luma Event Link or Embed Code</Label>
-                <Input
-                  id="registration_url"
-                  value={formData.registration_url}
-                  onChange={(e) => setFormData({ ...formData, registration_url: normalizeLumaInput(e.target.value) })}
-                  placeholder="https://luma.com/event/evt-..."
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Paste the event link, or the checkout button embed code from Luma (Share → Embed). Links that include
-                  the event ID (evt-…) open registration right on our site; other links open the Luma page.
-                </p>
-              </div>
-            )}
 
             {formData.type === "race" && (
               <>

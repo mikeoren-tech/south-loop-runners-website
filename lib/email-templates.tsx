@@ -1,3 +1,5 @@
+import { isLumaUrl } from "./luma"
+
 interface Event {
   id: string
   title: string
@@ -431,7 +433,7 @@ const buildCTAButtons = (event: Event, includeCalendar: boolean = true): string 
       </div>
       ` : ""}
       <div class="cta-row">
-        ${event.registration_url ? `<a href="${event.registration_url}" class="cta-button" target="_blank">${event.type === "social" ? "RSVP on Luma" : "View Pace Groups"}</a>` : ""}
+        ${event.registration_url ? `<a href="${event.registration_url}" class="cta-button" target="_blank">${event.type === "social" ? "RSVP on Luma" : isLumaUrl(event.registration_url) ? "RSVP for the Post-Run Social" : "View Pace Groups"}</a>` : ""}
         ${event.facebook_link ? `<a href="${event.facebook_link}" class="cta-button secondary" target="_blank">RSVP on Facebook</a>` : ""}
         ${event.strava_link ? `<a href="${event.strava_link}" class="cta-button secondary" target="_blank">View on Strava</a>` : ""}
       </div>

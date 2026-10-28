@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Clock, MapPin, Trophy, Activity, Bell, ChevronLeft, ChevronRight, Filter, CalendarDays, List, Download, ExternalLink, Star, PartyPopper } from 'lucide-react'
 import { ScrollReveal } from "@/components/scroll-reveal"
+import { isLumaUrl } from "@/lib/luma"
 import { cn } from "@/lib/utils"
 import {
   Dialog,
@@ -936,7 +937,11 @@ export function CalendarView() {
                   className="flex items-center gap-2"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  {selectedEvent.type === "social" ? "RSVP on Luma" : "Register Now"}
+                  {selectedEvent.type === "social"
+                    ? "RSVP on Luma"
+                    : isLumaUrl(selectedEvent.registrationUrl)
+                      ? "Post-Run Social RSVP"
+                      : "Register Now"}
                 </a>
               </Button>
             )}

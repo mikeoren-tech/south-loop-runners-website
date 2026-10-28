@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect } from "react"
+import type React from "react"
+import { useState } from "react"
 import useSWR from "swr"
-import { Clock, MapPin, ArrowUpRight } from "lucide-react"
+import { Clock, MapPin, Users } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { ScrollReveal } from "@/components/scroll-reveal"
-import { getLumaEventId } from "@/lib/luma"
+import { LumaRsvpLink } from "@/components/luma-rsvp-link"
 
 interface SocialEvent {
   id: string
@@ -16,6 +18,13 @@ interface SocialEvent {
   time: string | null
   location: string | null
   registration_url: string | null
+  collect_rsvp_names: number | boolean | null
+  max_rsvp_limit: number | null
+}
+
+interface Rsvp {
+  id: number
+  name: string
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -26,9 +35,92 @@ function parseDate(date: string) {
   return new Date(year, month - 1, day)
 }
 
+// RSVPs kept on our site (same RSVP list the weekly runs use)
+function SocialRsvpSection({ eventId, maxRsvpLimit }: { eventId: string; maxRsvpLimit: number | null }) {
+  const [name, setName] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [message, setMessage] = useState("")
+
+  const { data, mutate } = useSWR<Rsvp[]>(`/api/events/run-rsvps/${eventId}`, fetcher, {
+    refreshInterval: 10000,
+    shouldRetryOnError: false,
+  })
+  const rsvps = Array.isArray(data) ? data : []
+  const isFull = Boolean(maxRsvpLimit && rsvps.length >= maxRsvpLimit)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || isSubmitting) return
+
+    setIsSubmitting(true)
+    setMessage("")
+    try {
+      const response = await fetch(`/api/events/run-rsvps/${eventId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim() }),
+      })
+      if (response.ok) {
+        setName("")
+        setMessage("You're on the list!")
+      } else {
+        const result = await response.json().catch(() => ({}))
+        setMessage(result.error || "Couldn't save your RSVP. Please try again.")
+      }
+      await mutate()
+    } catch (error) {
+      console.error("Failed to submit social RSVP:", error)
+      setMessage("Couldn't save your RSVP. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="mt-auto space-y-3 border-t pt-4">
+      <p className="flex items-center gap-2 text-sm font-medium">
+        <Users className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        {rsvps.length}
+        {maxRsvpLimit ? `/${maxRsvpLimit}` : ""} going
+        {isFull && <span className="font-normal text-muted-foreground">· RSVPs full</span>}
+      </p>
+
+      {rsvps.length > 0 && (
+        <p className="text-sm text-muted-foreground break-words">{rsvps.map((rsvp) => rsvp.name).join(", ")}</p>
+      )}
+
+      {!isFull && (
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="First + last initial (e.g. Mike O.)"
+            aria-label="Your name"
+            className="flex-1 min-w-0"
+            maxLength={50}
+          />
+          <Button
+            type="submit"
+            disabled={!name.trim() || isSubmitting}
+            className="shrink-0 bg-slr-red hover:bg-slr-red/90 text-white"
+          >
+            {isSubmitting ? "Saving..." : "RSVP"}
+          </Button>
+        </form>
+      )}
+
+      {message && (
+        <p className="text-xs text-muted-foreground" role="status">
+          {message}
+        </p>
+      )}
+    </div>
+  )
+}
+
 function SocialCard({ event, index }: { event: SocialEvent; index: number }) {
   const date = parseDate(event.date)
-  const lumaEventId = getLumaEventId(event.registration_url)
+  const collectRsvps = Boolean(Number(event.collect_rsvp_names))
 
   return (
     <ScrollReveal
@@ -70,29 +162,12 @@ function SocialCard({ event, index }: { event: SocialEvent; index: number }) {
             <p className="text-sm text-muted-foreground whitespace-pre-line break-words">{event.description}</p>
           )}
 
-          {event.registration_url && (
+          {event.registration_url ? (
             <Button asChild className="mt-auto w-full bg-slr-red hover:bg-slr-red/90 text-white">
-              {lumaEventId ? (
-                // Luma's checkout script opens registration in an overlay on our page. Leaving off
-                // its "luma-checkout--button" class keeps our button style. If the script doesn't
-                // load, this is still a normal link to the event page.
-                <a
-                  href={event.registration_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-luma-action="checkout"
-                  data-luma-event-id={lumaEventId}
-                >
-                  RSVP on Luma
-                </a>
-              ) : (
-                <a href={event.registration_url} target="_blank" rel="noopener noreferrer">
-                  RSVP on Luma
-                  <ArrowUpRight className="h-4 w-4 ml-1" aria-hidden="true" />
-                  <span className="sr-only">(opens in new window)</span>
-                </a>
-              )}
+              <LumaRsvpLink url={event.registration_url}>RSVP on Luma</LumaRsvpLink>
             </Button>
+          ) : (
+            collectRsvps && <SocialRsvpSection eventId={event.id} maxRsvpLimit={event.max_rsvp_limit} />
           )}
         </CardContent>
       </Card>
@@ -103,17 +178,6 @@ function SocialCard({ event, index }: { event: SocialEvent; index: number }) {
 export function SocialEvents() {
   const { data } = useSWR<SocialEvent[]>("/api/events/socials", fetcher)
   const socials = Array.isArray(data) ? data : []
-  const hasLumaCheckout = socials.some((event) => getLumaEventId(event.registration_url))
-
-  // Load Luma's checkout script after the buttons are on the page so it can find them
-  useEffect(() => {
-    if (!hasLumaCheckout || document.getElementById("luma-checkout")) return
-    const script = document.createElement("script")
-    script.id = "luma-checkout"
-    script.src = "https://embed.lu.ma/checkout-button.js"
-    script.async = true
-    document.body.appendChild(script)
-  }, [hasLumaCheckout])
 
   // Only show the section when there's an upcoming social
   if (socials.length === 0) return null
