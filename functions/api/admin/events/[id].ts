@@ -155,20 +155,28 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
   }
 
   try {
-    // Get event details before deletion for email
     const event = await DB.prepare("SELECT * FROM events WHERE id = ?").bind(id).first()
 
-    // Delete event from database
-    await DB.prepare("DELETE FROM events WHERE id = ?").bind(id).run()
-
-    // Send cancellation email
-    if (event) {
-      await fetch(`${new URL(context.request.url).origin}/api/admin/emails/canceled-event`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event }),
-      })
+    // Only email subscribers when the admin asked for it (?sendEmail=true). This has to happen
+    // before the delete: the email endpoint looks the event up by ID.
+    const sendEmail = new URL(context.request.url).searchParams.get("sendEmail") === "true"
+    if (event && sendEmail) {
+      try {
+        const emailResponse = await fetch(`${new URL(context.request.url).origin}/api/admin/emails/canceled-event`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId: id }),
+        })
+        if (!emailResponse.ok) {
+          console.error("[v0] Cancellation email failed:", emailResponse.status, await emailResponse.text())
+        }
+      } catch (emailError) {
+        // Don't block the delete if the email can't be sent
+        console.error("[v0] Cancellation email error:", emailError)
+      }
     }
+
+    await DB.prepare("DELETE FROM events WHERE id = ?").bind(id).run()
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

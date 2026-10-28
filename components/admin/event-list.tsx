@@ -33,9 +33,12 @@ export function EventList({ events, onEdit, onDelete }: EventListProps) {
   const handleDelete = async (eventId: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return
 
+    // Subscribers are only emailed when asked. Choose Cancel for test or unannounced events.
+    const sendEmail = confirm("Also email subscribers that this event was canceled?\n\nOK = send email, Cancel = delete without emailing.")
+
     setDeleting(eventId)
     try {
-      const response = await fetch(`/api/admin/events/${eventId}`, {
+      const response = await fetch(`/api/admin/events/${eventId}?sendEmail=${sendEmail}`, {
         method: "DELETE",
       })
 
