@@ -21,7 +21,7 @@ export async function onRequestPost(context: any) {
       return new Response(JSON.stringify({ error: "Event not found" }), { status: 404 });
     }
 
-    const { subject, html } = getUpdatedEventEmailTemplate(event);
+    const { subject, html } = getCanceledEventEmailTemplate(event);
     const finalHtml = `${html}<br><p><a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a></p>`;
 
     const resend = new Resend(RESEND_API_KEY);
@@ -59,7 +59,7 @@ export async function onRequestPost(context: any) {
     }), { status: 200 });
 
   } catch (error: any) {
-    console.error("[v0] Unhandled error in updated-event function:", error.message);
+    console.error("[v0] Unhandled error in canceled-event function:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
