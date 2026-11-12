@@ -1,4 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types"
+import { PACE_GROUPS } from "@/lib/pace-groups"
 
 interface Env {
   DB: D1Database
@@ -82,16 +83,18 @@ export async function onRequestPost(context: { env: Env; params: { runId: string
 
     console.log("[v0] Adding pace interest:", pace, "for runId:", runId)
 
-    if (!pace) {
-      return new Response(JSON.stringify({ error: "Pace is required" }), {
+    if (!pace || !PACE_GROUPS.includes(pace)) {
+      return new Response(JSON.stringify({ error: "A valid pace is required" }), {
         status: 400,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       })
     }
 
     try {
+      // Upsert so runs created after the original seed migration get their row on first selection
       await context.env.DB.prepare(
-        `UPDATE pace_interests SET count = count + 1, updated_at = CURRENT_TIMESTAMP WHERE event_id = ? AND pace_group = ?`,
+        `INSERT INTO pace_interests (event_id, pace_group, count) VALUES (?, ?, 1)
+         ON CONFLICT(event_id, pace_group) DO UPDATE SET count = count + 1, updated_at = CURRENT_TIMESTAMP`,
       )
         .bind(runId, pace)
         .run()
